@@ -25,6 +25,20 @@ export async function POST(req: Request) {
 
         if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+        // Ensure user exists (especially for the demo-user)
+        let user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user && userId === 'demo-user') {
+            user = await prisma.user.create({
+                data: {
+                    id: 'demo-user',
+                    email: 'demo@zakibot.ai',
+                    password: 'password_not_needed_for_demo'
+                }
+            });
+        } else if (!user) {
+            return NextResponse.json({ error: 'User does not exist' }, { status: 400 });
+        }
+
         const existingConfig = await prisma.botConfig.findFirst({ where: { userId } });
 
         // Remove any fields that don't belong in the database or are read-only
