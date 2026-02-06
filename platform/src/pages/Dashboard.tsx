@@ -46,8 +46,13 @@ interface AgentConfig {
     feishuAppSecret: string;
     webSearchApiKey: string;
     githubToken: string;
+    firecrawlApiKey: string;
+    apifyApiToken: string;
     browserEnabled: boolean;
     shellEnabled: boolean;
+    tmuxEnabled: boolean;
+    weatherEnabled: boolean;
+    summarizeEnabled: boolean;
     restrictToWorkspace: boolean;
     gatewayHost: string;
     gatewayPort: number;
@@ -100,11 +105,16 @@ export default function Dashboard() {
             apiKey: '',
             apiBase: '',
             telegramEnabled: false,
-            discordEnabled: false,
-            whatsappEnabled: false,
             feishuEnabled: false,
             browserEnabled: true,
             shellEnabled: false,
+            tmuxEnabled: false,
+            weatherEnabled: false,
+            summarizeEnabled: false,
+            webSearchApiKey: '',
+            githubToken: '',
+            firecrawlApiKey: '',
+            apifyApiToken: '',
             restrictToWorkspace: true,
             gatewayHost: '0.0.0.0',
             gatewayPort: 18790 + (agents.length * 10), // Auto-offset ports
@@ -154,7 +164,7 @@ export default function Dashboard() {
     if (isLoading) {
         return (
             <div className="min-h-screen bg-black text-white flex items-center justify-center">
-                <Bot size={64} className="text-blue-500 animate-pulse" />
+                <Bot size={64} className="text-[#ff4d4d] animate-pulse" />
             </div>
         );
     }
@@ -174,10 +184,10 @@ export default function Dashboard() {
                     >
                         <header className="flex justify-between items-end mb-16">
                             <div>
-                                <div className="flex items-center gap-2 text-blue-500 font-bold text-xs uppercase tracking-[0.4em] mb-4">
+                                <div className="flex items-center gap-2 text-[#ff4d4d] font-bold text-xs uppercase tracking-[0.4em] mb-4">
                                     <Sparkles size={14} /> Fleet Intelligence
                                 </div>
-                                <h1 className="text-7xl font-black italic uppercase tracking-tighter decoration-blue-600/30 underline underline-offset-8">
+                                <h1 className="text-7xl font-black italic uppercase tracking-tighter decoration-[#ff4d4d]/30 underline underline-offset-8">
                                     The Squad
                                 </h1>
                             </div>
@@ -242,7 +252,7 @@ export default function Dashboard() {
 
                             <div className="max-w-4xl space-y-12 pb-32">
                                 {activeTab === 'provider' && (
-                                    <Section icon={<Cpu className="text-blue-500" />} title="Intelligence" desc="Core brain and provider keys.">
+                                    <Section icon={<Cpu className="text-[#ff4d4d]" />} title="Intelligence" desc="Core brain and provider keys.">
                                         <div className="grid grid-cols-2 gap-8">
                                             <InputWrapper label="Provider">
                                                 <select
@@ -314,7 +324,7 @@ export default function Dashboard() {
                                 {activeTab === 'tools' && (
                                     <div className="grid grid-cols-2 gap-8">
                                         <ToolCard
-                                            title="Web Search" icon={<Search className="text-blue-500" />}
+                                            title="Web Search" icon={<Search className="text-[#ff4d4d]" />}
                                             desc="Live searching via Brave API."
                                         >
                                             <input
@@ -326,7 +336,7 @@ export default function Dashboard() {
                                             />
                                         </ToolCard>
                                         <ToolCard
-                                            title="Browser" icon={<Globe className="text-cyan-500" />}
+                                            title="Browser" icon={<Globe className="text-[#00f2ff]" />}
                                             desc="Headless Chrome automation."
                                             onToggle={(v) => setEditingAgent({ ...editingAgent, browserEnabled: v })}
                                             checked={editingAgent.browserEnabled}
@@ -426,7 +436,7 @@ export default function Dashboard() {
 
                                 {activeTab === 'profile' && (
                                     <div className="space-y-8">
-                                        <Section icon={<User className="text-blue-500" />} title="Commander Profile" desc="Identity and credentials.">
+                                        <Section icon={<User className="text-[#ff4d4d]" />} title="Commander Profile" desc="Identity and credentials.">
                                             <div className="flex gap-8 items-start">
                                                 <div className="w-32 h-32 rounded-full bg-white/5 flex items-center justify-center overflow-hidden border-2 border-white/10 relative group">
                                                     {profileForm.avatar_url ? (
@@ -479,7 +489,7 @@ export default function Dashboard() {
                                                                     setProfileStatus({ ...profileStatus, loading: false });
                                                                 }
                                                             }}
-                                                            className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-black text-xs tracking-widest uppercase hover:scale-105 transition-all"
+                                                            className="bg-gradient-to-r from-[#ff4d4d] to-[#cc0000] text-white px-8 py-4 rounded-2xl font-black text-sm tracking-widest uppercase hover:scale-105 transition-all shadow-lg shadow-[#ff4d4d]/20"
                                                         >
                                                             Save Profile
                                                         </button>
@@ -500,7 +510,7 @@ export default function Dashboard() {
                                     <button
                                         onClick={() => saveConfig(editingAgent)}
                                         disabled={isSaving}
-                                        className="bg-blue-600 text-white px-12 py-5 rounded-[2rem] font-black text-sm tracking-widest shadow-2xl shadow-blue-600/30 flex items-center gap-3 hover:scale-105 active:scale-95 transition-all"
+                                        className="bg-[#00f2ff]/10 text-[#00f2ff] px-8 py-5 rounded-[2rem] font-black text-sm tracking-widest border border-[#00f2ff]/20 hover:bg-[#00f2ff]/20 transition-all"
                                     >
                                         <Rocket size={18} /> DEPLOY AGENT
                                     </button>
@@ -521,7 +531,7 @@ function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
             layout
             className={cn(
                 "bg-white/2 border border-white/5 rounded-[3rem] p-10 flex flex-col gap-8 transition-all relative overflow-hidden group hover:border-white/10",
-                isRunning && "bg-blue-600/[0.03] border-blue-500/20"
+                isRunning && "bg-[#ff4d4d]/[0.03] border-[#ff4d4d]/20"
             )}
         >
             <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -533,7 +543,7 @@ function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
             <div className="flex items-center justify-between">
                 <div className={cn(
                     "w-16 h-16 rounded-3xl flex items-center justify-center transition-all",
-                    isRunning ? "bg-blue-500 text-white shadow-2xl shadow-blue-500/40" : "bg-white/5 text-gray-500"
+                    isRunning ? "bg-[#ff4d4d] text-white shadow-2xl shadow-[#ff4d4d]/40" : "bg-white/5 text-gray-500"
                 )}>
                     <Bot size={32} />
                 </div>
@@ -607,10 +617,10 @@ function SidebarTab({ icon, label, active, onClick }: any) {
             onClick={onClick}
             className={cn(
                 "flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-sm tracking-tight transition-all text-left",
-                active ? "bg-blue-600/10 text-blue-500" : "text-gray-500 hover:text-white"
+                active ? "bg-[#ff4d4d]/10 text-[#ff4d4d]" : "text-gray-500 hover:text-white"
             )}
         >
-            <div className={cn("transition-colors", active ? "text-blue-500" : "text-gray-600")}>
+            <div className={cn("transition-colors", active ? "text-[#ff4d4d]" : "text-gray-600")}>
                 {icon}
             </div>
             {label}
@@ -639,7 +649,7 @@ function ChannelInput({ name, icon, enabled, onToggle, children }: any) {
     return (
         <div className={cn(
             "p-8 rounded-[2rem] border transition-all",
-            enabled ? "bg-blue-600/5 border-blue-500/20" : "bg-white/2 border-white/5"
+            enabled ? "bg-[#ff4d4d]/5 border-[#ff4d4d]/20" : "bg-white/2 border-white/5"
         )}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -662,7 +672,7 @@ function ToolCard({ title, icon, desc, checked, onToggle, children }: any) {
     return (
         <div className={cn(
             "p-10 rounded-[2.5rem] border transition-all relative overflow-hidden group",
-            (checked || (!onToggle && children)) ? "bg-blue-600/5 border-blue-500/20" : "bg-white/2 border-white/5"
+            (checked || (!onToggle && children)) ? "bg-[#ff4d4d]/5 border-[#ff4d4d]/20" : "bg-white/2 border-white/5"
         )}>
             <div className="flex items-center justify-between mb-8">
                 <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center">
@@ -692,7 +702,7 @@ function ToggleRow({ label, desc, checked, onToggle }: any) {
 function InputWrapper({ label, children, full }: any) {
     return (
         <div className={full ? 'col-span-2' : ''}>
-            <label className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-3 block opacity-60 px-1">{label}</label>
+            <label className="text-[10px] font-black text-[#ff4d4d] uppercase tracking-widest mb-3 block opacity-60 px-1">{label}</label>
             {children}
         </div>
     );
@@ -707,7 +717,7 @@ function Toggle({ checked, onChange }: any) {
                 onChange={e => onChange(e.target.checked)}
                 className="sr-only peer"
             />
-            <div className="w-14 h-7 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-[4px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            <div className="w-14 h-7 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-[4px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ff4d4d]"></div>
         </label>
     );
 }

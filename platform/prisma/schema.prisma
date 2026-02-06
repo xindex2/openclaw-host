@@ -74,9 +74,22 @@ model BotConfig {
   // Tools/Skills
   webSearchApiKey String?
   githubToken     String?
+  
+  // Browser
   browserEnabled  Boolean @default(true)
+  
+  // Shell/Tmux
   shellEnabled    Boolean @default(false)
+  tmuxEnabled     Boolean @default(false)
   restrictToWorkspace Boolean @default(false)
+
+  // Weather
+  weatherEnabled  Boolean @default(false)
+
+  // Summarize
+  summarizeEnabled Boolean @default(false)
+  firecrawlApiKey  String?
+  apifyApiToken    String?
   
   // System
   gatewayHost    String   @default("0.0.0.0")

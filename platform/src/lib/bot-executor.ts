@@ -114,7 +114,15 @@ export async function startBot(configId: string) {
         env: {
             ...env,
             NANOBOT_CONFIG: configPath,
-            NANOBOT_WORKSPACE: workspacePath
+            NANOBOT_WORKSPACE: workspacePath,
+            // Tool/Skill Secrets
+            GITHUB_TOKEN: config.githubToken || env.GITHUB_TOKEN,
+            FIRECRAWL_API_KEY: config.firecrawlApiKey || env.FIRECRAWL_API_KEY,
+            APIFY_API_TOKEN: config.apifyApiToken || env.APIFY_API_TOKEN,
+            // Feature Flags (optional, dependent on skill implementation)
+            ENABLE_WEATHER: config.weatherEnabled ? "true" : "false",
+            ENABLE_SUMMARIZE: config.summarizeEnabled ? "true" : "false",
+            ENABLE_TMUX: config.tmuxEnabled ? "true" : "false"
         }
     });
 
