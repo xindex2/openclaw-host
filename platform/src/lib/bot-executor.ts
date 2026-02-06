@@ -80,7 +80,17 @@ export async function startBot(userId: string) {
     // Spawn nanobot
     const nanobotRoot = path.join(process.cwd(), '..');
 
-    const child = spawn('python3', ['-m', 'nanobot', 'gateway'], {
+    // Detect python binary (prefer venv if exists)
+    let pythonPath = 'python3';
+    const venvPython = path.join(nanobotRoot, 'venv', 'bin', 'python3');
+    if (fs.existsSync(venvPython)) {
+        pythonPath = venvPython;
+        console.log(`[Bot ${userId}] Using venv python: ${pythonPath}`);
+    } else {
+        console.log(`[Bot ${userId}] Using system python: ${pythonPath}`);
+    }
+
+    const child = spawn(pythonPath, ['-m', 'nanobot', 'gateway'], {
         cwd: nanobotRoot,
         env: {
             ...process.env,
