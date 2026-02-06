@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
     Bot, Cpu, Share2, Terminal, Server, CreditCard, User, LogOut, Search, Globe, HardDrive, Clock,
     Trash2, Play, Square, Settings, LayoutDashboard, ChevronRight, CheckCircle, Plus, Rocket,
-    Cloud, FileText, Lock, Sparkles, ChevronLeft, Edit3
+    Cloud, FileText, Lock, Sparkles, ChevronLeft, Edit3, Activity, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
@@ -202,8 +202,11 @@ export default function Dashboard() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center">
-                <Bot size={64} className="text-[#ff4d4d] animate-pulse" />
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <Bot size={48} className="text-zinc-950 animate-bounce" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Loading Fleet...</p>
+                </div>
             </div>
         );
     }
@@ -217,7 +220,7 @@ export default function Dashboard() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="space-y-16"
+                        className="space-y-12"
                     >
                         {agents.length === 0 ? (
                             <DeployWizard
@@ -227,24 +230,44 @@ export default function Dashboard() {
                             />
                         ) : (
                             <>
-                                <header className="flex justify-between items-end">
+                                <header className="flex justify-between items-center bg-white border border-gray-200 p-8 rounded-2xl shadow-sm">
                                     <div>
-                                        <div className="flex items-center gap-2 text-gray-500 font-bold text-[10px] uppercase tracking-[0.4em] mb-4">
-                                            <Sparkles size={14} className="text-coral-bright" /> Operational Units
+                                        <div className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" /> Agent Management
                                         </div>
-                                        <h1 className="text-5xl font-black italic uppercase tracking-tighter">
-                                            The Squad
+                                        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+                                            Operational Units
                                         </h1>
                                     </div>
                                     <button
                                         onClick={handleCreateAgent}
-                                        className="bg-white text-black px-10 py-5 rounded-[2rem] font-black text-[11px] tracking-widest flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/5 uppercase"
+                                        className="btn-minimal flex items-center gap-2.5"
                                     >
-                                        <Plus size={18} strokeWidth={3} /> Recruit Member
+                                        <Plus size={16} strokeWidth={3} /> Create Agent
                                     </button>
                                 </header>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {/* Stats Overview */}
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                    {[
+                                        { label: 'Total Agents', value: agents.length, icon: <Bot size={16} /> },
+                                        { label: 'Active', value: agents.filter(a => a.status === 'running').length, icon: <Activity size={16} />, color: 'text-green-600' },
+                                        { label: 'Idle', value: agents.filter(a => a.status !== 'running').length, icon: <Clock size={16} /> },
+                                        { label: 'Compute Usage', value: '42%', icon: <Cpu size={16} /> },
+                                    ].map((stat, i) => (
+                                        <div key={i} className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm flex items-center justify-between">
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                                                <p className={cn("text-2xl font-bold tracking-tight", stat.color || "text-slate-950")}>{stat.value}</p>
+                                            </div>
+                                            <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
+                                                {stat.icon}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {agents.map(agent => (
                                         <AgentCard
                                             key={agent.id}
@@ -261,46 +284,46 @@ export default function Dashboard() {
                 ) : (
                     <motion.div
                         key="editor"
-                        initial={{ opacity: 0, scale: 0.98 }}
+                        initial={{ opacity: 0, scale: 0.99 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.02 }}
-                        className="flex-1 flex min-h-[70vh] bg-white/[0.01] border border-white/5 rounded-[4rem] overflow-hidden"
+                        exit={{ opacity: 0, scale: 1.01 }}
+                        className="flex-1 flex min-h-[70vh] bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-2xl"
                     >
                         <Sidebar
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
                             onBack={() => setEditingAgent(null)}
                         />
-                        <main className="flex-1 p-16 overflow-y-auto relative custom-scrollbar">
-                            <header className="mb-12">
-                                <button onClick={() => setEditingAgent(null)} className="flex items-center gap-2 text-gray-700 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest mb-8">
-                                    <ChevronLeft size={14} /> Return to Squad
+                        <main className="flex-1 p-12 overflow-y-auto relative custom-scrollbar bg-white">
+                            <header className="mb-10">
+                                <button onClick={() => setEditingAgent(null)} className="flex items-center gap-2 text-slate-400 hover:text-slate-900 transition-colors text-[10px] font-bold uppercase tracking-widest mb-6 px-1">
+                                    <ChevronLeft size={14} /> Back to dashboard
                                 </button>
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <input
                                         value={editingAgent.name}
                                         onChange={e => setEditingAgent({ ...editingAgent, name: e.target.value })}
-                                        className="bg-transparent text-5xl font-black tracking-tighter uppercase italic outline-none border-b border-transparent focus:border-white/5 w-full placeholder:text-gray-800"
+                                        className="bg-transparent text-3xl font-bold tracking-tight text-slate-950 outline-none border-b border-transparent focus:border-indigo-100 transition-colors w-full placeholder:text-slate-200"
                                         placeholder="Unit Designation"
                                     />
                                     <input
                                         value={editingAgent.description}
                                         onChange={e => setEditingAgent({ ...editingAgent, description: e.target.value })}
                                         placeholder="Define the mission objective..."
-                                        className="bg-transparent text-gray-600 text-sm font-medium outline-none w-full"
+                                        className="bg-transparent text-slate-500 text-sm font-medium outline-none w-full px-1"
                                     />
                                 </div>
                             </header>
 
                             <div className="max-w-4xl space-y-12 pb-32">
                                 {activeTab === 'provider' && (
-                                    <Section icon={<Cpu className="text-[#ff4d4d]" />} title="Intelligence" desc="Core brain and provider keys.">
-                                        <div className="grid grid-cols-2 gap-8">
+                                    <Section icon={<Cpu className="text-indigo-600" />} title="Intelligence" desc="Core brain and provider keys.">
+                                        <div className="grid grid-cols-2 gap-8 mt-8">
                                             <InputWrapper label="Provider">
                                                 <select
                                                     value={editingAgent.provider}
                                                     onChange={e => setEditingAgent({ ...editingAgent, provider: e.target.value })}
-                                                    className="form-input"
+                                                    className="form-select"
                                                 >
                                                     {PROVIDERS.map(p => (
                                                         <option key={p.id} value={p.id}>{p.name}</option>
@@ -327,7 +350,7 @@ export default function Dashboard() {
                                 )}
 
                                 {activeTab === 'channels' && (
-                                    <div className="space-y-6">
+                                    <div className="space-y-6 pt-4">
                                         <ChannelInput
                                             name="Telegram" icon={ICONS.telegram}
                                             enabled={editingAgent.telegramEnabled}
@@ -363,7 +386,7 @@ export default function Dashboard() {
                                                 placeholder="Bridge URL (ws://...)"
                                                 value={editingAgent.whatsappBridgeUrl || ''}
                                                 onChange={e => setEditingAgent({ ...editingAgent, whatsappBridgeUrl: e.target.value })}
-                                                className="form-input text-xs mt-2"
+                                                className="form-input text-xs"
                                             />
                                         </ChannelInput>
                                         <ChannelInput
@@ -389,13 +412,13 @@ export default function Dashboard() {
                                                     placeholder="Encrypt Key"
                                                     value={editingAgent.feishuEncryptKey || ''}
                                                     onChange={e => setEditingAgent({ ...editingAgent, feishuEncryptKey: e.target.value })}
-                                                    className="form-input text-[10px]"
+                                                    className="form-input text-xs"
                                                 />
                                                 <input
                                                     placeholder="Verification Token"
                                                     value={editingAgent.feishuVerificationToken || ''}
                                                     onChange={e => setEditingAgent({ ...editingAgent, feishuVerificationToken: e.target.value })}
-                                                    className="form-input text-[10px]"
+                                                    className="form-input text-xs"
                                                 />
                                             </div>
                                         </ChannelInput>
@@ -403,9 +426,9 @@ export default function Dashboard() {
                                 )}
 
                                 {activeTab === 'tools' && (
-                                    <div className="grid grid-cols-2 gap-8">
+                                    <div className="grid grid-cols-2 gap-6 pt-4">
                                         <ToolCard
-                                            title="Web Search" icon={<Search className="text-[#ff4d4d]" />}
+                                            title="Web Search" icon={<Search className="text-zinc-500" />}
                                             desc="Live searching via Brave API."
                                         >
                                             <input
@@ -413,29 +436,29 @@ export default function Dashboard() {
                                                 placeholder="Brave API Key"
                                                 value={editingAgent.webSearchApiKey}
                                                 onChange={e => setEditingAgent({ ...editingAgent, webSearchApiKey: e.target.value })}
-                                                className="form-input text-xs"
+                                                className="form-input text-xs mt-2"
                                             />
                                         </ToolCard>
                                         <ToolCard
-                                            title="Browser" icon={<Globe className="text-[#00f2ff]" />}
+                                            title="Browser" icon={<Globe className="text-zinc-500" />}
                                             desc="Headless Chrome automation."
                                             onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, browserEnabled: v })}
                                             checked={editingAgent.browserEnabled}
                                         />
                                         <ToolCard
-                                            title="Shell" icon={<Terminal className="text-amber-500" />}
+                                            title="Shell" icon={<Terminal className="text-zinc-500" />}
                                             desc="Isolated command execution."
                                             onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, shellEnabled: v })}
                                             checked={editingAgent.shellEnabled}
                                         />
                                         <ToolCard
-                                            title="Tmux Manager" icon={<Terminal className="text-emerald-500" />}
+                                            title="Tmux Manager" icon={<Terminal className="text-zinc-500" />}
                                             desc="Persistent background tasks."
                                             onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, tmuxEnabled: v })}
                                             checked={editingAgent.tmuxEnabled}
                                         />
                                         <ToolCard
-                                            title="GitHub" icon={<img src={ICONS.github} className="w-4 h-4" />}
+                                            title="GitHub" icon={<img src={ICONS.github} className="w-4 h-4 opacity-50" />}
                                             desc="Code & Repo management."
                                             onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, githubEnabled: v })}
                                             checked={editingAgent.githubToken ? true : false}
@@ -449,67 +472,60 @@ export default function Dashboard() {
                                             />
                                         </ToolCard>
                                         <ToolCard
-                                            title="Weather" icon={<Cloud className="text-sky-400" />}
+                                            title="Weather" icon={<Cloud className="text-zinc-500" />}
                                             desc="Live weather conditions."
                                             onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, weatherEnabled: v })}
                                             checked={editingAgent.weatherEnabled}
                                         />
                                         <ToolCard
-                                            title="Summarize" icon={<FileText className="text-orange-400" />}
+                                            title="Summarize" icon={<FileText className="text-zinc-500" />}
                                             desc="Web content extraction."
                                             onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, summarizeEnabled: v })}
                                             checked={editingAgent.summarizeEnabled}
                                         >
-                                            <div className="space-y-2 mt-2">
+                                            <div className="space-y-2 mt-4 pt-4 border-t border-gray-100">
                                                 <input
                                                     type="password"
                                                     placeholder="Firecrawl API Key"
                                                     value={editingAgent.firecrawlApiKey || ''}
                                                     onChange={e => setEditingAgent({ ...editingAgent, firecrawlApiKey: e.target.value })}
-                                                    className="form-input text-[10px]"
+                                                    className="form-input text-xs"
                                                 />
                                                 <input
                                                     type="password"
                                                     placeholder="Apify API Token"
                                                     value={editingAgent.apifyApiToken || ''}
                                                     onChange={e => setEditingAgent({ ...editingAgent, apifyApiToken: e.target.value })}
-                                                    className="form-input text-[10px]"
+                                                    className="form-input text-xs"
                                                 />
                                             </div>
                                         </ToolCard>
                                         <ToolCard
-                                            title="File System" icon={<HardDrive className="text-gray-400" />}
+                                            title="File System" icon={<HardDrive className="text-zinc-500" />}
                                             desc="Read/Write access to workspace."
                                             checked={true}
                                         >
-                                            <div className="mt-2 text-[10px] text-gray-500 font-mono bg-white/5 p-2 rounded">
-                                                Active (Restricted)
-                                            </div>
-                                        </ToolCard>
-                                        <ToolCard
-                                            title="Cron Scheduler" icon={<Clock className="text-purple-400" />}
-                                            desc="Scheduled task execution."
-                                            checked={true}
-                                        >
-                                            <div className="mt-2 text-[10px] text-gray-500 font-mono bg-white/5 p-2 rounded">
-                                                System Service Active
+                                            <div className="mt-4 px-3 py-2 text-[10px] text-zinc-400 font-bold uppercase tracking-widest bg-zinc-50 rounded-lg border border-zinc-100">
+                                                Platform Active
                                             </div>
                                         </ToolCard>
                                     </div>
                                 )}
 
                                 {activeTab === 'system' && (
-                                    <div className="space-y-8">
-                                        <Section icon={<Lock className="text-red-500" />} title="Security" desc="Process isolation.">
-                                            <ToggleRow
-                                                label="Restrict to Workspace"
-                                                desc="Prevent access outside project folder."
-                                                checked={editingAgent.restrictToWorkspace}
-                                                onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, restrictToWorkspace: v })}
-                                            />
+                                    <div className="space-y-8 pt-4">
+                                        <Section icon={<Lock className="text-zinc-400" />} title="Security" desc="Process isolation.">
+                                            <div className="mt-8">
+                                                <ToggleRow
+                                                    label="Restrict to Workspace"
+                                                    desc="Prevent access outside project folder."
+                                                    checked={editingAgent.restrictToWorkspace}
+                                                    onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, restrictToWorkspace: v })}
+                                                />
+                                            </div>
                                         </Section>
-                                        <Section icon={<Server className="text-purple-500" />} title="Gateway" desc="Network binding.">
-                                            <div className="grid grid-cols-2 gap-8">
+                                        <Section icon={<Server className="text-zinc-400" />} title="Gateway" desc="Network binding.">
+                                            <div className="grid grid-cols-2 gap-8 mt-8">
                                                 <InputWrapper label="Port Offset">
                                                     <input
                                                         type="number"
@@ -518,7 +534,7 @@ export default function Dashboard() {
                                                         className="form-input font-mono"
                                                     />
                                                 </InputWrapper>
-                                                <InputWrapper label="Max Interactions">
+                                                <InputWrapper label="Max Tool Iterations">
                                                     <input
                                                         type="number"
                                                         value={editingAgent.maxToolIterations}
@@ -532,54 +548,44 @@ export default function Dashboard() {
                                 )}
 
                                 {activeTab === 'billing' && (
-                                    <div className="space-y-8">
-                                        <Section icon={<CreditCard className="text-green-500" />} title="Subscription & Billing" desc="Manage your fleet plan.">
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="space-y-8 pt-4">
+                                        <Section icon={<CreditCard className="text-zinc-400" />} title="Subscription" desc="Manage your active fleet limit.">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
                                                 {[
-                                                    { name: 'Starter', price: '$19', color: 'border-blue-500/20', btn: 'bg-white/5', link: 'https://whop.com/checkout/plan_Ke7ZeyJO29DwZ', agents: 1 },
-                                                    { name: 'Professional', price: '$69', color: 'border-amber-500/20', btn: 'bg-amber-500/10 text-amber-500', popular: true, link: 'https://whop.com/checkout/plan_9NRNdPMrVzwi8', agents: 5 },
-                                                    { name: 'Elite', price: '$99', color: 'border-purple-500/20', btn: 'bg-white/5', link: 'https://whop.com/checkout/plan_XXO2Ey0ki51AI', agents: 10 }
+                                                    { name: 'Starter', price: '$19', link: 'https://whop.com/checkout/plan_Ke7ZeyJO29DwZ', agents: 1 },
+                                                    { name: 'Pro', price: '$69', popular: true, link: 'https://whop.com/checkout/plan_9NRNdPMrVzwi8', agents: 5 },
+                                                    { name: 'Elite', price: '$99', link: 'https://whop.com/checkout/plan_XXO2Ey0ki51AI', agents: 10 }
                                                 ].map((plan: any) => (
-                                                    <div key={plan.name} className={cn("p-8 rounded-[2.5rem] border bg-white/2 flex flex-col gap-6", plan.color, plan.popular && "bg-amber-500/5")}>
-                                                        <div>
-                                                            <div className="flex items-center justify-between mb-4">
-                                                                <h3 className="font-black italic uppercase text-lg">{plan.name}</h3>
-                                                                {plan.popular && <span className="px-3 py-1 bg-amber-500/20 text-amber-500 text-[9px] font-black uppercase tracking-widest rounded-full">Popular</span>}
+                                                    <div key={plan.name} className={cn("p-6 rounded-2xl border flex flex-col gap-4", plan.popular ? "bg-indigo-50/30 border-indigo-100" : "bg-white border-gray-100")}>
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{plan.name}</p>
+                                                                <h3 className="text-2xl font-bold tracking-tight text-slate-900">{plan.price}</h3>
                                                             </div>
-                                                            <div className="text-4xl font-black">{plan.price}<span className="text-sm text-gray-500 font-medium">/mo</span></div>
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-600 mt-2">{plan.agents} Agent Slot{plan.agents > 1 ? 's' : ''}</p>
                                                         </div>
-                                                        <a href={plan.link} target="_blank" className={cn("mt-auto py-4 rounded-2xl font-black text-center text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95", plan.btn)}>
-                                                            {plan.popular ? 'Upgrade Now' : 'Select Fleet'}
+                                                        <p className="text-[11px] text-slate-500 font-medium">{plan.agents} Operational Unit Slot{plan.agents > 1 ? 's' : ''}</p>
+                                                        <a href={plan.link} target="_blank" className={cn("mt-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-center transition-all", plan.popular ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10" : "bg-slate-100 text-slate-900")}>
+                                                            {plan.popular ? 'Upgrade' : 'Select'}
                                                         </a>
                                                     </div>
                                                 ))}
-                                            </div>
-                                            <div className="mt-8 p-6 rounded-[2rem] bg-white/5 border border-white/5 flex items-center justify-between">
-                                                <div>
-                                                    <h4 className="font-bold">Manage Subscription</h4>
-                                                    <p className="text-sm text-gray-500">View invoices and change payment methods via Whop.</p>
-                                                </div>
-                                                <a href="https://whop.com/hub/" target="_blank" className="bg-white text-black px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all">
-                                                    Open Hub
-                                                </a>
                                             </div>
                                         </Section>
                                     </div>
                                 )}
 
                                 {activeTab === 'profile' && (
-                                    <div className="space-y-8">
-                                        <Section icon={<User className="text-[#ff4d4d]" />} title="Commander Profile" desc="Identity and credentials.">
-                                            <div className="flex gap-8 items-start">
-                                                <div className="w-32 h-32 rounded-full bg-white/5 flex items-center justify-center overflow-hidden border-2 border-white/10 relative group">
+                                    <div className="space-y-8 pt-4">
+                                        <Section icon={<User className="text-zinc-400" />} title="Commander Profile" desc="Identity and credentials.">
+                                            <div className="flex gap-10 items-start mt-8">
+                                                <div className="w-24 h-24 rounded-2xl bg-slate-50 flex items-center justify-center overflow-hidden border border-slate-100 relative group shrink-0 shadow-sm">
                                                     {profileForm.avatar_url ? (
                                                         <img src={profileForm.avatar_url} className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <User size={48} className="text-gray-500" />
+                                                        <User size={32} className="text-slate-300" />
                                                     )}
                                                 </div>
-                                                <div className="flex-1 space-y-6">
+                                                <div className="flex-1 space-y-5">
                                                     <InputWrapper label="Full Name">
                                                         <input
                                                             value={profileForm.full_name}
@@ -601,11 +607,10 @@ export default function Dashboard() {
                                                             value={profileForm.password}
                                                             onChange={e => setProfileForm({ ...profileForm, password: e.target.value })}
                                                             className="form-input"
-                                                            placeholder="Leave blank to keep current"
+                                                            placeholder="••••••••"
                                                         />
                                                     </InputWrapper>
-
-                                                    <div className="flex justify-end pt-4">
+                                                    <div className="pt-4">
                                                         <button
                                                             onClick={async () => {
                                                                 setProfileStatus({ ...profileStatus, loading: true });
@@ -623,9 +628,9 @@ export default function Dashboard() {
                                                                     setProfileStatus({ ...profileStatus, loading: false });
                                                                 }
                                                             }}
-                                                            className="bg-gradient-to-r from-[#ff4d4d] to-[#cc0000] text-white px-8 py-4 rounded-2xl font-black text-sm tracking-widest uppercase hover:scale-105 transition-all shadow-lg shadow-[#ff4d4d]/20"
+                                                            className="btn-minimal px-8"
                                                         >
-                                                            Save Profile
+                                                            {profileStatus.loading ? 'Updating...' : 'Update Profile'}
                                                         </button>
                                                     </div>
                                                 </div>
@@ -633,51 +638,28 @@ export default function Dashboard() {
                                         </Section>
                                     </div>
                                 )}
-                                <div className="flex items-center gap-4">
-                                    {[
-                                        { id: 'intelligence', label: 'Intelligence', icon: <Cpu size={16} /> },
-                                        { id: 'channels', label: 'Connectors', icon: <Share2 size={16} /> },
-                                        { id: 'tools', label: 'Abilities', icon: <Rocket size={16} /> },
-                                        { id: 'system', label: 'Security', icon: <Lock size={16} /> },
-                                        { id: 'billing', label: 'Subscription', icon: <CreditCard size={16} /> },
-                                        { id: 'profile', label: 'Profile', icon: <User size={16} /> },
-                                    ].map((tab) => (
-                                        <button
-                                            key={tab.id}
-                                            onClick={() => setActiveTab(tab.id)}
-                                            className={cn(
-                                                "flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all",
-                                                activeTab === tab.id
-                                                    ? "bg-white text-black shadow-2xl shadow-white/5 scale-105"
-                                                    : "text-gray-600 hover:text-gray-400 hover:bg-white/5"
-                                            )}
-                                        >
-                                            {tab.icon}
-                                            {tab.label}
-                                        </button>
-                                    ))}    </div>
+                            </div>
 
-                                <div className="fixed bottom-12 right-12 flex items-center gap-6 z-50">
-                                    <button
-                                        onClick={() => deleteAgent(editingAgent.id)}
-                                        className="bg-red-500/10 text-red-500 px-8 py-5 rounded-[2rem] font-black text-sm tracking-widest border border-red-500/20 hover:bg-red-500/20 transition-all"
-                                    >
-                                        DECOMMISSION
-                                    </button>
-                                    <button
-                                        onClick={() => saveConfig(editingAgent)}
-                                        disabled={isSaving}
-                                        className="bg-[#00f2ff]/10 text-[#00f2ff] px-8 py-5 rounded-[2rem] font-black text-sm tracking-widest border border-[#00f2ff]/20 hover:bg-[#00f2ff]/20 transition-all"
-                                    >
-                                        <Rocket size={18} /> DEPLOY AGENT
-                                    </button>
-                                </div>
+                            <div className="fixed bottom-12 right-12 flex items-center gap-4 z-50">
+                                <button
+                                    onClick={() => deleteAgent(editingAgent.id)}
+                                    className="bg-red-50 text-red-600 px-6 py-3 rounded-xl font-bold text-[10px] tracking-widest uppercase hover:bg-red-100 transition-all border border-red-100"
+                                >
+                                    Terminated Operation
+                                </button>
+                                <button
+                                    onClick={() => saveConfig(editingAgent)}
+                                    disabled={isSaving}
+                                    className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-black text-xs tracking-widest uppercase hover:scale-105 transition-all shadow-xl shadow-indigo-600/20 flex items-center gap-3"
+                                >
+                                    <Rocket size={18} /> {isSaving ? 'Deploying...' : 'Deploy Agent'}
+                                </button>
                             </div>
                         </main>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div >
+        </div>
     );
 }
 
@@ -687,76 +669,78 @@ function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
         <motion.div
             layout
             className={cn(
-                "bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-10 flex flex-col gap-8 transition-all relative overflow-hidden group hover:border-white/10",
-                isRunning && "border-coral-bright/20 shadow-[0_0_50px_rgba(255,77,77,0.02)]"
+                "card-minimal p-7 flex flex-col gap-6 relative group",
+                isRunning && "border-green-100 bg-green-50/10"
             )}
         >
-            <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={onDelete} className="text-gray-800 hover:text-red-500 transition-colors">
-                    <Trash2 size={16} />
-                </button>
-            </div>
-
             <div className="flex items-center justify-between">
                 <div className={cn(
-                    "w-14 h-14 rounded-2xl flex items-center justify-center transition-all",
-                    isRunning ? "bg-white text-black shadow-2xl" : "bg-white/5 text-gray-700"
+                    "w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-sm border",
+                    isRunning ? "bg-white text-green-600 border-green-100" : "bg-slate-50 text-slate-400 border-gray-100"
                 )}>
-                    <Bot size={24} />
+                    <Bot size={20} />
                 </div>
-                <div className="flex items-center gap-1.5 grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
-                    {agent.telegramEnabled && <img src={ICONS.telegram} className="w-3.5 h-3.5 rounded-full" />}
-                    {agent.discordEnabled && <img src={ICONS.discord} className="w-3.5 h-3.5 rounded-full" />}
+                <div className="flex gap-1.5 grayscale opacity-30 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
+                    {agent.telegramEnabled && <img src={ICONS.telegram} className="w-3 h-3 rounded-full" />}
+                    {agent.discordEnabled && <img src={ICONS.discord} className="w-3 h-3 rounded-full" />}
+                    {agent.githubEnabled && <img src={ICONS.github} className="w-3 h-3 rounded-full" />}
                 </div>
             </div>
 
             <div>
-                <h3 className="text-xl font-black uppercase tracking-tight mb-1">{agent.name}</h3>
-                <p className="text-xs text-gray-600 font-medium line-clamp-2 leading-relaxed">{agent.description}</p>
+                <h3 className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight mb-1">{agent.name}</h3>
+                <p className="text-[11px] text-slate-500 font-medium line-clamp-1 leading-relaxed">{agent.description}</p>
             </div>
 
-            <div className="flex items-center justify-between mt-auto pt-4">
+            <div className="flex items-center justify-between mt-2 pt-5 border-t border-gray-100/50">
                 <div className="flex items-center gap-2">
-                    <div className={cn("w-1.5 h-1.5 rounded-full", isRunning ? "bg-green-500 animate-pulse" : "bg-gray-800")} />
-                    <span className={cn("text-[9px] font-black uppercase tracking-widest", isRunning ? "text-green-500" : "text-gray-700")}>
-                        {isRunning ? 'Operational' : 'Idle'}
+                    <div className={cn("w-1.5 h-1.5 rounded-full shadow-sm", isRunning ? "bg-green-500 animate-pulse" : "bg-slate-300")} />
+                    <span className={cn("text-[8px] font-bold uppercase tracking-[0.15em]", isRunning ? "text-green-600" : "text-slate-400")}>
+                        {isRunning ? 'Operational' : 'Deactivated'}
                     </span>
                 </div>
-                <div className="flex gap-3">
-                    <button onClick={onEdit} className="p-3.5 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-gray-600">
-                        <Edit3 size={16} />
+                <div className="flex gap-2">
+                    <button onClick={onEdit} className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-slate-400 hover:text-slate-900">
+                        <Settings size={14} />
                     </button>
                     <button
                         onClick={onToggle}
                         className={cn(
-                            "p-3.5 rounded-xl transition-all",
-                            isRunning ? "bg-red-500/10 text-red-500 hover:bg-red-500/20" : "bg-white text-black hover:scale-105 active:scale-95"
+                            "p-2.5 rounded-lg transition-all shadow-sm",
+                            isRunning ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100" : "bg-zinc-950 text-white hover:bg-zinc-800"
                         )}
                     >
-                        {isRunning ? <Square size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+                        {isRunning ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
                     </button>
                 </div>
             </div>
+
+            <button
+                onClick={onDelete}
+                className="absolute top-4 right-4 text-slate-200 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+            >
+                <Trash2 size={14} />
+            </button>
         </motion.div>
     );
 }
 
 function Sidebar({ activeTab, setActiveTab, onBack }: any) {
     return (
-        <aside className="w-80 border-r border-white/5 bg-white/[0.02] p-8 flex flex-col gap-12 shrink-0">
-            <div className="px-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700 mb-6 font-mono">Configuration</p>
-                <nav className="flex flex-col gap-1">
+        <aside className="w-72 border-r border-gray-200 bg-[#f7f7f8] p-6 flex flex-col gap-10 shrink-0">
+            <div className="space-y-6">
+                <p className="px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Build Configuration</p>
+                <nav className="flex flex-col gap-0.5">
                     <SidebarTab active={activeTab === 'provider'} onClick={() => setActiveTab('provider')} icon={<Cpu size={14} />} label="Intelligence" />
                     <SidebarTab active={activeTab === 'channels'} onClick={() => setActiveTab('channels')} icon={<Share2 size={14} />} label="Connectors" />
                     <SidebarTab active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={<Terminal size={14} />} label="Abilities" />
-                    <SidebarTab active={activeTab === 'system'} onClick={() => setActiveTab('system')} icon={<Server size={14} />} label="Structure" />
+                    <SidebarTab active={activeTab === 'system'} onClick={() => setActiveTab('system')} icon={<Server size={14} />} label="Platform" />
                 </nav>
             </div>
 
-            <div className="px-4 mt-auto">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700 mb-6 font-mono">Account</p>
-                <nav className="flex flex-col gap-1">
+            <div className="mt-auto space-y-6">
+                <p className="px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Officer Assets</p>
+                <nav className="flex flex-col gap-0.5">
                     <SidebarTab active={activeTab === 'billing'} onClick={() => setActiveTab('billing')} icon={<CreditCard size={14} />} label="Quota" />
                     <SidebarTab active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} icon={<User size={14} />} label="Identity" />
                 </nav>
@@ -770,11 +754,11 @@ function SidebarTab({ icon, label, active, onClick }: any) {
         <button
             onClick={onClick}
             className={cn(
-                "flex items-center gap-4 px-5 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-wider transition-all text-left",
-                active ? "bg-white/5 text-white border border-white/5 shadow-xl" : "text-gray-600 hover:text-white"
+                "flex items-center gap-3 px-4 py-2.5 rounded-lg font-bold text-[11px] transition-all text-left group",
+                active ? "bg-white text-slate-950 shadow-sm border border-gray-200" : "text-slate-500 hover:text-slate-900"
             )}
         >
-            <div className={cn("transition-colors", active ? "text-white" : "text-gray-800")}>
+            <div className={cn("transition-colors", active ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600")}>
                 {icon}
             </div>
             <span className="translate-y-px">{label}</span>
@@ -784,14 +768,14 @@ function SidebarTab({ icon, label, active, onClick }: any) {
 
 function Section({ icon, title, desc, children }: any) {
     return (
-        <div className="bg-white/2 border border-white/5 rounded-[2.5rem] p-10">
-            <div className="flex items-center gap-4 mb-10">
-                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center">
+        <div>
+            <div className="flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 bg-slate-50 border border-gray-100 rounded-xl flex items-center justify-center text-slate-400">
                     {icon}
                 </div>
                 <div>
-                    <h2 className="text-2xl font-black italic uppercase italic tracking-tighter">{title}</h2>
-                    <p className="text-xs text-gray-500 font-bold tracking-widest uppercase opacity-60">{desc}</p>
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900">{title}</h2>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{desc}</p>
                 </div>
             </div>
             {children}
@@ -802,22 +786,22 @@ function Section({ icon, title, desc, children }: any) {
 function ChannelInput({ name, icon, enabled, onToggle, children }: any) {
     return (
         <div className={cn(
-            "p-8 rounded-[2rem] border transition-all",
-            enabled ? "bg-[#ff4d4d]/5 border-[#ff4d4d]/20" : "bg-white/2 border-white/5"
+            "p-6 rounded-2xl border transition-all",
+            enabled ? "bg-white border-indigo-100" : "bg-zinc-50/50 border-gray-100 opacity-60"
         )}>
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                    <div className="w-14 h-14 bg-white p-3 rounded-2xl shadow-xl">
+                <div className="flex items-center gap-5">
+                    <div className="w-11 h-11 bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm">
                         <img src={icon} alt={name} className="w-full h-full object-contain" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold italic uppercase">{name} Link</h3>
-                        <p className="text-[10px] text-gray-600 font-black uppercase tracking-widest">{enabled ? 'Interface Active' : 'Interface Dormant'}</p>
+                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight">{name}</h3>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{enabled ? 'Operational' : 'Deactivated'}</p>
                     </div>
                 </div>
                 <Toggle checked={enabled} onChange={onToggle} />
             </div>
-            {enabled && <div className="mt-8 pt-8 border-t border-white/5">{children}</div>}
+            {enabled && <div className="mt-6 pt-6 border-t border-gray-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">{children}</div>}
         </div>
     );
 }
@@ -825,17 +809,17 @@ function ChannelInput({ name, icon, enabled, onToggle, children }: any) {
 function ToolCard({ title, icon, desc, checked, onToggle, children }: any) {
     return (
         <div className={cn(
-            "p-10 rounded-[2.5rem] border transition-all relative overflow-hidden group hover:border-white/10",
-            (checked || (!onToggle && children)) ? "bg-white/[0.02] border-white/10" : "bg-transparent border-white/5"
+            "p-6 rounded-2xl border transition-all relative group",
+            (checked || (!onToggle && children)) ? "bg-white border-indigo-100 shadow-sm" : "bg-zinc-50/50 border-gray-100"
         )}>
-            <div className="flex items-center justify-between mb-8">
-                <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-gray-500 group-hover:text-white transition-colors">
+            <div className="flex items-center justify-between mb-5">
+                <div className="w-10 h-10 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-colors shadow-sm">
                     {icon}
                 </div>
                 {onToggle && <Toggle checked={checked} onChange={onToggle} />}
             </div>
-            <h3 className="text-lg font-black uppercase mb-2">{title}</h3>
-            <p className="text-[11px] text-gray-500 font-medium mb-6 leading-relaxed">{desc}</p>
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-tight mb-1">{title}</h3>
+            <p className="text-[10px] text-slate-400 font-medium mb-4 leading-relaxed line-clamp-2">{desc}</p>
             {children}
         </div>
     );
@@ -843,10 +827,10 @@ function ToolCard({ title, icon, desc, checked, onToggle, children }: any) {
 
 function ToggleRow({ label, desc, checked, onToggle }: any) {
     return (
-        <div className="flex items-center justify-between p-6 bg-white/2 rounded-2xl border border-white/5">
+        <div className="flex items-center justify-between p-5 bg-zinc-50/50 rounded-xl border border-gray-100">
             <div>
-                <h4 className="font-bold text-lg">{label}</h4>
-                <p className="text-sm text-gray-500 font-medium">{desc}</p>
+                <h4 className="font-bold text-sm text-slate-900">{label}</h4>
+                <p className="text-[11px] text-slate-400 font-medium">{desc}</p>
             </div>
             <Toggle checked={checked} onChange={onToggle} />
         </div>
@@ -856,7 +840,7 @@ function ToggleRow({ label, desc, checked, onToggle }: any) {
 function InputWrapper({ label, children, full }: any) {
     return (
         <div className={full ? 'col-span-2' : ''}>
-            <label className="text-[10px] font-black text-[#ff4d4d] uppercase tracking-widest mb-3 block opacity-60 px-1">{label}</label>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5 block px-1">{label}</label>
             {children}
         </div>
     );
@@ -871,7 +855,8 @@ function Toggle({ checked, onChange }: any) {
                 onChange={e => onChange(e.target.checked)}
                 className="sr-only peer"
             />
-            <div className="w-14 h-7 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-[4px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ff4d4d]"></div>
+            <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:shadow-sm after:transition-all peer-checked:bg-indigo-600"></div>
         </label>
     );
 }
+
