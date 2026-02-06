@@ -11,6 +11,9 @@ import Hosting from './pages/seo/Hosting';
 import VPS from './pages/seo/VPS';
 import Deploy from './pages/seo/Deploy';
 import Install from './pages/seo/Install';
+import Contact from './pages/Contact';
+import Privacy from './pages/legal/Privacy';
+import ToS from './pages/legal/ToS';
 import Shell from './components/Shell';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -38,6 +41,9 @@ function AppRoutes() {
             <Route path="/deploy" element={<Deploy />} />
             <Route path="/install" element={<Install />} />
             <Route path="/thank-you" element={<ThankYou />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/tos" element={<ToS />} />
 
             {/* Protected User Routes */}
             <Route path="/dashboard" element={
