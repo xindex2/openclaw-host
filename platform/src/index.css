@@ -3,14 +3,21 @@
 @tailwind utilities;
 
 :root {
+  --coral-bright: #ff4d4d;
+  --coral-dark: #cc0000;
+  --cyan-bright: #00f2ff;
+  --bg-deep: #050505;
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
+
+  --color-primary: var(--coral-bright);
+  --color-primary-dark: var(--coral-dark);
+  --color-secondary: var(--cyan-bright);
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: black;
+  background: var(--bg-deep);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

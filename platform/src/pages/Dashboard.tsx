@@ -4,7 +4,8 @@ import {
     Globe, MessageSquare, Github, Terminal, Search,
     Zap, Layout, ShieldAlert, Server, Activity,
     ChevronRight, Database, Lock, Rocket, Sparkles,
-    RefreshCcw, Plus, Trash2, Edit3, X, ChevronLeft
+    RefreshCcw, Plus, Trash2, Edit3, X, ChevronLeft,
+    FileText, Clock, HardDrive, Command
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
@@ -239,11 +240,15 @@ export default function Dashboard() {
                                                     onChange={e => setEditingAgent({ ...editingAgent, provider: e.target.value })}
                                                     className="form-select"
                                                 >
-                                                    <option value="openrouter">OpenRouter</option>
+                                                    <option value="openrouter">OpenRouter (Recommended)</option>
                                                     <option value="anthropic">Anthropic</option>
                                                     <option value="openai">OpenAI</option>
                                                     <option value="deepseek">DeepSeek</option>
-                                                    <option value="vllm">vLLM</option>
+                                                    <option value="gemini">Google Gemini</option>
+                                                    <option value="groq">Groq</option>
+                                                    <option value="moonshot">Moonshot AI (Kimi)</option>
+                                                    <option value="zhipu">Zhipu AI (GLM)</option>
+                                                    <option value="vllm">vLLM / Self-Hosted</option>
                                                 </select>
                                             </InputWrapper>
                                             <InputWrapper label="Model">
@@ -322,6 +327,24 @@ export default function Dashboard() {
                                             onToggle={(v) => setEditingAgent({ ...editingAgent, shellEnabled: v })}
                                             checked={editingAgent.shellEnabled}
                                         />
+                                        <ToolCard
+                                            title="File System" icon={<HardDrive className="text-gray-400" />}
+                                            desc="Read/Write access to workspace."
+                                            checked={true}
+                                        >
+                                            <div className="mt-2 text-[10px] text-gray-500 font-mono bg-white/5 p-2 rounded">
+                                                Active (Restricted)
+                                            </div>
+                                        </ToolCard>
+                                        <ToolCard
+                                            title="Cron Scheduler" icon={<Clock className="text-purple-400" />}
+                                            desc="Scheduled task execution."
+                                            checked={true}
+                                        >
+                                            <div className="mt-2 text-[10px] text-gray-500 font-mono bg-white/5 p-2 rounded">
+                                                System Service Active
+                                            </div>
+                                        </ToolCard>
                                     </div>
                                 )}
 

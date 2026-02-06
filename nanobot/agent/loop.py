@@ -44,10 +44,11 @@ class AgentLoop:
         max_iterations: int = 20,
         brave_api_key: str | None = None,
         exec_config: "ExecToolConfig | None" = None,
+        browser_config: "BrowserConfig | None" = None,
         cron_service: "CronService | None" = None,
         restrict_to_workspace: bool = False,
     ):
-        from nanobot.config.schema import ExecToolConfig
+        from nanobot.config.schema import ExecToolConfig, BrowserConfig
         from nanobot.cron.service import CronService
         self.bus = bus
         self.provider = provider
@@ -56,6 +57,7 @@ class AgentLoop:
         self.max_iterations = max_iterations
         self.brave_api_key = brave_api_key
         self.exec_config = exec_config or ExecToolConfig()
+        self.browser_config = browser_config or BrowserConfig()
         self.cron_service = cron_service
         self.restrict_to_workspace = restrict_to_workspace
         
@@ -85,16 +87,19 @@ class AgentLoop:
         self.tools.register(ListDirTool(allowed_dir=allowed_dir))
         
         # Shell tool
-        self.tools.register(ExecTool(
-            working_dir=str(self.workspace),
-            timeout=self.exec_config.timeout,
-            restrict_to_workspace=self.restrict_to_workspace,
-        ))
+        if self.exec_config.enabled:
+            self.tools.register(ExecTool(
+                working_dir=str(self.workspace),
+                timeout=self.exec_config.timeout,
+                restrict_to_workspace=self.restrict_to_workspace,
+            ))
         
         # Web tools
         self.tools.register(WebSearchTool(api_key=self.brave_api_key))
         self.tools.register(WebFetchTool())
-        self.tools.register(BrowserTool(workspace=self.workspace))
+        
+        if self.browser_config.enabled:
+            self.tools.register(BrowserTool(workspace=self.workspace))
         
         # Message tool
         message_tool = MessageTool(send_callback=self.bus.publish_outbound)

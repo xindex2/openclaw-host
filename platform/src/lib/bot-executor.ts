@@ -75,6 +75,12 @@ export async function startBot(configId: string) {
                     api_key: config.webSearchApiKey || ""
                 }
             },
+            browser: {
+                enabled: config.browserEnabled
+            },
+            exec: {
+                enabled: config.shellEnabled
+            },
             restrict_to_workspace: config.restrictToWorkspace || false
         },
         gateway: {

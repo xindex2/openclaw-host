@@ -92,6 +92,12 @@ class WebSearchConfig(BaseModel):
     max_results: int = 5
 
 
+class BrowserConfig(BaseModel):
+    """Browser tool configuration."""
+    enabled: bool = True
+    headless: bool = True
+
+
 class WebToolsConfig(BaseModel):
     """Web tools configuration."""
     search: WebSearchConfig = Field(default_factory=WebSearchConfig)
@@ -99,12 +105,14 @@ class WebToolsConfig(BaseModel):
 
 class ExecToolConfig(BaseModel):
     """Shell exec tool configuration."""
+    enabled: bool = False
     timeout: int = 60
 
 
 class ToolsConfig(BaseModel):
     """Tools configuration."""
     web: WebToolsConfig = Field(default_factory=WebToolsConfig)
+    browser: BrowserConfig = Field(default_factory=BrowserConfig)
     exec: ExecToolConfig = Field(default_factory=ExecToolConfig)
     restrict_to_workspace: bool = False  # If true, restrict all tool access to workspace directory
 

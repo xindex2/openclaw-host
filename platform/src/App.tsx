@@ -40,6 +40,13 @@ function AppRoutes() {
             <Route path="/vps" element={<VPS />} />
             <Route path="/deploy" element={<Deploy />} />
             <Route path="/install" element={<Install />} />
+
+            {/* Legacy SEO Routes */}
+            <Route path="/openclaw-hosting" element={<Hosting />} />
+            <Route path="/openclaw-vps" element={<VPS />} />
+            <Route path="/deploy-openclaw" element={<Deploy />} />
+            <Route path="/install-openclaw" element={<Install />} />
+
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<Privacy />} />

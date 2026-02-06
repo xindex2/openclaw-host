@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default function Logo({ size = 40, className = '' }: { size?: number, className?: string }) {
     return (
         <svg
@@ -22,24 +24,24 @@ export default function Logo({ size = 40, className = '' }: { size?: number, cla
             />
             <path
                 d="M45 15 Q35 5 30 8"
-                stroke="#ff6b6b"
+                stroke="var(--coral-bright)"
                 strokeWidth="2"
                 strokeLinecap="round"
             />
             <path
                 d="M75 15 Q85 5 90 8"
-                stroke="#ff6b6b"
+                stroke="var(--coral-bright)"
                 strokeWidth="2"
                 strokeLinecap="round"
             />
-            <circle cx="45" cy="35" r="6" fill="#1a1a1a" />
-            <circle cx="75" cy="35" r="6" fill="#1a1a1a" />
-            <circle cx="46" cy="34" r="2" fill="#00f3ff" />
-            <circle cx="76" cy="34" r="2" fill="#00f3ff" />
+            <circle cx="45" cy="35" r="6" fill="var(--bg-deep)" />
+            <circle cx="75" cy="35" r="6" fill="var(--bg-deep)" />
+            <circle cx="46" cy="34" r="2" fill="var(--cyan-bright)" />
+            <circle cx="76" cy="34" r="2" fill="var(--cyan-bright)" />
             <defs>
                 <linearGradient id="lobster-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ff6b6b" />
-                    <stop offset="100%" stopColor="#c0392b" />
+                    <stop offset="0%" stopColor="var(--coral-bright)" />
+                    <stop offset="100%" stopColor="var(--coral-dark)" />
                 </linearGradient>
             </defs>
         </svg>
