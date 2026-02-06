@@ -1,5 +1,5 @@
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Bot, Layout as LayoutIcon, Users, Settings, LogOut, ChevronRight, Activity, ShieldCircle } from 'lucide-react';
+import { Bot, Layout as LayoutIcon, Users, Settings, LogOut, ChevronRight, Activity, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Shell({ children }: { children: React.ReactNode }) {
@@ -17,7 +17,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     const adminItems = [
         { icon: <Activity size={20} />, label: 'Command Center', path: '/admin', color: 'text-[#ff6b6b]' },
         { icon: <Users size={20} />, label: 'Personnel', path: '/admin/users', color: 'text-[#ff6b6b]' },
-        { icon: <ShieldCircle size={20} />, label: 'Maintenance', path: '/admin/maintenance', color: 'text-[#ff6b6b]' },
+        { icon: <ShieldCheck size={20} />, label: 'Maintenance', path: '/admin/maintenance', color: 'text-[#ff6b6b]' },
     ];
 
     return (
