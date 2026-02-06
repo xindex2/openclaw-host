@@ -197,10 +197,10 @@ export default function Dashboard() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <Bot size={48} className="text-zinc-950 animate-bounce" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Loading Fleet...</p>
+                    <Bot size={48} className="text-red-500 animate-bounce shadow-lg shadow-red-500/20" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-500/60">Synchronizing Fleet...</p>
                 </div>
             </div>
         );
@@ -225,20 +225,20 @@ export default function Dashboard() {
                             />
                         ) : (
                             <>
-                                <header className="flex justify-between items-center bg-white border border-gray-200 p-8 rounded-2xl shadow-sm">
+                                <header className="flex justify-between items-center bg-zinc-900 border border-zinc-800 p-8 rounded-2xl shadow-xl shadow-black/20">
                                     <div>
-                                        <div className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" /> Agent Management
+                                        <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-red-600 rounded-full" /> Operational Command
                                         </div>
-                                        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-                                            My Agents
+                                        <h1 className="text-3xl font-black tracking-tighter text-white uppercase italic">
+                                            Active Agents
                                         </h1>
                                     </div>
                                     <button
                                         onClick={handleCreateAgent}
                                         className="btn-minimal flex items-center gap-2.5"
                                     >
-                                        <Plus size={16} strokeWidth={3} /> Create Agent
+                                        <Plus size={16} strokeWidth={3} /> Initialize Agent
                                     </button>
                                 </header>
 
@@ -250,12 +250,12 @@ export default function Dashboard() {
                                         { label: 'Idle', value: agents.filter(a => a.status !== 'running').length, icon: <Clock size={16} /> },
                                         { label: 'Compute Usage', value: '42%', icon: <Cpu size={16} /> },
                                     ].map((stat, i) => (
-                                        <div key={i} className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm flex items-center justify-between">
+                                        <div key={i} className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-sm flex items-center justify-between group hover:border-red-600/30 transition-colors">
                                             <div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-                                                <p className={cn("text-2xl font-bold tracking-tight", stat.color || "text-slate-950")}>{stat.value}</p>
+                                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">{stat.label}</p>
+                                                <p className={cn("text-2xl font-black tracking-tight", stat.color || "text-white")}>{stat.value}</p>
                                             </div>
-                                            <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
+                                            <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-zinc-600 group-hover:text-red-500 transition-colors">
                                                 {stat.icon}
                                             </div>
                                         </div>
@@ -282,24 +282,24 @@ export default function Dashboard() {
                         initial={{ opacity: 0, scale: 0.99 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 1.01 }}
-                        className="flex-1 flex min-h-[70vh] bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-2xl"
+                        className="flex-1 flex min-h-[70vh] bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl relative z-10"
                     >
                         <Sidebar
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
                             onBack={() => setEditingAgent(null)}
                         />
-                        <main className="flex-1 p-12 overflow-y-auto relative custom-scrollbar bg-white">
+                        <main className="flex-1 p-12 overflow-y-auto relative custom-scrollbar bg-zinc-950">
                             <header className="mb-10">
-                                <button onClick={() => setEditingAgent(null)} className="flex items-center gap-2 text-slate-400 hover:text-slate-900 transition-colors text-[10px] font-bold uppercase tracking-widest mb-6 px-1">
+                                <button onClick={() => setEditingAgent(null)} className="flex items-center gap-2 text-zinc-500 hover:text-red-500 transition-colors text-[10px] font-bold uppercase tracking-widest mb-6 px-1">
                                     <ChevronLeft size={14} /> Back to dashboard
                                 </button>
                                 <div className="space-y-1">
                                     <input
                                         value={editingAgent.name}
                                         onChange={e => setEditingAgent({ ...editingAgent, name: e.target.value })}
-                                        className="bg-transparent text-3xl font-bold tracking-tight text-slate-950 outline-none border-b border-transparent focus:border-indigo-100 transition-colors w-full placeholder:text-slate-200"
-                                        placeholder="Unit Designation"
+                                        className="bg-transparent text-3xl font-black tracking-tighter text-white outline-none border-b border-zinc-800 focus:border-red-600 transition-colors w-full placeholder:text-zinc-800 uppercase italic"
+                                        placeholder="Agent Name"
                                     />
                                     <input
                                         value={editingAgent.description}
@@ -312,7 +312,7 @@ export default function Dashboard() {
 
                             <div className="max-w-4xl space-y-12 pb-32">
                                 {activeTab === 'provider' && (
-                                    <Section icon={<Cpu className="text-indigo-600" />} title="Intelligence" desc="Core brain and provider keys.">
+                                    <Section icon={<Cpu className="text-red-500" />} title="Intelligence Brain" desc="Core processing & authentication.">
                                         <div className="grid grid-cols-2 gap-8 mt-8">
                                             <InputWrapper label="Provider">
                                                 <select
@@ -478,7 +478,7 @@ export default function Dashboard() {
                                             onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, summarizeEnabled: v })}
                                             checked={editingAgent.summarizeEnabled}
                                         >
-                                            <div className="space-y-2 mt-4 pt-4 border-t border-gray-100">
+                                            <div className="space-y-2 mt-4 pt-4 border-t border-zinc-800">
                                                 <input
                                                     type="password"
                                                     placeholder="Firecrawl API Key"
@@ -500,7 +500,7 @@ export default function Dashboard() {
                                             desc="Read/Write access to workspace."
                                             checked={true}
                                         >
-                                            <div className="mt-4 px-3 py-2 text-[10px] text-zinc-400 font-bold uppercase tracking-widest bg-zinc-50 rounded-lg border border-zinc-100">
+                                            <div className="mt-4 px-3 py-2 text-[10px] text-zinc-500 font-bold uppercase tracking-widest bg-black rounded-lg border border-zinc-800 shadow-inner">
                                                 Platform Active
                                             </div>
                                         </ToolCard>
@@ -554,9 +554,9 @@ export default function Dashboard() {
                                 <button
                                     onClick={() => saveConfig(editingAgent)}
                                     disabled={isSaving}
-                                    className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-black text-xs tracking-widest uppercase hover:scale-105 transition-all shadow-xl shadow-indigo-600/20 flex items-center gap-3"
+                                    className="bg-red-600 text-white px-8 py-4 rounded-xl font-black text-xs tracking-widest uppercase hover:scale-105 transition-all shadow-xl shadow-red-600/20 flex items-center gap-3"
                                 >
-                                    <Rocket size={18} /> {isSaving ? 'Deploying...' : 'Deploy Agent'}
+                                    <Rocket size={18} /> {isSaving ? 'Synchronizing...' : 'Deploy Agent'}
                                 </button>
                             </div>
                         </main>
@@ -579,8 +579,8 @@ function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
         >
             <div className="flex items-center justify-between">
                 <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-sm border",
-                    isRunning ? "bg-white text-green-600 border-green-100" : "bg-slate-50 text-slate-400 border-gray-100"
+                    "w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-lg border",
+                    isRunning ? "bg-red-600 text-white border-red-500" : "bg-zinc-800 text-zinc-500 border-zinc-700"
                 )}>
                     <Bot size={20} />
                 </div>
@@ -592,11 +592,11 @@ function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
             </div>
 
             <div>
-                <h3 className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight mb-1">{agent.name}</h3>
-                <p className="text-[11px] text-slate-500 font-medium line-clamp-1 leading-relaxed">{agent.description}</p>
+                <h3 className="text-sm font-black text-white group-hover:text-red-500 transition-colors uppercase tracking-tight mb-1 italic">{agent.name}</h3>
+                <p className="text-[11px] text-zinc-500 font-medium line-clamp-1 leading-relaxed">{agent.description}</p>
             </div>
 
-            <div className="flex items-center justify-between mt-2 pt-5 border-t border-gray-100/50">
+            <div className="flex items-center justify-between mt-2 pt-5 border-t border-zinc-800/50">
                 <div className="flex items-center gap-2">
                     <div className={cn("w-1.5 h-1.5 rounded-full shadow-sm", isRunning ? "bg-green-500 animate-pulse" : "bg-slate-300")} />
                     <span className={cn("text-[8px] font-bold uppercase tracking-[0.15em]", isRunning ? "text-green-600" : "text-slate-400")}>
@@ -604,14 +604,14 @@ function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
                     </span>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={onEdit} className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-slate-400 hover:text-slate-900">
+                    <button onClick={onEdit} className="p-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-500 hover:text-red-500">
                         <Settings size={14} />
                     </button>
                     <button
                         onClick={onToggle}
                         className={cn(
-                            "p-2.5 rounded-lg transition-all shadow-sm",
-                            isRunning ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100" : "bg-zinc-950 text-white hover:bg-zinc-800"
+                            "p-2.5 rounded-lg transition-all shadow-lg",
+                            isRunning ? "bg-zinc-800 text-red-500 hover:bg-zinc-700 border border-zinc-700" : "bg-red-600 text-white hover:bg-red-700 shadow-red-600/20"
                         )}
                     >
                         {isRunning ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
@@ -631,7 +631,7 @@ function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
 
 function Sidebar({ activeTab, setActiveTab, onBack }: any) {
     return (
-        <aside className="w-72 border-r border-gray-200 bg-[#f7f7f8] p-6 flex flex-col gap-10 shrink-0">
+        <aside className="w-72 border-r border-zinc-800 bg-black p-6 flex flex-col gap-10 shrink-0">
             <div className="space-y-6">
                 <p className="px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Build Configuration</p>
                 <nav className="flex flex-col gap-0.5">
@@ -651,11 +651,11 @@ function SidebarTab({ icon, label, active, onClick }: any) {
         <button
             onClick={onClick}
             className={cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-lg font-bold text-[11px] transition-all text-left group",
-                active ? "bg-white text-slate-950 shadow-sm border border-gray-200" : "text-slate-500 hover:text-slate-900"
+                "flex items-center gap-3 px-4 py-2.5 rounded-lg font-bold text-[11px] transition-all text-left group uppercase tracking-widest",
+                active ? "bg-zinc-900 text-white shadow-xl border border-zinc-800" : "text-zinc-500 hover:text-white"
             )}
         >
-            <div className={cn("transition-colors", active ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600")}>
+            <div className={cn("transition-colors", active ? "text-red-500" : "text-zinc-600 group-hover:text-zinc-400")}>
                 {icon}
             </div>
             <span className="translate-y-px">{label}</span>
@@ -667,12 +667,12 @@ function Section({ icon, title, desc, children }: any) {
     return (
         <div>
             <div className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 bg-slate-50 border border-gray-100 rounded-xl flex items-center justify-center text-slate-400">
+                <div className="w-10 h-10 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center text-zinc-500 shadow-inner">
                     {icon}
                 </div>
                 <div>
-                    <h2 className="text-xl font-bold tracking-tight text-slate-900">{title}</h2>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{desc}</p>
+                    <h2 className="text-xl font-black tracking-tighter text-white uppercase italic">{title}</h2>
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em]">{desc}</p>
                 </div>
             </div>
             {children}
@@ -684,21 +684,21 @@ function ChannelInput({ name, icon, enabled, onToggle, children }: any) {
     return (
         <div className={cn(
             "p-6 rounded-2xl border transition-all",
-            enabled ? "bg-white border-indigo-100" : "bg-zinc-50/50 border-gray-100 opacity-60"
+            enabled ? "bg-zinc-900 border-red-600/20 shadow-xl" : "bg-black border-zinc-900 opacity-40 grayscale"
         )}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-5">
-                    <div className="w-11 h-11 bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm">
+                    <div className="w-11 h-11 bg-black p-2.5 rounded-xl border border-zinc-800 shadow-inner">
                         <img src={icon} alt={name} className="w-full h-full object-contain" />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight">{name}</h3>
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{enabled ? 'Operational' : 'Deactivated'}</p>
+                        <h3 className="text-sm font-black text-white uppercase tracking-tight italic">{name}</h3>
+                        <p className="text-[9px] text-red-500/60 font-bold uppercase tracking-widest">{enabled ? 'Active Channel' : 'Standby'}</p>
                     </div>
                 </div>
                 <Toggle checked={enabled} onChange={onToggle} />
             </div>
-            {enabled && <div className="mt-6 pt-6 border-t border-gray-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">{children}</div>}
+            {enabled && <div className="mt-6 pt-6 border-t border-zinc-800 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">{children}</div>}
         </div>
     );
 }
@@ -706,17 +706,17 @@ function ChannelInput({ name, icon, enabled, onToggle, children }: any) {
 function ToolCard({ title, icon, desc, checked, onToggle, children }: any) {
     return (
         <div className={cn(
-            "p-6 rounded-2xl border transition-all relative group",
-            (checked || (!onToggle && children)) ? "bg-white border-indigo-100 shadow-sm" : "bg-zinc-50/50 border-gray-100"
+            "p-6 rounded-2xl border transition-all relative group shadow-lg",
+            (checked || (!onToggle && children)) ? "bg-zinc-900 border-red-600/20 shadow-red-600/5" : "bg-black border-zinc-900"
         )}>
             <div className="flex items-center justify-between mb-5">
-                <div className="w-10 h-10 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-colors shadow-sm">
+                <div className="w-10 h-10 bg-zinc-800 border border-zinc-700 rounded-xl flex items-center justify-center text-zinc-500 group-hover:text-red-500 transition-colors shadow-inner">
                     {icon}
                 </div>
                 {onToggle && <Toggle checked={checked} onChange={onToggle} />}
             </div>
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-tight mb-1">{title}</h3>
-            <p className="text-[10px] text-slate-400 font-medium mb-4 leading-relaxed line-clamp-2">{desc}</p>
+            <h3 className="text-xs font-black text-white uppercase tracking-tight mb-1 italic">{title}</h3>
+            <p className="text-[10px] text-zinc-500 font-medium mb-4 leading-relaxed line-clamp-2">{desc}</p>
             {children}
         </div>
     );
@@ -724,10 +724,10 @@ function ToolCard({ title, icon, desc, checked, onToggle, children }: any) {
 
 function ToggleRow({ label, desc, checked, onToggle }: any) {
     return (
-        <div className="flex items-center justify-between p-5 bg-zinc-50/50 rounded-xl border border-gray-100">
+        <div className="flex items-center justify-between p-5 bg-zinc-900 rounded-xl border border-zinc-800 shadow-inner">
             <div>
-                <h4 className="font-bold text-sm text-slate-900">{label}</h4>
-                <p className="text-[11px] text-slate-400 font-medium">{desc}</p>
+                <h4 className="font-black text-sm text-white uppercase italic tracking-wide">{label}</h4>
+                <p className="text-[11px] text-zinc-500 font-medium">{desc}</p>
             </div>
             <Toggle checked={checked} onChange={onToggle} />
         </div>
@@ -737,7 +737,7 @@ function ToggleRow({ label, desc, checked, onToggle }: any) {
 function InputWrapper({ label, children, full }: any) {
     return (
         <div className={full ? 'col-span-2' : ''}>
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5 block px-1">{label}</label>
+            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-2.5 block px-1">{label}</label>
             {children}
         </div>
     );
@@ -752,7 +752,7 @@ function Toggle({ checked, onChange }: any) {
                 onChange={e => onChange(e.target.checked)}
                 className="sr-only peer"
             />
-            <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:shadow-sm after:transition-all peer-checked:bg-indigo-600"></div>
+            <div className="w-10 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:shadow-sm after:transition-all peer-checked:bg-red-600 shadow-inner"></div>
         </label>
     );
 }

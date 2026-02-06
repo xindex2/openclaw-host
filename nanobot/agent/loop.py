@@ -222,13 +222,40 @@ class AgentLoop:
                 )
                 
                 # Execute tools
+                sequential_failures = 0
                 for tool_call in response.tool_calls:
                     args_str = json.dumps(tool_call.arguments)
                     logger.debug(f"Executing tool: {tool_call.name} with arguments: {args_str}")
-                    result = await self.tools.execute(tool_call.name, tool_call.arguments)
+                    
+                    try:
+                        result = await self.tools.execute(tool_call.name, tool_call.arguments)
+                        
+                        # Check for error signature in result
+                        if isinstance(result, str) and result.startswith("Error:"):
+                            sequential_failures += 1
+                            logger.warning(f"Tool {tool_call.name} failed ({sequential_failures}/{self.browser_config.max_tool_retries if hasattr(self, 'browser_config') else 3})")
+                        else:
+                            sequential_failures = 0
+                            
+                    except Exception as e:
+                        result = f"Error: Tool execution crashed: {str(e)}"
+                        sequential_failures += 1
+                        logger.error(f"Tool {tool_call.name} crashed: {e}")
+
                     messages = self.context.add_tool_result(
                         messages, tool_call.id, tool_call.name, result
                     )
+                    
+                    # Stop if we hit too many failures in a row within this turn
+                    # This prevents the LLM from trying the same failing thing 20 times
+                    max_fails = 3 # Hardcoded default or from config
+                    if sequential_failures >= max_fails:
+                        logger.error(f"Hit max sequential failures ({max_fails}) for tools. Stopping loop.")
+                        final_content = f"I've encountered repeated errors while trying to complete your request. The last error was: {result}. Please double-check the requirements or provide more details so I can assist better."
+                        break
+                
+                if final_content:
+                    break
             else:
                 # No tool calls, we're done
                 final_content = response.content

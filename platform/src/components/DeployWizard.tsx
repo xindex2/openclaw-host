@@ -30,7 +30,7 @@ export default function DeployWizard({ user, onDeploy, isDeploying }: DeployWiza
 
     const handleDeploy = () => {
         onDeploy({
-            name: `${user.full_name?.split(' ')[0]}'s Squad Member`,
+            name: `${user.full_name?.split(' ')[0]}'s Agent`,
             provider: selectedModel.split('/')[0],
             model: selectedModel,
             telegramEnabled: selectedChannel === 'telegram',

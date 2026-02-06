@@ -57,12 +57,18 @@ class BrowserTool(Tool):
             return
 
         from playwright.async_api import async_playwright
+        from playwright_stealth import stealth_async
+        
         self.playwright = await async_playwright().start()
         self.browser = await self.playwright.chromium.launch(headless=True)
         self.context = await self.browser.new_context(
-            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 800}
         )
         self.page = await self.context.new_page()
+        
+        # Apply stealth patterns
+        await stealth_async(self.page)
 
     async def execute(self, action: str, **kwargs: Any) -> str:
         try:
@@ -72,13 +78,19 @@ class BrowserTool(Tool):
                 url = kwargs.get("url")
                 if not url:
                     return "Error: 'url' parameter is required for 'goto' action."
-                await self.page.goto(url, wait_until="networkidle")
+                # More robust navigation with fallback wait conditions
+                await self.page.goto(url, wait_until="domcontentloaded", timeout=60000)
+                try:
+                    await self.page.wait_for_load_state("networkidle", timeout=5000)
+                except:
+                    pass # Network idle is optimal but domcontentloaded is often enough
                 return f"Successfully navigated to {url}"
             
             elif action == "click":
                 selector = kwargs.get("selector")
                 if not selector:
                     return "Error: 'selector' parameter is required for 'click' action."
+                await self.page.wait_for_selector(selector, state="visible", timeout=10000)
                 await self.page.click(selector)
                 return f"Successfully clicked on {selector}"
             
@@ -87,6 +99,7 @@ class BrowserTool(Tool):
                 text = kwargs.get("text")
                 if not selector or text is None:
                     return "Error: 'selector' and 'text' parameters are required for 'type' action."
+                await self.page.wait_for_selector(selector, state="visible", timeout=10000)
                 await self.page.fill(selector, text)
                 return f"Successfully typed text into {selector}"
             
@@ -134,8 +147,9 @@ class BrowserTool(Tool):
             return f"Error: Unknown action '{action}'"
             
         except Exception as e:
-            logger.error(f"Browser tool error: {e}")
-            return f"Error: {str(e)}"
+            current_url = self.page.url if self.page else "unknown"
+            logger.error(f"Browser tool error at {current_url}: {e}")
+            return f"Error ({current_url}): {str(e)}"
 
     async def close(self):
         """Close the browser instance."""

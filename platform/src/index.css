@@ -25,16 +25,17 @@
     --ring: 222.2 84% 4.9%;
     --radius: 0.75rem;
 
-    /* Minimalist Light SaaS Theme */
-    --bg-main: #fcfcfc;
-    --bg-sidebar: #f7f7f8;
-    --border-clean: #e5e7eb;
-    --indigo-primary: #4f46e5;
+    /* Crimson & Obsidian Dark Theme */
+    --bg-main: #09090b;
+    --bg-sidebar: #000000;
+    --border-clean: #27272a;
+    --crimson-primary: #dc2626;
+    --text-muted: #a1a1aa;
   }
 }
 
 body {
-  color: #111827;
+  color: #ffffff;
   background: var(--bg-main);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   letter-spacing: -0.01em;
@@ -43,23 +44,23 @@ body {
 
 @layer components {
   .form-input {
-    @apply w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all duration-200 placeholder:text-gray-400 text-sm font-medium;
+    @apply w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/10 transition-all duration-200 placeholder:text-zinc-500 text-sm font-medium text-white;
   }
 
   .form-select {
-    @apply w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all duration-200 appearance-none text-sm font-medium;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    @apply w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/10 transition-all duration-200 appearance-none text-sm font-medium text-white;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ef4444'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 1rem center;
     background-size: 1rem;
   }
 
   .card-minimal {
-    @apply bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300;
+    @apply bg-zinc-900/50 border border-zinc-800 rounded-2xl shadow-sm hover:border-red-600/30 transition-all duration-300;
   }
 
   .btn-minimal {
-    @apply bg-zinc-950 hover:bg-zinc-800 text-white px-5 py-2.5 rounded-xl font-bold text-xs tracking-wider transition-all transform active:scale-95 shadow-sm;
+    @apply bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs tracking-wider transition-all transform active:scale-95 shadow-lg shadow-red-600/10;
   }
 }
 
@@ -73,7 +74,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  @apply bg-zinc-800 rounded-full hover:bg-red-900/40 transition-colors;
 }
 
 input[type="number"]::-webkit-inner-spin-button,

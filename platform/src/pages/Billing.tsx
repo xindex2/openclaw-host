@@ -1,133 +1,124 @@
-import { CreditCard, Check, Zap, Rocket, Star, Building2 } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs));
-}
-
-const PLANS = [
-    {
-        name: 'Starter',
-        price: '$19',
-        icon: <Zap size={20} className="text-blue-500" />,
-        agents: 1,
-        link: 'https://whop.com/checkout/plan_Ke7ZeyJO29DwZ',
-        features: ['1 Autonomous Agent', 'Standard Web Search', 'Community Support', 'Basic Logic Engine']
-    },
-    {
-        name: 'Pro',
-        price: '$69',
-        popular: true,
-        icon: <Rocket size={20} className="text-indigo-600" />,
-        agents: 5,
-        link: 'https://whop.com/checkout/plan_9NRNdPMrVzwi8',
-        features: ['5 Autonomous Agents', 'Advanced Browser Tools', 'Priority Execution', 'Discord & Telegram Integration']
-    },
-    {
-        name: 'Elite',
-        price: '$99',
-        icon: <Star size={20} className="text-amber-500" />,
-        agents: 10,
-        link: 'https://whop.com/checkout/plan_XXO2Ey0ki51AI',
-        features: ['10 Autonomous Agents', 'All Skill Plugins', 'Dedicated Gateway', 'Unlimited Tool Iterations']
-    },
-    {
-        name: 'Enterprise',
-        price: 'Custom',
-        icon: <Building2 size={20} className="text-slate-600" />,
-        agents: 'Unlimited',
-        link: 'mailto:enterprise@simpleclaw.com',
-        features: ['Unlimited Agents', 'Custom Skill Development', 'On-Premise Deployment', '24/7 Dedicated Support']
-    }
-];
+import { CreditCard, Shield, Rocket, CheckCircle2, Bot, Zap, Crown, Building2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Billing() {
+    const plans = [
+        {
+            name: 'Starter',
+            price: '$19',
+            icon: <Zap size={24} />,
+            agents: 1,
+            features: ['1 Active Agent Slot', 'Standard Compute', 'Basic Connectors', 'Email Support'],
+            color: 'text-zinc-400',
+            bg: 'bg-zinc-900/50'
+        },
+        {
+            name: 'Pro',
+            price: '$69',
+            icon: <Bot size={24} />,
+            agents: 5,
+            popular: true,
+            features: ['5 Active Agent Slots', 'High Priority Compute', 'All Connectors', '24/7 Priority Support', 'Advanced Skills Pack'],
+            color: 'text-red-500',
+            bg: 'bg-zinc-900/80',
+            border: 'border-red-600/30'
+        },
+        {
+            name: 'Elite',
+            price: '$99',
+            icon: <Crown size={24} />,
+            agents: 10,
+            features: ['10 Active Agent Slots', 'Bespoke Private Nodes', 'Custom Skills Hosting', 'Dedicated Account Manager'],
+            color: 'text-red-600',
+            bg: 'bg-black'
+        },
+        {
+            name: 'Enterprise',
+            price: 'Custom',
+            icon: <Building2 size={24} />,
+            agents: '∞',
+            features: ['Unlimited Agents', 'On-Premise Deployment', 'Custom LLM Training', 'SLA Guaranteed Support'],
+            color: 'text-white',
+            bg: 'bg-zinc-900/30'
+        },
+    ];
+
     return (
-        <div className="space-y-12 max-w-6xl">
-            <header>
-                <div className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" /> Subscription Models
+        <div className="space-y-12 max-w-6xl mx-auto">
+            <header className="text-center space-y-4">
+                <div className="text-[10px] font-bold text-red-500 uppercase tracking-[0.3em] flex items-center justify-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-red-600 rounded-full" /> Subscription Protocol
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight text-slate-900">Fleet Quota Management</h1>
-                <p className="text-slate-500 text-sm font-medium mt-2">Scale your operational capacity with premium agent slots.</p>
+                <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic">Fleet Capacity</h1>
+                <p className="text-zinc-500 max-w-xl mx-auto text-sm font-medium">Select your operational scale. All plans include full access to the core engine and skill architecture.</p>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {PLANS.map((plan) => (
-                    <div
-                        key={plan.name}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {plans.map((plan, i) => (
+                    <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
                         className={cn(
-                            "relative flex flex-col p-8 rounded-[2.5rem] border transition-all duration-300",
-                            plan.popular
-                                ? "bg-white border-indigo-600 shadow-2xl shadow-indigo-600/10 z-10 scale-105"
-                                : "bg-white border-gray-100 hover:border-gray-300 shadow-sm"
+                            "p-8 rounded-3xl border flex flex-col relative group overflow-hidden",
+                            plan.bg,
+                            plan.border || "border-zinc-800",
+                            plan.popular && "ring-1 ring-red-600/50"
                         )}
                     >
                         {plan.popular && (
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                                Most Popular
+                            <div className="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-bl-xl">
+                                Recommended
                             </div>
                         )}
-
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className={cn(
-                                "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm border",
-                                plan.popular ? "bg-indigo-50 border-indigo-100" : "bg-slate-50 border-gray-50"
-                            )}>
-                                {plan.icon}
-                            </div>
-                            <div>
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">{plan.name}</h3>
-                                <p className="text-2xl font-bold text-slate-900">{plan.price}</p>
-                            </div>
+                        <div className={cn("mb-8", plan.color)}>{plan.icon}</div>
+                        <h3 className="text-xl font-black text-white uppercase italic mb-1">{plan.name}</h3>
+                        <div className="flex items-baseline gap-1 mb-8">
+                            <span className="text-3xl font-black text-white tracking-tighter">{plan.price}</span>
+                            {plan.price !== 'Custom' && <span className="text-zinc-500 font-bold text-[10px] uppercase">/month</span>}
                         </div>
 
-                        <div className="space-y-4 flex-1">
-                            <div className="pb-4 border-b border-gray-50">
-                                <p className="text-[11px] font-bold text-slate-900">{plan.agents} Operational Slot{plan.agents !== 1 ? 's' : ''}</p>
-                            </div>
-                            <ul className="space-y-3">
-                                {plan.features.map((feature) => (
-                                    <li key={feature} className="flex items-start gap-3">
-                                        <div className="mt-1 w-3.5 h-3.5 rounded-full bg-green-50 flex items-center justify-center">
-                                            <Check size={10} className="text-green-600" />
-                                        </div>
-                                        <span className="text-[11px] text-slate-500 font-medium leading-tight">{feature}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                        <ul className="space-y-4 mb-10 flex-1">
+                            {plan.features.map((f, j) => (
+                                <li key={j} className="flex items-start gap-3 text-[11px] font-medium text-zinc-400">
+                                    <CheckCircle2 size={14} className="text-red-500 shrink-0 mt-0.5" />
+                                    {f}
+                                </li>
+                            ))}
+                        </ul>
 
-                        <a
-                            href={plan.link}
-                            target={plan.name === 'Enterprise' ? '_self' : '_blank'}
-                            rel="noreferrer"
-                            className={cn(
-                                "mt-10 w-full py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest text-center transition-all",
-                                plan.popular
-                                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 hover:scale-[1.02]"
-                                    : "bg-slate-50 text-slate-900 hover:bg-slate-100 border border-gray-100"
-                            )}
-                        >
-                            {plan.name === 'Enterprise' ? 'Contact Solutions' : 'Select Plan'}
-                        </a>
-                    </div>
+                        <button className={cn(
+                            "w-full py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all transform active:scale-95 shadow-xl",
+                            plan.popular
+                                ? "bg-red-600 text-white shadow-red-600/20 hover:bg-red-700"
+                                : "bg-black text-zinc-400 hover:text-white border border-zinc-800"
+                        )}>
+                            {plan.name === 'Enterprise' ? 'Contact Intelligence' : 'Initialize Plan'}
+                        </button>
+                    </motion.div>
                 ))}
             </div>
 
-            <section className="mt-20 p-12 bg-zinc-950 rounded-[3rem] text-white flex flex-col md:flex-row items-center justify-between gap-10">
-                <div className="max-w-lg">
-                    <h2 className="text-2xl font-bold tracking-tight mb-2">Need a custom environment?</h2>
-                    <p className="text-zinc-400 text-sm font-medium">We offer dedicated clusters and custom-built skills for large-scale enterprise deployments.</p>
+            <footer className="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl flex items-center justify-between shadow-2xl">
+                <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 bg-black border border-zinc-800 rounded-2xl flex items-center justify-center text-red-500">
+                        <Shield size={24} />
+                    </div>
+                    <div>
+                        <h4 className="text-white font-bold text-sm uppercase italic tracking-wide">Secure Transaction Protocol</h4>
+                        <p className="text-zinc-500 text-[10px] font-medium uppercase tracking-widest">Enterprise-grade encryption via Whop Payments</p>
+                    </div>
                 </div>
-                <a
-                    href="mailto:support@simpleclaw.com"
-                    className="bg-white text-zinc-950 px-10 py-5 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-zinc-100 transition-all shrink-0"
-                >
-                    Speak with our Team
-                </a>
-            </section>
+                <div className="flex gap-4 grayscale opacity-40">
+                    <CreditCard size={32} />
+                    <Bot size={32} />
+                </div>
+            </footer>
         </div>
     );
+}
+
+function cn(...inputs: any) {
+    return inputs.filter(Boolean).join(' ');
 }

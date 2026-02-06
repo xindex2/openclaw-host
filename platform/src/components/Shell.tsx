@@ -26,29 +26,29 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     ];
 
     return (
-        <div className="min-h-screen bg-[#fcfcfc] text-slate-900 flex flex-col font-sans overflow-hidden">
+        <div className="min-h-screen bg-zinc-950 text-white flex flex-col font-sans overflow-hidden">
             {/* Topbar Header */}
-            <header className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-8 relative z-[60] shrink-0 shadow-sm">
+            <header className="h-16 border-b border-zinc-800 bg-zinc-900 flex items-center justify-between px-8 relative z-[60] shrink-0 shadow-xl shadow-black/20">
                 <Link to="/dashboard" className="flex items-center gap-2.5 group">
-                    <div className="w-8 h-8 bg-zinc-950 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:bg-red-500 transition-colors">
                         <Bot size={18} className="text-white" />
                     </div>
-                    <span className="text-sm font-bold tracking-tight uppercase">SimpleClaw<span className="text-slate-400">.com</span></span>
+                    <span className="text-sm font-black tracking-widest uppercase italic">Zaki<span className="text-red-600">Bot</span></span>
                 </Link>
 
                 <div className="flex items-center gap-6">
-                    <a href="mailto:support@simpleclaw.com" className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-colors">
-                        <MessageSquare size={14} /> Support
+                    <a href="mailto:support@zakibot.com" className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 hover:text-red-500 transition-colors">
+                        <MessageSquare size={14} /> Mission Support
                     </a>
                 </div>
             </header>
 
             <div className="flex-1 flex overflow-hidden">
                 {/* Sidebar */}
-                <aside className="w-64 border-r border-gray-200 bg-[#f7f7f8] p-6 flex flex-col gap-8 relative z-10 shrink-0">
+                <aside className="w-64 border-r border-zinc-800 bg-black p-6 flex flex-col gap-8 relative z-10 shrink-0">
                     <nav className="flex flex-col gap-8 overflow-y-auto pr-2 custom-scrollbar">
                         <div className="space-y-3">
-                            <p className="px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Platform</p>
+                            <p className="px-3 text-[9px] font-bold uppercase tracking-[0.25em] text-zinc-500">Fleet Operations</p>
                             <div className="space-y-0.5">
                                 {menuItems.map((item) => (
                                     <SidebarItem
@@ -63,7 +63,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
                         {isAdmin && (
                             <div className="space-y-3">
-                                <p className="px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-indigo-500/70">Intelligence</p>
+                                <p className="px-3 text-[9px] font-bold uppercase tracking-[0.25em] text-red-500/70">Central Intelligence</p>
                                 <div className="space-y-0.5">
                                     {adminItems.map((item) => (
                                         <SidebarItem
@@ -78,7 +78,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                         )}
 
                         <div className="space-y-3">
-                            <p className="px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Account</p>
+                            <p className="px-3 text-[9px] font-bold uppercase tracking-[0.25em] text-zinc-500">Commander Logistics</p>
                             <div className="space-y-0.5">
                                 {accountItems.map((item) => (
                                     <SidebarItem
@@ -93,9 +93,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                     </nav>
 
                     {/* User Section */}
-                    <div className="mt-auto pt-6 border-t border-gray-200 flex flex-col gap-4">
+                    <div className="mt-auto pt-6 border-t border-zinc-800 flex flex-col gap-4">
                         <div className="flex items-center gap-3 px-2 h-10">
-                            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center font-bold text-zinc-950 border border-gray-200 overflow-hidden text-xs">
+                            <div className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center font-bold text-white border border-zinc-700 overflow-hidden text-xs shadow-inner">
                                 {user?.avatar_url ? (
                                     <img src={user.avatar_url} className="w-full h-full object-cover" />
                                 ) : (
@@ -104,21 +104,21 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-1">
-                                    <p className="text-[11px] font-bold text-slate-900 truncate">
+                                    <p className="text-[11px] font-bold text-white truncate">
                                         {user?.full_name || 'Commander'}
                                     </p>
-                                    <button onClick={logout} className="text-slate-400 hover:text-red-500 transition-colors shrink-0">
+                                    <button onClick={logout} className="text-zinc-500 hover:text-red-500 transition-colors shrink-0">
                                         <LogOut size={12} />
                                     </button>
                                 </div>
-                                <p className="text-[9px] font-medium text-slate-500 truncate uppercase tracking-widest">{user?.role || 'Officer'}</p>
+                                <p className="text-[9px] font-medium text-zinc-500 truncate uppercase tracking-widest">{user?.role || 'Officer'}</p>
                             </div>
                         </div>
                     </div>
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-y-auto relative z-10 p-12 bg-[#fcfcfc]">
+                <main className="flex-1 overflow-y-auto relative z-10 p-12 bg-zinc-950">
                     <div className="max-w-6xl mx-auto">
                         {children}
                     </div>
@@ -132,15 +132,15 @@ function SidebarItem({ icon, label, active, onClick }: any) {
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg font-bold text-[11px] transition-all text-left group ${active
-                ? 'bg-white text-slate-950 shadow-sm border border-gray-200'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-gray-200/50'
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-bold text-[11px] transition-all text-left group ${active
+                ? 'bg-zinc-900 text-white shadow-xl shadow-black/10 border border-zinc-800'
+                : 'text-zinc-500 hover:text-white hover:bg-zinc-900/50'
                 }`}
         >
-            <div className={`transition-colors duration-200 ${active ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
+            <div className={`transition-colors duration-200 ${active ? 'text-red-500' : 'text-zinc-600 group-hover:text-zinc-400'}`}>
                 {icon}
             </div>
-            <span className="translate-y-px">{label}</span>
+            <span className="translate-y-px tracking-wide uppercase">{label}</span>
         </button>
     );
 }
