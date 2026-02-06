@@ -6,12 +6,11 @@ import {
     CheckCircle2, Globe, MessageSquare, Github,
     CloudRain, Terminal, Search, Zap, Layout,
     ShieldAlert, Server, Activity, ChevronRight,
-    Database, Lock, Rocket
+    Database, Lock, Rocket, Sparkles, RefreshCcw
 } from 'lucide-react';
 
 const USER_ID = 'demo-user';
 
-// Official Favicons
 const ICONS = {
     telegram: 'https://telegram.org/favicon.ico',
     discord: 'https://discord.com/favicon.ico',
@@ -19,7 +18,8 @@ const ICONS = {
     feishu: 'https://www.feishu.cn/favicon.ico',
     openai: 'https://openai.com/favicon.ico',
     anthropic: 'https://www.anthropic.com/favicon.ico',
-    google: 'https://www.google.com/favicon.ico'
+    google: 'https://www.google.com/favicon.ico',
+    brave: 'https://brave.com/static-assets/images/brave-favicon.png'
 };
 
 export default function Dashboard() {
@@ -62,15 +62,7 @@ export default function Dashboard() {
                     }
                 }
 
-                const statusResp = await fetch('/api/bot/control', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: USER_ID, action: 'status' })
-                });
-                if (statusResp.ok) {
-                    const { status } = await statusResp.json();
-                    setIsRunning(status === 'running');
-                }
+                await updateStatus();
             } catch (err) {
                 console.error('Failed to fetch data:', err);
             } finally {
@@ -79,7 +71,23 @@ export default function Dashboard() {
         };
 
         fetchData();
+        const interval = setInterval(updateStatus, 5000);
+        return () => clearInterval(interval);
     }, []);
+
+    const updateStatus = async () => {
+        try {
+            const statusResp = await fetch('/api/bot/control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: USER_ID, action: 'status' })
+            });
+            if (statusResp.ok) {
+                const { status } = await statusResp.json();
+                setIsRunning(status === 'running');
+            }
+        } catch (e) { }
+    };
 
     const handleChange = (e: any) => {
         const { name, value, type, checked } = e.target;
@@ -122,111 +130,112 @@ export default function Dashboard() {
     if (isLoading) {
         return (
             <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">
-                <div className="relative">
-                    <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full" />
-                    <Bot size={64} className="text-blue-500 animate-pulse relative z-10" />
-                </div>
+                <Bot size={64} className="text-blue-500 animate-bounce" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white flex font-sans selection:bg-blue-500/30">
+        <div className="min-h-screen bg-[#050505] text-white flex font-sans selection:bg-blue-500/30 selection:text-white overflow-hidden">
+            {/* Dynamic Background Noise */}
+            <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none z-50 mix-blend-overlay" />
+
             {/* Sidebar */}
-            <aside className="w-80 border-r border-white/5 bg-black/40 backdrop-blur-xl p-8 flex flex-col gap-12 sticky top-0 h-screen">
-                <div className="flex items-center gap-4 px-2 group cursor-pointer">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300">
+            <aside className="w-80 border-r border-white/5 bg-black/40 backdrop-blur-3xl p-8 flex flex-col gap-10 sticky top-0 h-screen z-10">
+                <div className="flex items-center gap-4 px-2 group cursor-pointer transition-all">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-800 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-500/20 group-hover:rotate-12 transition-transform duration-500">
                         <Bot size={28} className="text-white" />
                     </div>
                     <div>
-                        <span className="text-2xl font-black tracking-tighter block uppercase italic">zakibot</span>
-                        <span className="text-[10px] text-blue-500 font-bold tracking-[0.2em] uppercase opacity-80">Autonomous Core</span>
+                        <span className="text-2xl font-black tracking-tighter block uppercase italic leading-none">zakibot</span>
+                        <span className="text-[10px] text-blue-500 font-bold tracking-[0.2em] uppercase opacity-80 mt-1 block">Autonomous Core</span>
                     </div>
                 </div>
 
-                <nav className="flex flex-col gap-3">
-                    <SidebarTab active={activeTab === 'provider'} onClick={() => setActiveTab('provider')} icon={<Cpu size={18} />} label="AI Brain" sub="Model & Provider" />
-                    <SidebarTab active={activeTab === 'channels'} onClick={() => setActiveTab('channels')} icon={<Share2 size={18} />} label="Chat Hub" sub="Telegram, Discord..." />
-                    <SidebarTab active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={<Terminal size={18} />} label="Capabilities" sub="Tools & Skills" />
-                    <SidebarTab active={activeTab === 'system'} onClick={() => setActiveTab('system')} icon={<Server size={18} />} label="Infrastructure" sub="Gateway & Resources" />
+                <nav className="flex flex-col gap-2">
+                    <SidebarTab active={activeTab === 'provider'} onClick={() => setActiveTab('provider')} icon={<Cpu size={18} />} label="AI Brain" sub="Core Intelligence" />
+                    <SidebarTab active={activeTab === 'channels'} onClick={() => setActiveTab('channels')} icon={<Share2 size={18} />} label="Inbound Hub" sub="Communication" />
+                    <SidebarTab active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={<Terminal size={18} />} label="Capabilities" sub="Tool Registry" />
+                    <SidebarTab active={activeTab === 'system'} onClick={() => setActiveTab('system')} icon={<Server size={18} />} label="System" sub="Infrastructure" />
                 </nav>
 
                 <div className="mt-auto flex flex-col gap-4">
-                    <div className={`p-6 rounded-2xl border transition-all duration-500 ${isRunning ? 'border-green-500/30 bg-green-500/5' : 'border-white/5 bg-white/2'}`}>
+                    <div className={`p-6 rounded-3xl border transition-all duration-700 ${isRunning ? 'border-green-500/30 bg-green-500/5 shadow-[0_0_40px_rgba(34,197,94,0.05)]' : 'border-white/5 bg-white/2'}`}>
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]' : 'bg-gray-600'}`} />
+                                <div className={`w-2.5 h-2.5 rounded-full ${isRunning ? 'bg-green-500 animate-pulse shadow-[0_0_15px_rgba(34,197,94,0.8)]' : 'bg-gray-600'}`} />
                                 <span className={`text-[10px] font-black uppercase tracking-widest ${isRunning ? 'text-green-500' : 'text-gray-500'}`}>
-                                    {isRunning ? 'System Online' : 'Core Offline'}
+                                    {isRunning ? 'System Active' : 'System Dormant'}
                                 </span>
                             </div>
                             <Activity size={12} className={isRunning ? 'text-green-500' : 'text-gray-600'} />
                         </div>
                         <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
-                            {isRunning ? 'Subagent manager active. Processing inbound triggers.' : 'Core dormant. Awaiting initialization command.'}
+                            {isRunning ? 'Subagent manager listening for inbound triggers on Telegram/Discord.' : 'Core in hibernation mode. Waiting for initialization signal.'}
                         </p>
                     </div>
 
                     <button
                         onClick={toggleBot}
                         disabled={isSaving}
-                        className={`w-full flex items-center justify-center gap-3 py-5 rounded-2xl font-black text-sm tracking-widest transition-all transform active:scale-95 disabled:opacity-50 ${isRunning ? 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20' : 'bg-white text-black hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]'}`}
+                        className={`w-full flex items-center justify-center gap-3 py-5 rounded-2xl font-black text-sm tracking-widest transition-all transform active:scale-95 disabled:opacity-50 ${isRunning ? 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20' : 'bg-white text-black hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:-translate-y-1'}`}
                     >
                         {isRunning ? (
-                            <><Square size={16} fill="currentColor" /> TERMINATE CORE</>
+                            <><Square size={16} fill="currentColor" /> TERMINATE</>
                         ) : (
-                            <><Play size={16} fill="currentColor" /> INITIALIZE CORE</>
+                            <><Play size={16} fill="currentColor" /> INITIALIZE</>
                         )}
                     </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-16 overflow-y-auto bg-[radial-gradient(circle_at_50%_0%,_#111_0%,_transparent_50%)]">
-                <header className="flex flex-col gap-4 mb-16 relative">
-                    <div className="absolute -top-10 -left-10 w-64 h-64 bg-blue-500/5 blur-[100px] rounded-full -z-10" />
-                    <div className="flex items-center gap-2 text-blue-500 font-bold text-xs uppercase tracking-[0.3em]">
-                        <ChevronRight size={14} /> System Configuration
+            <main className="flex-1 p-16 overflow-y-auto bg-[radial-gradient(circle_at_50%_0%,_#0a0a0a_0%,_transparent_100%)] relative">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] rounded-full -z-10" />
+
+                <header className="flex flex-col gap-4 mb-20 relative">
+                    <div className="flex items-center gap-2 text-blue-500 font-bold text-xs uppercase tracking-[0.4em]">
+                        <Sparkles size={14} className="animate-pulse" /> Command Center
                     </div>
-                    <h1 className="text-6xl font-black tracking-tighter">
-                        {activeTab === 'provider' && 'Intelligence Hub'}
+                    <h1 className="text-7xl font-black tracking-tighter italic uppercase underline decoration-blue-600/30 underline-offset-8">
+                        {activeTab === 'provider' && 'Intelligence'}
                         {activeTab === 'channels' && 'Omni-Channel'}
-                        {activeTab === 'tools' && 'Skill Registry'}
-                        {activeTab === 'system' && 'Core Infrastructure'}
+                        {activeTab === 'tools' && 'Capabilities'}
+                        {activeTab === 'system' && 'Infrastructure'}
                     </h1>
-                    <p className="text-lg text-gray-500 max-w-2xl font-medium">
-                        Fine-tune your autonomous agents brain, communication reach, and interaction toolkit.
+                    <p className="text-xl text-gray-400 max-w-2xl font-medium mt-2">
+                        Configure the central processing unit of your autonomous agent.
                     </p>
                 </header>
 
-                <div className="max-w-5xl space-y-12 pb-20">
+                <div className="max-w-5xl space-y-16 pb-32">
                     {activeTab === 'provider' && (
-                        <div className="grid gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                        <div className="grid gap-12 animate-in fade-in zoom-in-95 duration-500">
                             <Section
                                 icon={<Lock className="text-blue-500" />}
-                                title="Authentication & Provider"
+                                title="Intelligence Provider"
                                 desc="Link your LLM core provider and specific intelligence model."
                             >
                                 <div className="grid md:grid-cols-2 gap-10">
-                                    <InputWrapper label="Intelligence Provider">
+                                    <InputWrapper label="Provider Architecture">
                                         <select
                                             name="provider"
                                             value={formData.provider}
                                             onChange={handleChange}
                                             className="form-select text-base"
                                         >
-                                            <option value="openrouter">OpenRouter (Global Access)</option>
-                                            <option value="anthropic">Anthropic Claude (Direct)</option>
-                                            <option value="openai">OpenAI GPT (Direct)</option>
-                                            <option value="deepseek">DeepSeek AI</option>
+                                            <option value="openrouter">OpenRouter AI</option>
+                                            <option value="anthropic">Anthropic (Claude)</option>
+                                            <option value="openai">OpenAI (GPT)</option>
+                                            <option value="deepseek">DeepSeek Central</option>
                                             <option value="gemini">Google Gemini</option>
-                                            <option value="groq">Groq (LPU Processing)</option>
-                                            <option value="zhipu">Zhipu (ChatGLM)</option>
-                                            <option value="moonshot">Moonshot (Kimi)</option>
-                                            <option value="vllm">Custom vLLM Node</option>
+                                            <option value="groq">Groq LPU</option>
+                                            <option value="zhipu">Zhipu AI</option>
+                                            <option value="moonshot">Moonshot</option>
+                                            <option value="vllm">vLLM Node</option>
                                         </select>
                                     </InputWrapper>
-                                    <InputWrapper label="Model Identifier">
+                                    <InputWrapper label="Model Descriptor">
                                         <input
                                             name="model"
                                             value={formData.model}
@@ -235,7 +244,7 @@ export default function Dashboard() {
                                             className="form-input text-base"
                                         />
                                     </InputWrapper>
-                                    <InputWrapper label="Encryption Key (API Key)" full>
+                                    <InputWrapper label="Core API Key" full>
                                         <input
                                             name="apiKey"
                                             type="password"
@@ -245,24 +254,13 @@ export default function Dashboard() {
                                             className="form-input text-base font-mono"
                                         />
                                     </InputWrapper>
-                                    {formData.provider === 'vllm' && (
-                                        <InputWrapper label="Custom API Base URL" full>
-                                            <input
-                                                name="apiBase"
-                                                value={formData.apiBase}
-                                                onChange={handleChange}
-                                                placeholder="http://vllm-node:8000/v1"
-                                                className="form-input text-base font-mono"
-                                            />
-                                        </InputWrapper>
-                                    )}
                                 </div>
                             </Section>
                         </div>
                     )}
 
                     {activeTab === 'channels' && (
-                        <div className="grid gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                        <div className="grid gap-6 animate-in fade-in slide-in-from-right-8 duration-500">
                             <ChannelRow
                                 name="Telegram"
                                 icon={ICONS.telegram}
@@ -277,7 +275,7 @@ export default function Dashboard() {
                                         value={formData.telegramToken}
                                         onChange={handleChange}
                                         placeholder="123456789:ABC..."
-                                        className="form-input py-3 text-sm"
+                                        className="form-input py-4 text-sm font-mono"
                                     />
                                 </InputWrapper>
                             </ChannelRow>
@@ -289,14 +287,14 @@ export default function Dashboard() {
                                 onToggle={handleChange}
                                 toggleName="discordEnabled"
                             >
-                                <InputWrapper label="Application Bot Token">
+                                <InputWrapper label="Discord Secret Token">
                                     <input
                                         name="discordToken"
                                         type="password"
                                         value={formData.discordToken}
                                         onChange={handleChange}
                                         placeholder="MTIzNDU2..."
-                                        className="form-input py-3 text-sm"
+                                        className="form-input py-4 text-sm font-mono"
                                     />
                                 </InputWrapper>
                             </ChannelRow>
@@ -308,14 +306,17 @@ export default function Dashboard() {
                                 onToggle={handleChange}
                                 toggleName="whatsappEnabled"
                             >
-                                <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                                    <p className="text-xs text-blue-400 font-bold mb-2 uppercase tracking-widest">Initialization Required</p>
-                                    <p className="text-xs text-gray-500">Scan QR code via CLI: <code className="bg-black/50 px-2 py-0.5 rounded text-white">nanobot channels login</code></p>
+                                <div className="bg-blue-600/5 p-6 rounded-3xl border border-blue-500/10">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <RefreshCcw size={14} className="text-blue-500 animate-spin-slow" />
+                                        <p className="text-xs text-blue-500 font-black uppercase tracking-widest">Awaiting Bridge Login</p>
+                                    </div>
+                                    <p className="text-xs text-gray-500 ml-6">Initialize QR scan via system terminal or Zakibot CLI.</p>
                                 </div>
                             </ChannelRow>
 
                             <ChannelRow
-                                name="Feishu / Lark"
+                                name="Feishu"
                                 icon={ICONS.feishu}
                                 enabled={formData.feishuEnabled}
                                 onToggle={handleChange}
@@ -323,10 +324,10 @@ export default function Dashboard() {
                             >
                                 <div className="grid grid-cols-2 gap-4">
                                     <InputWrapper label="App ID">
-                                        <input name="feishuAppId" value={formData.feishuAppId} onChange={handleChange} className="form-input py-3 text-sm" />
+                                        <input name="feishuAppId" value={formData.feishuAppId} onChange={handleChange} className="form-input py-4 text-sm" />
                                     </InputWrapper>
                                     <InputWrapper label="App Secret">
-                                        <input name="feishuAppSecret" type="password" value={formData.feishuAppSecret} onChange={handleChange} className="form-input py-3 text-sm" />
+                                        <input name="feishuAppSecret" type="password" value={formData.feishuAppSecret} onChange={handleChange} className="form-input py-4 text-sm" />
                                     </InputWrapper>
                                 </div>
                             </ChannelRow>
@@ -334,11 +335,11 @@ export default function Dashboard() {
                     )}
 
                     {activeTab === 'tools' && (
-                        <div className="grid md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                        <div className="grid md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
                             <ToolCard
-                                icon={<Search className="text-blue-500" />}
+                                icon={<img src={ICONS.brave} className="w-8 h-8 rounded-lg" />}
                                 title="Web Search"
-                                desc="Live data scanning via Brave Search API."
+                                desc="Live search capabilities powered by Brave API."
                             >
                                 <input
                                     name="webSearchApiKey"
@@ -346,38 +347,38 @@ export default function Dashboard() {
                                     value={formData.webSearchApiKey}
                                     onChange={handleChange}
                                     placeholder="Brave API Key"
-                                    className="form-input py-3 text-sm"
+                                    className="form-input py-4 text-sm font-mono"
                                 />
                             </ToolCard>
 
                             <ToolCard
-                                icon={<Github className="text-white" />}
-                                title="GitHub Management"
-                                desc="Control repos, issues, and pull requests."
+                                icon={<Github className="text-white" size={32} />}
+                                title="GitHub Tool"
+                                desc="Autonomous code management & issue tracking."
                             >
                                 <input
                                     name="githubToken"
                                     type="password"
                                     value={formData.githubToken}
                                     onChange={handleChange}
-                                    placeholder="GitHub Access Token"
-                                    className="form-input py-3 text-sm"
+                                    placeholder="Personal Access Token"
+                                    className="form-input py-4 text-sm font-mono"
                                 />
                             </ToolCard>
 
                             <ToolCard
-                                icon={<Globe className="text-cyan-400" />}
-                                title="Browser Automation"
-                                desc="Headless browser via Playwright (Chrome)."
+                                icon={<Globe className="text-cyan-400" size={32} />}
+                                title="Playwright Browser"
+                                desc="Dynamic web browsing & scraping."
                                 toggleName="browserEnabled"
                                 checked={formData.browserEnabled}
                                 onToggle={handleChange}
                             />
 
                             <ToolCard
-                                icon={<Terminal className="text-amber-500" />}
-                                title="System Sandbox"
-                                desc="Isolated shell command execution."
+                                icon={<Terminal className="text-amber-500" size={32} />}
+                                title="System Shell"
+                                desc="Secure command execution sandbox."
                                 toggleName="shellEnabled"
                                 checked={formData.shellEnabled}
                                 onToggle={handleChange}
@@ -386,27 +387,27 @@ export default function Dashboard() {
                     )}
 
                     {activeTab === 'system' && (
-                        <div className="grid gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            <Section icon={<ShieldAlert className="text-red-500" />} title="Security Sandbox" desc="Restrict agent focus and execution boundaries.">
-                                <div className="flex items-center justify-between p-6 bg-white/2 rounded-2xl border border-white/5">
+                        <div className="grid gap-12 animate-in fade-in slide-in-from-left-8 duration-500">
+                            <Section icon={<ShieldAlert className="text-red-500" />} title="Security Sandbox" desc="Isolated process boundaries and execution limits.">
+                                <div className="flex items-center justify-between p-8 bg-white/2 rounded-[2rem] border border-white/5 hover:border-blue-500/20 transition-all group">
                                     <div>
-                                        <h4 className="font-bold text-lg mb-1">Restrict to Workspace</h4>
-                                        <p className="text-sm text-gray-500">Ensure the agent ONLY accesses files within its designated project folder.</p>
+                                        <h4 className="font-bold text-xl mb-1 group-hover:text-blue-500 transition-colors">Workspace Jail</h4>
+                                        <p className="text-sm text-gray-500 max-w-md mt-2">Force the agent to stay within the designated user project folder. Highly recommended for production.</p>
                                     </div>
                                     <Toggle name="restrictToWorkspace" checked={formData.restrictToWorkspace} onChange={handleChange} />
                                 </div>
                             </Section>
 
-                            <Section icon={<Database className="text-purple-500" />} title="Infrastructure" desc="Gateway binding and resource limits.">
-                                <div className="grid md:grid-cols-3 gap-6">
-                                    <InputWrapper label="Gateway Host">
-                                        <input name="gatewayHost" value={formData.gatewayHost} onChange={handleChange} className="form-input py-4 text-sm font-mono" />
+                            <Section icon={<Database className="text-purple-500" />} title="Infrastructure" desc="Networking and resource allocation settings.">
+                                <div className="grid md:grid-cols-3 gap-8">
+                                    <InputWrapper label="Interface Binding">
+                                        <input name="gatewayHost" value={formData.gatewayHost} onChange={handleChange} className="form-input py-5 text-sm font-mono" />
                                     </InputWrapper>
                                     <InputWrapper label="Gateway Port">
-                                        <input name="gatewayPort" type="number" value={formData.gatewayPort} onChange={handleChange} className="form-input py-4 text-sm font-mono" />
+                                        <input name="gatewayPort" type="number" value={formData.gatewayPort} onChange={handleChange} className="form-input py-5 text-sm font-mono" />
                                     </InputWrapper>
-                                    <InputWrapper label="Max Tool Cycles">
-                                        <input name="maxToolIterations" type="number" value={formData.maxToolIterations} onChange={handleChange} className="form-input py-4 text-sm font-mono" />
+                                    <InputWrapper label="Iterative Limit">
+                                        <input name="maxToolIterations" type="number" value={formData.maxToolIterations} onChange={handleChange} className="form-input py-5 text-sm font-mono" />
                                     </InputWrapper>
                                 </div>
                             </Section>
@@ -414,22 +415,36 @@ export default function Dashboard() {
                     )}
                 </div>
 
-                {/* Floating Save Button */}
-                <div className="fixed bottom-10 right-10 flex items-center gap-4">
+                {/* Floating Actions */}
+                <div className="fixed bottom-12 right-12 flex items-center gap-6">
                     {isSaving && (
-                        <div className="flex items-center gap-2 text-xs font-bold text-blue-500 animate-pulse bg-blue-500/10 px-4 py-2 rounded-full border border-blue-500/20">
-                            <Activity size={14} /> PERSISTING STATE...
+                        <div className="flex items-center gap-2 text-[10px] font-black text-blue-500 animate-pulse bg-blue-500/10 px-6 py-3 rounded-full border border-blue-500/30 uppercase tracking-[0.2em]">
+                            <Activity size={14} /> Saving State
                         </div>
                     )}
                     <button
                         onClick={saveConfig}
                         disabled={isSaving}
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-10 py-5 rounded-2xl font-black text-sm tracking-widest shadow-2xl shadow-blue-500/40 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                        className="group relative"
                     >
-                        <Rocket size={18} /> SAVE CONFIG
+                        <div className="absolute inset-0 bg-blue-600 blur-2xl opacity-20 group-hover:opacity-50 transition-all rounded-full" />
+                        <div className="relative bg-blue-600 hover:bg-shadow-blue-500 text-white px-12 py-6 rounded-[2rem] font-black text-sm tracking-[0.2em] shadow-3xl transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3">
+                            <Rocket size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                            DEPLOY CHANGES
+                        </div>
                     </button>
                 </div>
             </main>
+
+            <style jsx global>{`
+        @keyframes slow-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: slow-spin 3s linear infinite;
+        }
+      `}</style>
         </div>
     );
 }
@@ -438,14 +453,17 @@ function SidebarTab({ icon, label, sub, active, onClick }: any) {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-4 px-6 py-5 rounded-2xl transition-all text-left group ${active ? 'bg-gradient-to-r from-blue-600/20 to-transparent border-l-4 border-blue-500 text-white' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'}`}
+            className={`flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all text-left relative group ${active ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
         >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${active ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/40' : 'bg-white/5 group-hover:bg-white/10'}`}>
+            {active && (
+                <div className="absolute inset-0 bg-blue-600/10 rounded-[1.5rem] border border-blue-500/10 shadow-[inner_0_0_20px_rgba(37,99,235,0.1)]" />
+            )}
+            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all relative z-10 ${active ? 'bg-blue-600 text-white shadow-2xl shadow-blue-500/40' : 'bg-white/5 group-hover:bg-white/10'}`}>
                 {icon}
             </div>
-            <div className="flex flex-col">
-                <span className="text-sm font-black tracking-wide">{label}</span>
-                <span className="text-[10px] opacity-60 font-medium uppercase tracking-tighter">{sub}</span>
+            <div className="flex flex-col relative z-10">
+                <span className="text-sm font-black tracking-tight">{label}</span>
+                <span className="text-[10px] opacity-40 font-bold uppercase tracking-widest">{sub}</span>
             </div>
         </button>
     );
@@ -453,16 +471,16 @@ function SidebarTab({ icon, label, sub, active, onClick }: any) {
 
 function Section({ icon, title, desc, children }: any) {
     return (
-        <div className="bg-white/2 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-12 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/5 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2" />
+        <div className="bg-white/2 backdrop-blur-3xl border border-white/5 rounded-[3rem] p-12 relative overflow-hidden group hover:border-white/10 transition-all duration-700">
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-600/5 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-blue-600/10 transition-all" />
             <div className="relative z-10">
                 <div className="flex items-center gap-6 mb-12">
-                    <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                    <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform duration-700 shadow-inner">
                         {icon}
                     </div>
                     <div>
-                        <h2 className="text-3xl font-black tracking-tighter uppercase italic">{title}</h2>
-                        <p className="text-sm text-gray-500 font-medium">{desc}</p>
+                        <h2 className="text-4xl font-black tracking-tighter uppercase italic">{title}</h2>
+                        <p className="text-[13px] text-gray-500 font-bold uppercase tracking-widest opacity-80">{desc}</p>
                     </div>
                 </div>
                 {children}
@@ -473,36 +491,44 @@ function Section({ icon, title, desc, children }: any) {
 
 function ChannelRow({ name, icon, enabled, onToggle, toggleName, children }: any) {
     return (
-        <div className={`p-8 rounded-[2rem] border transition-all duration-500 ${enabled ? 'bg-blue-600/5 border-blue-500/20' : 'bg-white/2 border-white/5 hover:border-white/10'}`}>
-            <div className="flex items-center justify-between mb-0">
-                <div className="flex items-center gap-6">
-                    <div className="w-14 h-14 bg-white p-3 rounded-2xl shadow-xl">
-                        <img src={icon} alt={name} className="w-full h-full object-contain" />
+        <div className={`p-10 rounded-[2.5rem] border transition-all duration-500 ${enabled ? 'bg-blue-600/5 border-blue-500/20 shadow-[0_0_50px_rgba(37,99,235,0.03)]' : 'bg-white/2 border-white/5 hover:border-white/10'}`}>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-8">
+                    <div className="w-16 h-16 bg-white p-3.5 rounded-[1.5rem] shadow-2xl shadow-black relative group">
+                        <div className="absolute inset-0 bg-blue-500 blur-xl opacity-0 group-hover:opacity-20 transition-opacity" />
+                        <img src={icon} alt={name} className="w-full h-full object-contain relative z-10" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold tracking-tight">{name} Connectivity</h3>
-                        <p className="text-xs text-gray-500 font-medium">{enabled ? 'Interface Link Active' : 'Interface Link Dormant'}</p>
+                        <h3 className="text-2xl font-black tracking-tight underline decoration-white/10 underline-offset-4">{name}</h3>
+                        <p className="text-xs text-gray-500 font-bold uppercase mt-1 tracking-widest">{enabled ? 'Status: Online' : 'Status: Dormant'}</p>
                     </div>
                 </div>
                 <Toggle name={toggleName} checked={enabled} onChange={onToggle} />
             </div>
-            {enabled && children && <div className="mt-8 pt-8 border-t border-white/5">{children}</div>}
+            {enabled && children && (
+                <div className="mt-10 pt-10 border-t border-white/5 animate-in slide-in-from-top-4 duration-500">
+                    {children}
+                </div>
+            )}
         </div>
     );
 }
 
 function ToolCard({ icon, title, desc, toggleName, checked, onToggle, children }: any) {
     return (
-        <div className={`p-10 rounded-[2.5rem] border transition-all duration-500 ${checked || (!onToggle && children) ? 'bg-blue-600/5 border-blue-500/20' : 'bg-white/2 border-white/5 hover:border-white/10'}`}>
-            <div className="flex items-center justify-between mb-8">
-                <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center">
+        <div className={`p-12 rounded-[3.5rem] border transition-all duration-700 relative overflow-hidden group ${checked || (!onToggle && children) ? 'bg-blue-600/5 border-blue-500/20' : 'bg-white/2 border-white/5 hover:border-white/10'}`}>
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-blue-500/5 blur-3xl rounded-full group-hover:bg-blue-500/10 transition-all" />
+            <div className="flex items-center justify-between mb-10">
+                <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-inner">
                     {icon}
                 </div>
                 {onToggle && <Toggle name={toggleName} checked={checked} onChange={onToggle} />}
             </div>
-            <h3 className="text-xl font-black tracking-tight mb-2 uppercase italic">{title}</h3>
-            <p className="text-sm text-gray-500 font-medium leading-relaxed mb-6">{desc}</p>
-            {children}
+            <h3 className="text-2xl font-black tracking-tighter mb-2 uppercase italic leading-none">{title}</h3>
+            <p className="text-sm text-gray-500 font-medium leading-relaxed mb-8">{desc}</p>
+            <div className="relative z-10">
+                {children}
+            </div>
         </div>
     );
 }
@@ -510,7 +536,7 @@ function ToolCard({ icon, title, desc, toggleName, checked, onToggle, children }
 function InputWrapper({ label, children, full }: any) {
     return (
         <div className={`flex flex-col gap-3 ${full ? 'md:col-span-2' : ''}`}>
-            <label className="text-[10px] font-black text-blue-500/80 uppercase tracking-[0.2em] px-1">{label}</label>
+            <label className="text-[10px] font-black text-blue-500/60 uppercase tracking-[0.3em] px-2">{label}</label>
             {children}
         </div>
     );
@@ -518,7 +544,7 @@ function InputWrapper({ label, children, full }: any) {
 
 function Toggle({ name, checked, onChange }: any) {
     return (
-        <label className="relative inline-flex items-center cursor-pointer">
+        <label className="relative inline-flex items-center cursor-pointer group">
             <input
                 type="checkbox"
                 name={name}
@@ -526,7 +552,7 @@ function Toggle({ name, checked, onChange }: any) {
                 onChange={onChange}
                 className="sr-only peer"
             />
-            <div className="w-14 h-7 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"></div>
+            <div className="w-16 h-8 bg-white/5 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600 shadow-inner group-hover:bg-white/10 transition-all"></div>
         </label>
     );
 }

@@ -1,5 +1,5 @@
 // Bot executor logic for managing nanobot instances
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcess, execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
@@ -8,8 +8,22 @@ const prisma = new PrismaClient();
 const processes: Record<string, ChildProcess> = {};
 
 export async function startBot(userId: string) {
+    // 1. Attempt to kill any legacy or orphaned processes for this specific user
+    try {
+        // Find and kill processes running with this user's config file
+        const configFileName = `${userId}.json`;
+        const killCmd = `pkill -f "nanobot.*${configFileName}" || true`;
+        execSync(killCmd);
+        console.log(`[Bot ${userId}] Checked and cleaned existing processes.`);
+    } catch (e) {
+        console.warn(`[Bot ${userId}] Cleanup error (non-fatal):`, e);
+    }
+
     if (processes[userId]) {
-        throw new Error('Bot is already running');
+        try {
+            processes[userId].kill('SIGKILL');
+            delete processes[userId];
+        } catch (e) { }
     }
 
     const config = await prisma.botConfig.findFirst({ where: { userId } });
@@ -17,30 +31,49 @@ export async function startBot(userId: string) {
 
     // Create temporary config file
     const configsDir = path.join(process.cwd(), 'configs');
-    if (!fs.existsSync(configsDir)) fs.mkdirSync(configsDir);
+    if (!fs.existsSync(configsDir)) fs.mkdirSync(configsDir, { recursive: true });
 
     const configPath = path.join(configsDir, `${userId}.json`);
+    const workspacePath = path.join(process.cwd(), 'workspaces', userId);
+    if (!fs.existsSync(workspacePath)) fs.mkdirSync(workspacePath, { recursive: true });
 
-    // Build Nanobot configuration object
+    // Build Nanobot configuration object strictly matching nanobot/config/schema.py
     const nanobotConfig: any = {
         providers: {
             [config.provider]: {
-                apiKey: config.apiKey,
-                apiBase: config.apiBase
+                api_key: config.apiKey,
+                api_base: config.apiBase
             }
         },
         agents: {
             defaults: {
                 model: config.model,
-                workspace: path.join(process.cwd(), 'workspaces', userId),
+                workspace: workspacePath,
                 max_tool_iterations: config.maxToolIterations || 20
             }
         },
-        channels: {},
+        channels: {
+            telegram: {
+                enabled: config.telegramEnabled,
+                token: config.telegramToken || ""
+            },
+            discord: {
+                enabled: config.discordEnabled,
+                token: config.discordToken || ""
+            },
+            whatsapp: {
+                enabled: config.whatsappEnabled
+            },
+            feishu: {
+                enabled: config.feishuEnabled,
+                app_id: config.feishuAppId || "",
+                app_secret: config.feishuAppSecret || ""
+            }
+        },
         tools: {
             web: {
                 search: {
-                    apiKey: config.webSearchApiKey
+                    api_key: config.webSearchApiKey || ""
                 }
             },
             restrict_to_workspace: config.restrictToWorkspace || false
@@ -51,37 +84,7 @@ export async function startBot(userId: string) {
         }
     };
 
-    // Add enabled channels
-    if (config.telegramEnabled) {
-        nanobotConfig.channels.telegram = {
-            enabled: true,
-            token: config.telegramToken
-        };
-    }
-    if (config.discordEnabled) {
-        nanobotConfig.channels.discord = {
-            enabled: true,
-            token: config.discordToken
-        };
-    }
-    if (config.whatsappEnabled) {
-        nanobotConfig.channels.whatsapp = {
-            enabled: true
-        };
-    }
-    if (config.feishuEnabled) {
-        nanobotConfig.channels.feishu = {
-            enabled: true,
-            app_id: config.feishuAppId,
-            app_secret: config.feishuAppSecret
-        };
-    }
-
     fs.writeFileSync(configPath, JSON.stringify(nanobotConfig, null, 2));
-
-    // Workspace for this user
-    const workspacePath = path.join(process.cwd(), 'workspaces', userId);
-    if (!fs.existsSync(workspacePath)) fs.mkdirSync(workspacePath, { recursive: true });
 
     // Spawn nanobot
     const nanobotRoot = path.join(process.cwd(), '..');
@@ -95,7 +98,6 @@ export async function startBot(userId: string) {
 
     if (fs.existsSync(venvPython)) {
         pythonPath = venvPython;
-        // Prepend venv/bin to PATH to ensure subprocesses use the venv
         env.PATH = `${venvBin}:${process.env.PATH}`;
         console.log(`[Bot ${userId}] Using venv python: ${pythonPath}`);
     } else {
@@ -134,11 +136,20 @@ export async function startBot(userId: string) {
 }
 
 export async function stopBot(userId: string) {
-    const child = processes[userId];
-    if (!child) return { success: false, error: 'Bot is not running' };
+    // Robust kill
+    try {
+        const configFileName = `${userId}.json`;
+        execSync(`pkill -f "nanobot.*${configFileName}" || true`);
+    } catch (e) { }
 
-    child.kill();
-    delete processes[userId];
+    const child = processes[userId];
+    if (child) {
+        child.kill('SIGTERM');
+        setTimeout(() => {
+            try { child.kill('SIGKILL'); } catch (e) { }
+        }, 1000);
+        delete processes[userId];
+    }
 
     await prisma.botConfig.updateMany({
         where: { userId },
