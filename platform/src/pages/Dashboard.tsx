@@ -80,13 +80,8 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState('provider');
     const [isSaving, setIsSaving] = useState(false);
 
-    // Profile State
-    const [profileForm, setProfileForm] = useState({ full_name: '', avatar_url: '', password: '' });
-    const [profileStatus, setProfileStatus] = useState({ loading: false, error: '', success: '' });
-
     useEffect(() => {
         if (user) {
-            setProfileForm({ full_name: user.full_name || '', avatar_url: user.avatar_url || '', password: '' });
             fetchAgents();
             const interval = setInterval(fetchAgents, 5000);
             return () => clearInterval(interval);
@@ -110,7 +105,7 @@ export default function Dashboard() {
 
     const handleCreateAgent = () => {
         const newAgent: any = {
-            name: 'New Squad Member',
+            name: 'New Agent',
             description: 'Autonomous research and execution agent.',
             provider: 'openrouter',
             model: 'anthropic/claude-3.5-sonnet',
@@ -178,7 +173,7 @@ export default function Dashboard() {
     };
 
     const deleteAgent = async (id: string) => {
-        if (!confirm('Are you sure you want to decommission this agent?')) return;
+        if (!confirm('Are you sure you want to delete this agent?')) return;
         try {
             await fetch(`/api/config/${id}`, { method: 'DELETE' });
             await fetchAgents();
@@ -236,7 +231,7 @@ export default function Dashboard() {
                                             <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full" /> Agent Management
                                         </div>
                                         <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-                                            Operational Units
+                                            My Agents
                                         </h1>
                                     </div>
                                     <button
@@ -546,99 +541,8 @@ export default function Dashboard() {
                                         </Section>
                                     </div>
                                 )}
-
-                                {activeTab === 'billing' && (
-                                    <div className="space-y-8 pt-4">
-                                        <Section icon={<CreditCard className="text-zinc-400" />} title="Subscription" desc="Manage your active fleet limit.">
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-                                                {[
-                                                    { name: 'Starter', price: '$19', link: 'https://whop.com/checkout/plan_Ke7ZeyJO29DwZ', agents: 1 },
-                                                    { name: 'Pro', price: '$69', popular: true, link: 'https://whop.com/checkout/plan_9NRNdPMrVzwi8', agents: 5 },
-                                                    { name: 'Elite', price: '$99', link: 'https://whop.com/checkout/plan_XXO2Ey0ki51AI', agents: 10 }
-                                                ].map((plan: any) => (
-                                                    <div key={plan.name} className={cn("p-6 rounded-2xl border flex flex-col gap-4", plan.popular ? "bg-indigo-50/30 border-indigo-100" : "bg-white border-gray-100")}>
-                                                        <div className="flex justify-between items-start">
-                                                            <div>
-                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{plan.name}</p>
-                                                                <h3 className="text-2xl font-bold tracking-tight text-slate-900">{plan.price}</h3>
-                                                            </div>
-                                                        </div>
-                                                        <p className="text-[11px] text-slate-500 font-medium">{plan.agents} Operational Unit Slot{plan.agents > 1 ? 's' : ''}</p>
-                                                        <a href={plan.link} target="_blank" className={cn("mt-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-center transition-all", plan.popular ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10" : "bg-slate-100 text-slate-900")}>
-                                                            {plan.popular ? 'Upgrade' : 'Select'}
-                                                        </a>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </Section>
-                                    </div>
-                                )}
-
-                                {activeTab === 'profile' && (
-                                    <div className="space-y-8 pt-4">
-                                        <Section icon={<User className="text-zinc-400" />} title="Commander Profile" desc="Identity and credentials.">
-                                            <div className="flex gap-10 items-start mt-8">
-                                                <div className="w-24 h-24 rounded-2xl bg-slate-50 flex items-center justify-center overflow-hidden border border-slate-100 relative group shrink-0 shadow-sm">
-                                                    {profileForm.avatar_url ? (
-                                                        <img src={profileForm.avatar_url} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <User size={32} className="text-slate-300" />
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 space-y-5">
-                                                    <InputWrapper label="Full Name">
-                                                        <input
-                                                            value={profileForm.full_name}
-                                                            onChange={e => setProfileForm({ ...profileForm, full_name: e.target.value })}
-                                                            className="form-input"
-                                                        />
-                                                    </InputWrapper>
-                                                    <InputWrapper label="Avatar URL">
-                                                        <input
-                                                            value={profileForm.avatar_url}
-                                                            onChange={e => setProfileForm({ ...profileForm, avatar_url: e.target.value })}
-                                                            className="form-input"
-                                                            placeholder="https://..."
-                                                        />
-                                                    </InputWrapper>
-                                                    <InputWrapper label="New Password">
-                                                        <input
-                                                            type="password"
-                                                            value={profileForm.password}
-                                                            onChange={e => setProfileForm({ ...profileForm, password: e.target.value })}
-                                                            className="form-input"
-                                                            placeholder="••••••••"
-                                                        />
-                                                    </InputWrapper>
-                                                    <div className="pt-4">
-                                                        <button
-                                                            onClick={async () => {
-                                                                setProfileStatus({ ...profileStatus, loading: true });
-                                                                try {
-                                                                    const res = await fetch('/api/profile', {
-                                                                        method: 'PUT',
-                                                                        headers: {
-                                                                            'Content-Type': 'application/json',
-                                                                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                                                        },
-                                                                        body: JSON.stringify(profileForm)
-                                                                    });
-                                                                    if (res.ok) alert('Profile updated!');
-                                                                } finally {
-                                                                    setProfileStatus({ ...profileStatus, loading: false });
-                                                                }
-                                                            }}
-                                                            className="btn-minimal px-8"
-                                                        >
-                                                            {profileStatus.loading ? 'Updating...' : 'Update Profile'}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Section>
-                                    </div>
-                                )}
                             </div>
+
 
                             <div className="fixed bottom-12 right-12 flex items-center gap-4 z-50">
                                 <button
@@ -738,13 +642,6 @@ function Sidebar({ activeTab, setActiveTab, onBack }: any) {
                 </nav>
             </div>
 
-            <div className="mt-auto space-y-6">
-                <p className="px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Officer Assets</p>
-                <nav className="flex flex-col gap-0.5">
-                    <SidebarTab active={activeTab === 'billing'} onClick={() => setActiveTab('billing')} icon={<CreditCard size={14} />} label="Quota" />
-                    <SidebarTab active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} icon={<User size={14} />} label="Identity" />
-                </nav>
-            </div>
         </aside>
     );
 }

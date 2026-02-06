@@ -9,6 +9,8 @@ import Maintenance from './pages/Maintenance';
 import AdminEvents from './pages/AdminEvents';
 import PlansEdit from './pages/PlansEdit';
 import ThankYou from './pages/ThankYou';
+import Profile from './pages/Profile';
+import Billing from './pages/Billing';
 import Hosting from './pages/seo/Hosting';
 import VPS from './pages/seo/VPS';
 import Deploy from './pages/seo/Deploy';
@@ -58,6 +60,16 @@ function AppRoutes() {
             <Route path="/dashboard" element={
                 <ProtectedRoute>
                     <Dashboard />
+                </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+                <ProtectedRoute>
+                    <Profile />
+                </ProtectedRoute>
+            } />
+            <Route path="/billing" element={
+                <ProtectedRoute>
+                    <Billing />
                 </ProtectedRoute>
             } />
 

@@ -1,5 +1,5 @@
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Bot, Layout as LayoutIcon, Users, Settings, LogOut, ChevronRight, Activity, ShieldCheck, MessageSquare } from 'lucide-react';
+import { Bot, Layout as LayoutIcon, Users, Settings, LogOut, ChevronRight, Activity, ShieldCheck, MessageSquare, CreditCard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Shell({ children }: { children: React.ReactNode }) {
@@ -18,6 +18,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         { icon: <Activity size={18} />, label: 'Command Center', path: '/admin' },
         { icon: <Users size={18} />, label: 'User Registry', path: '/admin/users' },
         { icon: <ShieldCheck size={18} />, label: 'System Logs', path: '/admin/events' },
+    ];
+
+    const accountItems = [
+        { icon: <Bot size={18} />, label: 'My Identity', path: '/profile' },
+        { icon: <CreditCard size={18} />, label: 'Subscription', path: '/billing' },
     ];
 
     return (
@@ -71,6 +76,20 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                                 </div>
                             </div>
                         )}
+
+                        <div className="space-y-3">
+                            <p className="px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Account</p>
+                            <div className="space-y-0.5">
+                                {accountItems.map((item) => (
+                                    <SidebarItem
+                                        key={item.path}
+                                        {...item}
+                                        active={location.pathname === item.path}
+                                        onClick={() => navigate(item.path)}
+                                    />
+                                ))}
+                            </div>
+                        </div>
                     </nav>
 
                     {/* User Section */}
