@@ -124,6 +124,30 @@ sudo systemctl restart nginx
 3. Configure your **API Keys** (OpenRouter, OpenAI, etc.) in the dashboard.
 4. Launch your bot instance!
 
+## External Access Troubleshooting
+
+If you cannot access your platform via your VPS IP:
+
+1.  **Use HTTP and Port 3000**: By default, the app runs on `http` (not `https`) at port `3000`. Try: 
+    `http://45.55.73.131:3000`
+2.  **Check Firewall (UFW)**: Ubuntu's firewall might be blocking the port.
+    ```bash
+    sudo ufw allow 3000/tcp
+    sudo ufw allow 80/tcp
+    sudo ufw allow 443/tcp
+    sudo ufw status
+    ```
+3.  **Binding to IPv4**: Ensure Next.js is listening on all interfaces (`0.0.0.0`) and not just `localhost`.
+    Update your start command:
+    ```bash
+    # For dev
+    npx next dev -H 0.0.0.0
+    
+    # For production
+    npx next start -H 0.0.0.0
+    ```
+4.  **SSL/HTTPS Note**: If you use `https://` with an IP address, it will fail unless you have a specific certificate for that IP. Use `http://` until you have a domain and Nginx/SSL set up.
+
 ---
 **Note**: Ensure your firewall (UFW) allows traffic on the required ports (3000, 80, 443).
 ```bash
