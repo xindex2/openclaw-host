@@ -12,7 +12,7 @@ export async function startBot(userId: string) {
     }
 
     const config = await prisma.botConfig.findFirst({ where: { userId } });
-    if (!config) throw new Error('No configuration found');
+    if (!config) throw new Error('Please save your configuration first before starting the bot.');
 
     // Create temporary config file
     const configsDir = path.join(process.cwd(), 'configs');
