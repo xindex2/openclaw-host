@@ -160,3 +160,10 @@ export async function stopBot(configId: string) {
 export function getBotStatus(configId: string) {
     return processes[configId] ? 'running' : 'stopped';
 }
+
+export async function killAllUserProcesses(userId: string) {
+    const configs = await prisma.botConfig.findMany({ where: { userId } });
+    for (const config of configs) {
+        await stopBot(config.id);
+    }
+}

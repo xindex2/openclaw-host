@@ -8,18 +8,47 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  configs   BotConfig[]
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  password           String
+  full_name          String   @default("Commander")
+  role               String   @default("user") // "user", "admin"
+  acquisition_source String?  @default("Direct")
+  whop_user_id       String?  @unique
+  google_id          String?  @unique
+  avatar_url         String?
+  configs            BotConfig[]
+  subscription       Subscription?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Subscription {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id])
+  plan               String   @default("Free")
+  status             String   @default("active") // "active", "deactivated"
+  maxInstances       Int      @default(1)
+  whopMembershipId   String?  @unique
+  whopPlanId         String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model WhopEvent {
+  id                 String   @id @default(cuid())
+  eventType          String
+  whopUserId         String?
+  email              String?
+  payload            String // JSON string
+  createdAt          DateTime @default(now())
 }
 
 model BotConfig {
   id             String   @id @default(cuid())
   userId         String
-  user           User     @relation(fields: [userId], references: [id])
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   name           String   @default("New Agent")
   description    String?
