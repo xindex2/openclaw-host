@@ -4,10 +4,23 @@ import { useState, useEffect } from 'react';
 import {
     Bot, Settings, Cpu, Share2, Play, Square,
     CheckCircle2, Globe, MessageSquare, Github,
-    CloudRain, Terminal, Search, Zap, Layout
+    CloudRain, Terminal, Search, Zap, Layout,
+    ShieldAlert, Server, Activity, ChevronRight,
+    Database, Lock, Rocket
 } from 'lucide-react';
 
 const USER_ID = 'demo-user';
+
+// Official Favicons
+const ICONS = {
+    telegram: 'https://telegram.org/favicon.ico',
+    discord: 'https://discord.com/favicon.ico',
+    whatsapp: 'https://whatsapp.com/favicon.ico',
+    feishu: 'https://www.feishu.cn/favicon.ico',
+    openai: 'https://openai.com/favicon.ico',
+    anthropic: 'https://www.anthropic.com/favicon.ico',
+    google: 'https://www.google.com/favicon.ico'
+};
 
 export default function Dashboard() {
     const [formData, setFormData] = useState({
@@ -27,11 +40,16 @@ export default function Dashboard() {
         githubToken: '',
         browserEnabled: true,
         shellEnabled: false,
+        restrictToWorkspace: true,
+        gatewayHost: '0.0.0.0',
+        gatewayPort: 18790,
+        maxToolIterations: 20
     });
 
     const [isRunning, setIsRunning] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('provider');
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -39,7 +57,7 @@ export default function Dashboard() {
                 const configResp = await fetch(`/api/config?userId=${USER_ID}`);
                 if (configResp.ok) {
                     const config = await configResp.json();
-                    if (config) {
+                    if (config && Object.keys(config).length > 0) {
                         setFormData(prev => ({ ...prev, ...config }));
                     }
                 }
@@ -67,19 +85,24 @@ export default function Dashboard() {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: type === 'checkbox' ? checked : (type === 'number' ? parseInt(value) : value)
         }));
     };
 
     const saveConfig = async () => {
-        await fetch('/api/config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: USER_ID,
-                ...formData
-            })
-        });
+        setIsSaving(true);
+        try {
+            await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: USER_ID,
+                    ...formData
+                })
+            });
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const toggleBot = async () => {
@@ -98,349 +121,412 @@ export default function Dashboard() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">
-                <Bot size={48} className="text-blue-500 animate-bounce" />
+            <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full" />
+                    <Bot size={64} className="text-blue-500 animate-pulse relative z-10" />
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white flex">
+        <div className="min-h-screen bg-[#050505] text-white flex font-sans selection:bg-blue-500/30">
             {/* Sidebar */}
-            <aside className="w-72 border-r border-white/5 bg-black/30 p-8 flex flex-col gap-10">
-                <div className="flex items-center gap-3 px-2">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                        <Bot size={24} className="text-white" />
+            <aside className="w-80 border-r border-white/5 bg-black/40 backdrop-blur-xl p-8 flex flex-col gap-12 sticky top-0 h-screen">
+                <div className="flex items-center gap-4 px-2 group cursor-pointer">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300">
+                        <Bot size={28} className="text-white" />
                     </div>
-                    <span className="text-2xl font-black tracking-tighter">zakibot</span>
+                    <div>
+                        <span className="text-2xl font-black tracking-tighter block uppercase italic">zakibot</span>
+                        <span className="text-[10px] text-blue-500 font-bold tracking-[0.2em] uppercase opacity-80">Autonomous Core</span>
+                    </div>
                 </div>
 
-                <nav className="flex flex-col gap-2">
-                    <SidebarTab active={activeTab === 'provider'} onClick={() => setActiveTab('provider')} icon={<Cpu size={20} />} label="Model Provider" />
-                    <SidebarTab active={activeTab === 'channels'} onClick={() => setActiveTab('channels')} icon={<Share2 size={20} />} label="Chat Channels" />
-                    <SidebarTab active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={<Terminal size={20} />} label="Skills & Tools" />
+                <nav className="flex flex-col gap-3">
+                    <SidebarTab active={activeTab === 'provider'} onClick={() => setActiveTab('provider')} icon={<Cpu size={18} />} label="AI Brain" sub="Model & Provider" />
+                    <SidebarTab active={activeTab === 'channels'} onClick={() => setActiveTab('channels')} icon={<Share2 size={18} />} label="Chat Hub" sub="Telegram, Discord..." />
+                    <SidebarTab active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={<Terminal size={18} />} label="Capabilities" sub="Tools & Skills" />
+                    <SidebarTab active={activeTab === 'system'} onClick={() => setActiveTab('system')} icon={<Server size={18} />} label="Infrastructure" sub="Gateway & Resources" />
                 </nav>
 
-                <div className="mt-auto">
-                    <div className={`p-6 rounded-2xl border transition-all ${isRunning ? 'border-green-500/30 bg-green-500/5' : 'border-white/5 bg-white/5 opacity-50'}`}>
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className={`w-2.5 h-2.5 rounded-full ${isRunning ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`} />
-                            <span className="text-sm font-bold uppercase tracking-widest">{isRunning ? 'Running' : 'Offline'}</span>
+                <div className="mt-auto flex flex-col gap-4">
+                    <div className={`p-6 rounded-2xl border transition-all duration-500 ${isRunning ? 'border-green-500/30 bg-green-500/5' : 'border-white/5 bg-white/2'}`}>
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]' : 'bg-gray-600'}`} />
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${isRunning ? 'text-green-500' : 'text-gray-500'}`}>
+                                    {isRunning ? 'System Online' : 'Core Offline'}
+                                </span>
+                            </div>
+                            <Activity size={12} className={isRunning ? 'text-green-500' : 'text-gray-600'} />
                         </div>
-                        <p className="text-xs text-gray-400 leading-relaxed">
-                            {isRunning ? 'Instance is currently processing tasks.' : 'Launch your bot to start automating.'}
+                        <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
+                            {isRunning ? 'Subagent manager active. Processing inbound triggers.' : 'Core dormant. Awaiting initialization command.'}
                         </p>
-                    </div>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 p-16 overflow-y-auto">
-                <header className="flex items-center justify-between mb-16">
-                    <div>
-                        <h1 className="text-5xl font-black mb-3">
-                            {activeTab === 'provider' && 'Intelligence Core'}
-                            {activeTab === 'channels' && 'Communication Hub'}
-                            {activeTab === 'tools' && 'Skill Registry'}
-                        </h1>
-                        <p className="text-xl text-gray-400">Manage all aspects of your nanobot's capabilities.</p>
                     </div>
 
                     <button
                         onClick={toggleBot}
-                        className={`flex items-center gap-4 px-12 py-5 rounded-2xl font-black text-lg transition-all transform hover:scale-105 active:scale-95 ${isRunning ? 'bg-red-500/10 text-red-500 border border-red-500/50' : 'bg-blue-500 text-white shadow-lg shadow-blue-500/50'}`}
+                        disabled={isSaving}
+                        className={`w-full flex items-center justify-center gap-3 py-5 rounded-2xl font-black text-sm tracking-widest transition-all transform active:scale-95 disabled:opacity-50 ${isRunning ? 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20' : 'bg-white text-black hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]'}`}
                     >
                         {isRunning ? (
-                            <><Square size={22} fill="currentColor" /> STOP INSTANCE</>
+                            <><Square size={16} fill="currentColor" /> TERMINATE CORE</>
                         ) : (
-                            <><Play size={22} fill="currentColor" /> START INSTANCE</>
+                            <><Play size={16} fill="currentColor" /> INITIALIZE CORE</>
                         )}
                     </button>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-1 p-16 overflow-y-auto bg-[radial-gradient(circle_at_50%_0%,_#111_0%,_transparent_50%)]">
+                <header className="flex flex-col gap-4 mb-16 relative">
+                    <div className="absolute -top-10 -left-10 w-64 h-64 bg-blue-500/5 blur-[100px] rounded-full -z-10" />
+                    <div className="flex items-center gap-2 text-blue-500 font-bold text-xs uppercase tracking-[0.3em]">
+                        <ChevronRight size={14} /> System Configuration
+                    </div>
+                    <h1 className="text-6xl font-black tracking-tighter">
+                        {activeTab === 'provider' && 'Intelligence Hub'}
+                        {activeTab === 'channels' && 'Omni-Channel'}
+                        {activeTab === 'tools' && 'Skill Registry'}
+                        {activeTab === 'system' && 'Core Infrastructure'}
+                    </h1>
+                    <p className="text-lg text-gray-500 max-w-2xl font-medium">
+                        Fine-tune your autonomous agents brain, communication reach, and interaction toolkit.
+                    </p>
                 </header>
 
-                <div className="max-w-4xl">
+                <div className="max-w-5xl space-y-12 pb-20">
                     {activeTab === 'provider' && (
-                        <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="glass-card p-10">
-                                <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
-                                    <Layout className="text-blue-500" />
-                                    Provider Configuration
-                                </h2>
+                        <div className="grid gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            <Section
+                                icon={<Lock className="text-blue-500" />}
+                                title="Authentication & Provider"
+                                desc="Link your LLM core provider and specific intelligence model."
+                            >
                                 <div className="grid md:grid-cols-2 gap-10">
-                                    <div className="flex flex-col gap-3">
-                                        <label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Provider</label>
+                                    <InputWrapper label="Intelligence Provider">
                                         <select
                                             name="provider"
                                             value={formData.provider}
                                             onChange={handleChange}
-                                            className="bg-white/5 border border-white/10 rounded-xl p-5 text-lg focus:outline-none focus:border-blue-500 transition-all font-medium"
+                                            className="form-select text-base"
                                         >
-                                            <option value="openrouter">OpenRouter (Recommended)</option>
-                                            <option value="anthropic">Anthropic</option>
-                                            <option value="openai">OpenAI</option>
-                                            <option value="deepseek">DeepSeek</option>
+                                            <option value="openrouter">OpenRouter (Global Access)</option>
+                                            <option value="anthropic">Anthropic Claude (Direct)</option>
+                                            <option value="openai">OpenAI GPT (Direct)</option>
+                                            <option value="deepseek">DeepSeek AI</option>
                                             <option value="gemini">Google Gemini</option>
-                                            <option value="groq">Groq</option>
+                                            <option value="groq">Groq (LPU Processing)</option>
                                             <option value="zhipu">Zhipu (ChatGLM)</option>
                                             <option value="moonshot">Moonshot (Kimi)</option>
-                                            <option value="vllm">Local vLLM</option>
+                                            <option value="vllm">Custom vLLM Node</option>
                                         </select>
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                        <label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Model Identifier</label>
+                                    </InputWrapper>
+                                    <InputWrapper label="Model Identifier">
                                         <input
                                             name="model"
                                             value={formData.model}
                                             onChange={handleChange}
-                                            placeholder="anthropic/claude-3-opus"
-                                            className="bg-white/5 border border-white/10 rounded-xl p-5 text-lg focus:outline-none focus:border-blue-500 transition-all"
+                                            placeholder="e.g. anthropic/claude-3.5-sonnet"
+                                            className="form-input text-base"
                                         />
-                                    </div>
-                                    <div className="flex flex-col gap-3 md:col-span-2">
-                                        <label className="text-sm font-bold text-gray-400 uppercase tracking-widest">API Key</label>
+                                    </InputWrapper>
+                                    <InputWrapper label="Encryption Key (API Key)" full>
                                         <input
                                             name="apiKey"
                                             type="password"
                                             value={formData.apiKey}
                                             onChange={handleChange}
                                             placeholder="sk-..."
-                                            className="bg-white/5 border border-white/10 rounded-xl p-5 text-lg focus:outline-none focus:border-blue-500 transition-all"
+                                            className="form-input text-base font-mono"
                                         />
-                                        <p className="text-xs text-gray-500 mt-1">Keys are encrypted and stored securely.</p>
-                                    </div>
+                                    </InputWrapper>
                                     {formData.provider === 'vllm' && (
-                                        <div className="flex flex-col gap-3 md:col-span-2">
-                                            <label className="text-sm font-bold text-gray-400 uppercase tracking-widest">API Base URL</label>
+                                        <InputWrapper label="Custom API Base URL" full>
                                             <input
                                                 name="apiBase"
                                                 value={formData.apiBase}
                                                 onChange={handleChange}
-                                                placeholder="http://localhost:8000/v1"
-                                                className="bg-white/5 border border-white/10 rounded-xl p-5 text-lg focus:outline-none focus:border-blue-500 transition-all"
+                                                placeholder="http://vllm-node:8000/v1"
+                                                className="form-input text-base font-mono"
                                             />
-                                        </div>
+                                        </InputWrapper>
                                     )}
                                 </div>
-                            </div>
+                            </Section>
                         </div>
                     )}
 
                     {activeTab === 'channels' && (
-                        <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <ChannelCard
-                                icon={<MessageSquare className="text-blue-400" />}
-                                title="Telegram Bot"
-                                enabledName="telegramEnabled"
+                        <div className="grid gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            <ChannelRow
+                                name="Telegram"
+                                icon={ICONS.telegram}
                                 enabled={formData.telegramEnabled}
-                                onChange={handleChange}
+                                onToggle={handleChange}
+                                toggleName="telegramEnabled"
                             >
-                                <div className="flex flex-col gap-3 mt-6">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Bot Token</label>
+                                <InputWrapper label="Bot API Token">
                                     <input
                                         name="telegramToken"
                                         type="password"
                                         value={formData.telegramToken}
                                         onChange={handleChange}
-                                        placeholder="123456789:ABCDEF..."
-                                        className="bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:border-blue-500"
+                                        placeholder="123456789:ABC..."
+                                        className="form-input py-3 text-sm"
                                     />
-                                </div>
-                            </ChannelCard>
+                                </InputWrapper>
+                            </ChannelRow>
 
-                            <ChannelCard
-                                icon={<Zap className="text-indigo-400" />}
-                                title="Discord Bot"
-                                enabledName="discordEnabled"
+                            <ChannelRow
+                                name="Discord"
+                                icon={ICONS.discord}
                                 enabled={formData.discordEnabled}
-                                onChange={handleChange}
+                                onToggle={handleChange}
+                                toggleName="discordEnabled"
                             >
-                                <div className="flex flex-col gap-3 mt-6">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Bot Token</label>
+                                <InputWrapper label="Application Bot Token">
                                     <input
                                         name="discordToken"
                                         type="password"
                                         value={formData.discordToken}
                                         onChange={handleChange}
-                                        placeholder="OTI1Mj..."
-                                        className="bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:border-indigo-500"
+                                        placeholder="MTIzNDU2..."
+                                        className="form-input py-3 text-sm"
                                     />
-                                </div>
-                            </ChannelCard>
+                                </InputWrapper>
+                            </ChannelRow>
 
-                            <ChannelCard
-                                icon={<Globe className="text-green-400" />}
-                                title="WhatsApp (QR Connect)"
-                                enabledName="whatsappEnabled"
+                            <ChannelRow
+                                name="WhatsApp"
+                                icon={ICONS.whatsapp}
                                 enabled={formData.whatsappEnabled}
-                                onChange={handleChange}
-                            />
-
-                            <ChannelCard
-                                icon={<Search className="text-cyan-400" />}
-                                title="Feishu / Lark"
-                                enabledName="feishuEnabled"
-                                enabled={formData.feishuEnabled}
-                                onChange={handleChange}
+                                onToggle={handleChange}
+                                toggleName="whatsappEnabled"
                             >
-                                <div className="grid grid-cols-2 gap-4 mt-6">
-                                    <div className="flex flex-col gap-3">
-                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">App ID</label>
-                                        <input
-                                            name="feishuAppId"
-                                            value={formData.feishuAppId}
-                                            onChange={handleChange}
-                                            placeholder="cli_..."
-                                            className="bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:border-cyan-500"
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">App Secret</label>
-                                        <input
-                                            name="feishuAppSecret"
-                                            type="password"
-                                            value={formData.feishuAppSecret}
-                                            onChange={handleChange}
-                                            placeholder="***"
-                                            className="bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:border-cyan-500"
-                                        />
-                                    </div>
+                                <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                                    <p className="text-xs text-blue-400 font-bold mb-2 uppercase tracking-widest">Initialization Required</p>
+                                    <p className="text-xs text-gray-500">Scan QR code via CLI: <code className="bg-black/50 px-2 py-0.5 rounded text-white">nanobot channels login</code></p>
                                 </div>
-                            </ChannelCard>
+                            </ChannelRow>
+
+                            <ChannelRow
+                                name="Feishu / Lark"
+                                icon={ICONS.feishu}
+                                enabled={formData.feishuEnabled}
+                                onToggle={handleChange}
+                                toggleName="feishuEnabled"
+                            >
+                                <div className="grid grid-cols-2 gap-4">
+                                    <InputWrapper label="App ID">
+                                        <input name="feishuAppId" value={formData.feishuAppId} onChange={handleChange} className="form-input py-3 text-sm" />
+                                    </InputWrapper>
+                                    <InputWrapper label="App Secret">
+                                        <input name="feishuAppSecret" type="password" value={formData.feishuAppSecret} onChange={handleChange} className="form-input py-3 text-sm" />
+                                    </InputWrapper>
+                                </div>
+                            </ChannelRow>
                         </div>
                     )}
 
                     {activeTab === 'tools' && (
-                        <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="glass-card p-10">
-                                <h2 className="text-2xl font-bold mb-10 flex items-center gap-3">
-                                    <Terminal className="text-yellow-500" />
-                                    Built-in Skills
-                                </h2>
-                                <div className="grid md:grid-cols-2 gap-8">
-                                    <ToolSection
-                                        icon={<Search className="text-blue-500" />}
-                                        title="Web Search"
-                                        description="Search the live web using Brave Search API."
-                                    >
-                                        <input
-                                            name="webSearchApiKey"
-                                            type="password"
-                                            value={formData.webSearchApiKey}
-                                            onChange={handleChange}
-                                            placeholder="Brave API Key"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm mt-4 focus:outline-none focus:border-blue-500"
-                                        />
-                                    </ToolSection>
+                        <div className="grid md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            <ToolCard
+                                icon={<Search className="text-blue-500" />}
+                                title="Web Search"
+                                desc="Live data scanning via Brave Search API."
+                            >
+                                <input
+                                    name="webSearchApiKey"
+                                    type="password"
+                                    value={formData.webSearchApiKey}
+                                    onChange={handleChange}
+                                    placeholder="Brave API Key"
+                                    className="form-input py-3 text-sm"
+                                />
+                            </ToolCard>
 
-                                    <ToolSection
-                                        icon={<Github className="text-white" />}
-                                        title="GitHub Integration"
-                                        description="Manage issues, PRs, and repositories."
-                                    >
-                                        <input
-                                            name="githubToken"
-                                            type="password"
-                                            value={formData.githubToken}
-                                            onChange={handleChange}
-                                            placeholder="Personal Access Token"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm mt-4 focus:outline-none focus:border-white/50"
-                                        />
-                                    </ToolSection>
+                            <ToolCard
+                                icon={<Github className="text-white" />}
+                                title="GitHub Management"
+                                desc="Control repos, issues, and pull requests."
+                            >
+                                <input
+                                    name="githubToken"
+                                    type="password"
+                                    value={formData.githubToken}
+                                    onChange={handleChange}
+                                    placeholder="GitHub Access Token"
+                                    className="form-input py-3 text-sm"
+                                />
+                            </ToolCard>
 
-                                    <ToolSection
-                                        icon={<Globe className="text-cyan-500" />}
-                                        title="Browser Automation"
-                                        description="Control a headless browser via Playwright."
-                                        enabled={formData.browserEnabled}
-                                        toggleName="browserEnabled"
-                                        onToggle={handleChange}
-                                    />
+                            <ToolCard
+                                icon={<Globe className="text-cyan-400" />}
+                                title="Browser Automation"
+                                desc="Headless browser via Playwright (Chrome)."
+                                toggleName="browserEnabled"
+                                checked={formData.browserEnabled}
+                                onToggle={handleChange}
+                            />
 
-                                    <ToolSection
-                                        icon={<Terminal className="text-red-500" />}
-                                        title="System Shell"
-                                        description="Execute shell commands in a sandboxed env."
-                                        enabled={formData.shellEnabled}
-                                        toggleName="shellEnabled"
-                                        onToggle={handleChange}
-                                    />
-
-                                    <ToolSection icon={<CloudRain className="text-gray-400" />} title="Weather (OpenClaw)" description="Current weather data via OpenWeather." />
-                                    <ToolSection icon={<Layout className="text-purple-400" />} title="Tmux / Terminal" description="Persistent terminal sessions." />
-                                </div>
-                            </div>
+                            <ToolCard
+                                icon={<Terminal className="text-amber-500" />}
+                                title="System Sandbox"
+                                desc="Isolated shell command execution."
+                                toggleName="shellEnabled"
+                                checked={formData.shellEnabled}
+                                onToggle={handleChange}
+                            />
                         </div>
                     )}
+
+                    {activeTab === 'system' && (
+                        <div className="grid gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            <Section icon={<ShieldAlert className="text-red-500" />} title="Security Sandbox" desc="Restrict agent focus and execution boundaries.">
+                                <div className="flex items-center justify-between p-6 bg-white/2 rounded-2xl border border-white/5">
+                                    <div>
+                                        <h4 className="font-bold text-lg mb-1">Restrict to Workspace</h4>
+                                        <p className="text-sm text-gray-500">Ensure the agent ONLY accesses files within its designated project folder.</p>
+                                    </div>
+                                    <Toggle name="restrictToWorkspace" checked={formData.restrictToWorkspace} onChange={handleChange} />
+                                </div>
+                            </Section>
+
+                            <Section icon={<Database className="text-purple-500" />} title="Infrastructure" desc="Gateway binding and resource limits.">
+                                <div className="grid md:grid-cols-3 gap-6">
+                                    <InputWrapper label="Gateway Host">
+                                        <input name="gatewayHost" value={formData.gatewayHost} onChange={handleChange} className="form-input py-4 text-sm font-mono" />
+                                    </InputWrapper>
+                                    <InputWrapper label="Gateway Port">
+                                        <input name="gatewayPort" type="number" value={formData.gatewayPort} onChange={handleChange} className="form-input py-4 text-sm font-mono" />
+                                    </InputWrapper>
+                                    <InputWrapper label="Max Tool Cycles">
+                                        <input name="maxToolIterations" type="number" value={formData.maxToolIterations} onChange={handleChange} className="form-input py-4 text-sm font-mono" />
+                                    </InputWrapper>
+                                </div>
+                            </Section>
+                        </div>
+                    )}
+                </div>
+
+                {/* Floating Save Button */}
+                <div className="fixed bottom-10 right-10 flex items-center gap-4">
+                    {isSaving && (
+                        <div className="flex items-center gap-2 text-xs font-bold text-blue-500 animate-pulse bg-blue-500/10 px-4 py-2 rounded-full border border-blue-500/20">
+                            <Activity size={14} /> PERSISTING STATE...
+                        </div>
+                    )}
+                    <button
+                        onClick={saveConfig}
+                        disabled={isSaving}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-10 py-5 rounded-2xl font-black text-sm tracking-widest shadow-2xl shadow-blue-500/40 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                    >
+                        <Rocket size={18} /> SAVE CONFIG
+                    </button>
                 </div>
             </main>
         </div>
     );
 }
 
-function SidebarTab({ icon, label, active, onClick }: any) {
+function SidebarTab({ icon, label, sub, active, onClick }: any) {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all text-left ${active ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+            className={`flex items-center gap-4 px-6 py-5 rounded-2xl transition-all text-left group ${active ? 'bg-gradient-to-r from-blue-600/20 to-transparent border-l-4 border-blue-500 text-white' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'}`}
         >
-            {icon}
-            <span>{label}</span>
-            {active && <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full" />}
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${active ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/40' : 'bg-white/5 group-hover:bg-white/10'}`}>
+                {icon}
+            </div>
+            <div className="flex flex-col">
+                <span className="text-sm font-black tracking-wide">{label}</span>
+                <span className="text-[10px] opacity-60 font-medium uppercase tracking-tighter">{sub}</span>
+            </div>
         </button>
     );
 }
 
-function ChannelCard({ icon, title, enabledName, enabled, onChange, children }: any) {
+function Section({ icon, title, desc, children }: any) {
     return (
-        <div className={`glass-card p-8 border transition-all ${enabled ? 'border-blue-500/20 bg-blue-500/5' : 'border-white/5'}`}>
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
+        <div className="bg-white/2 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-12 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/5 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2" />
+            <div className="relative z-10">
+                <div className="flex items-center gap-6 mb-12">
+                    <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                         {icon}
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold">{title}</h3>
-                        <p className="text-sm text-gray-500">{enabled ? 'Active and Configured' : 'Disabled'}</p>
+                        <h2 className="text-3xl font-black tracking-tighter uppercase italic">{title}</h2>
+                        <p className="text-sm text-gray-500 font-medium">{desc}</p>
                     </div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                        type="checkbox"
-                        name={enabledName}
-                        checked={enabled}
-                        onChange={onChange}
-                        className="sr-only peer"
-                    />
-                    <div className="w-14 h-7 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500"></div>
-                </label>
+                {children}
             </div>
-            {enabled && children}
         </div>
     );
 }
 
-function ToolSection({ icon, title, description, children, enabled, toggleName, onToggle }: any) {
+function ChannelRow({ name, icon, enabled, onToggle, toggleName, children }: any) {
     return (
-        <div className="p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-all">
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                        {icon}
+        <div className={`p-8 rounded-[2rem] border transition-all duration-500 ${enabled ? 'bg-blue-600/5 border-blue-500/20' : 'bg-white/2 border-white/5 hover:border-white/10'}`}>
+            <div className="flex items-center justify-between mb-0">
+                <div className="flex items-center gap-6">
+                    <div className="w-14 h-14 bg-white p-3 rounded-2xl shadow-xl">
+                        <img src={icon} alt={name} className="w-full h-full object-contain" />
                     </div>
-                    <h3 className="font-bold">{title}</h3>
+                    <div>
+                        <h3 className="text-xl font-bold tracking-tight">{name} Connectivity</h3>
+                        <p className="text-xs text-gray-500 font-medium">{enabled ? 'Interface Link Active' : 'Interface Link Dormant'}</p>
+                    </div>
                 </div>
-                {onToggle && (
-                    <input
-                        type="checkbox"
-                        name={toggleName}
-                        checked={enabled}
-                        onChange={onToggle}
-                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 bg-black"
-                    />
-                )}
+                <Toggle name={toggleName} checked={enabled} onChange={onToggle} />
             </div>
-            <p className="text-sm text-gray-400 leading-relaxed mb-4">{description}</p>
+            {enabled && children && <div className="mt-8 pt-8 border-t border-white/5">{children}</div>}
+        </div>
+    );
+}
+
+function ToolCard({ icon, title, desc, toggleName, checked, onToggle, children }: any) {
+    return (
+        <div className={`p-10 rounded-[2.5rem] border transition-all duration-500 ${checked || (!onToggle && children) ? 'bg-blue-600/5 border-blue-500/20' : 'bg-white/2 border-white/5 hover:border-white/10'}`}>
+            <div className="flex items-center justify-between mb-8">
+                <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center">
+                    {icon}
+                </div>
+                {onToggle && <Toggle name={toggleName} checked={checked} onChange={onToggle} />}
+            </div>
+            <h3 className="text-xl font-black tracking-tight mb-2 uppercase italic">{title}</h3>
+            <p className="text-sm text-gray-500 font-medium leading-relaxed mb-6">{desc}</p>
             {children}
         </div>
+    );
+}
+
+function InputWrapper({ label, children, full }: any) {
+    return (
+        <div className={`flex flex-col gap-3 ${full ? 'md:col-span-2' : ''}`}>
+            <label className="text-[10px] font-black text-blue-500/80 uppercase tracking-[0.2em] px-1">{label}</label>
+            {children}
+        </div>
+    );
+}
+
+function Toggle({ name, checked, onChange }: any) {
+    return (
+        <label className="relative inline-flex items-center cursor-pointer">
+            <input
+                type="checkbox"
+                name={name}
+                checked={checked}
+                onChange={onChange}
+                className="sr-only peer"
+            />
+            <div className="w-14 h-7 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]"></div>
+        </label>
     );
 }

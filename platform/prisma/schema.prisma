@@ -45,6 +45,12 @@ model BotConfig {
   githubToken     String?
   browserEnabled  Boolean @default(true)
   shellEnabled    Boolean @default(false)
+  restrictToWorkspace Boolean @default(false)
+  
+  // System
+  gatewayHost    String   @default("0.0.0.0")
+  gatewayPort    Int      @default(18790)
+  maxToolIterations Int   @default(20)
   
   status         String   @default("stopped") // "running", "stopped", "error"
   lastRun        DateTime?

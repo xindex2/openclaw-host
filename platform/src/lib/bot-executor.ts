@@ -31,7 +31,9 @@ export async function startBot(userId: string) {
         },
         agents: {
             defaults: {
-                model: config.model
+                model: config.model,
+                workspace: path.join(process.cwd(), 'workspaces', userId),
+                max_tool_iterations: config.maxToolIterations || 20
             }
         },
         channels: {},
@@ -41,7 +43,11 @@ export async function startBot(userId: string) {
                     apiKey: config.webSearchApiKey
                 }
             },
-            restrictToWorkspace: true
+            restrict_to_workspace: config.restrictToWorkspace || false
+        },
+        gateway: {
+            host: config.gatewayHost || "0.0.0.0",
+            port: config.gatewayPort || 18790
         }
     };
 
@@ -66,8 +72,8 @@ export async function startBot(userId: string) {
     if (config.feishuEnabled) {
         nanobotConfig.channels.feishu = {
             enabled: true,
-            appId: config.feishuAppId,
-            appSecret: config.feishuAppSecret
+            app_id: config.feishuAppId,
+            app_secret: config.feishuAppSecret
         };
     }
 
