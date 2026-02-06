@@ -9,15 +9,19 @@ interface DeployWizardProps {
 }
 
 const MODELS = [
-    { id: 'anthropic/claude-3-5-sonnet', name: 'Claude Opus 4.5', icon: 'https://www.anthropic.com/favicon.ico' },
-    { id: 'openai/gpt-4o', name: 'GPT-5.2', icon: 'https://openai.com/favicon.ico' },
-    { id: 'google/gemini-2.0-flash-exp', name: 'Gemini 3 Flash', icon: 'https://www.google.com/favicon.ico' }
+    { id: 'anthropic/claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', icon: 'https://www.anthropic.com/favicon.ico', color: '#f5f5f7' },
+    { id: 'openai/gpt-4o', name: 'GPT-4o', icon: 'https://openai.com/favicon.ico', color: '#74aa9c' },
+    { id: 'deepseek/deepseek-chat', name: 'DeepSeek-V3', icon: 'https://www.deepseek.com/favicon.ico', color: '#60a5fa' },
+    { id: 'google/gemini-2.0-flash', name: 'Gemini 2.0 Flash', icon: 'https://www.google.com/favicon.ico', color: '#4285f4' },
+    { id: 'moonshot/moonshot-v1-8k', name: 'Moonshot (Kimi)', icon: 'https://www.moonshot.cn/favicon.ico', color: '#f97316' },
+    { id: 'groq/llama-3.1-70b-versatile', name: 'Groq Llama 3.1', icon: 'https://groq.com/favicon.ico', color: '#f59e0b' }
 ];
 
 const CHANNELS = [
     { id: 'telegram', name: 'Telegram', icon: 'https://telegram.org/favicon.ico', status: 'available' },
-    { id: 'discord', name: 'Discord', icon: 'https://discord.com/favicon.ico', status: 'coming_soon' },
-    { id: 'whatsapp', name: 'WhatsApp', icon: 'https://whatsapp.com/favicon.ico', status: 'coming_soon' }
+    { id: 'discord', name: 'Discord', icon: 'https://discord.com/favicon.ico', status: 'available' },
+    { id: 'whatsapp', name: 'WhatsApp', icon: 'https://whatsapp.com/favicon.ico', status: 'coming_soon' },
+    { id: 'feishu', name: 'Feishu / Lark', icon: 'https://www.feishu.cn/favicon.ico', status: 'coming_soon' }
 ];
 
 export default function DeployWizard({ user, onDeploy, isDeploying }: DeployWizardProps) {
@@ -66,8 +70,8 @@ export default function DeployWizard({ user, onDeploy, isDeploying }: DeployWiza
                                     key={m.id}
                                     onClick={() => setSelectedModel(m.id)}
                                     className={`flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all ${selectedModel === m.id
-                                            ? 'bg-white/5 border-white/20 shadow-lg'
-                                            : 'bg-transparent border-white/5 hover:border-white/10 text-gray-500'
+                                        ? 'bg-white/5 border-white/20 shadow-lg'
+                                        : 'bg-transparent border-white/5 hover:border-white/10 text-gray-500'
                                         }`}
                                 >
                                     <img src={m.icon} className="w-5 h-5 grayscale-0" alt={m.name} />
@@ -88,8 +92,8 @@ export default function DeployWizard({ user, onDeploy, isDeploying }: DeployWiza
                                     disabled={c.status === 'coming_soon'}
                                     onClick={() => setSelectedChannel(c.id)}
                                     className={`flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all relative ${selectedChannel === c.id
-                                            ? 'bg-white/5 border-white/20'
-                                            : 'bg-transparent border-white/5 text-gray-500'
+                                        ? 'bg-white/5 border-white/20'
+                                        : 'bg-transparent border-white/5 text-gray-500'
                                         } ${c.status === 'coming_soon' ? 'opacity-40 cursor-not-allowed' : 'hover:border-white/10'}`}
                                 >
                                     <img src={c.icon} className="w-5 h-5 rounded-lg" alt={c.name} />
@@ -128,8 +132,8 @@ export default function DeployWizard({ user, onDeploy, isDeploying }: DeployWiza
                             onClick={handleDeploy}
                             disabled={isDeploying}
                             className={`w-full py-6 rounded-2xl font-black text-sm tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-3 ${isDeploying
-                                    ? 'bg-white/10 text-white/50 cursor-wait'
-                                    : 'bg-white text-black hover:scale-[1.02] active:scale-95 shadow-2xl shadow-white/5'
+                                ? 'bg-white/10 text-white/50 cursor-wait'
+                                : 'bg-white text-black hover:scale-[1.02] active:scale-95 shadow-2xl shadow-white/5'
                                 }`}
                         >
                             <Zap size={18} fill="currentColor" /> {isDeploying ? 'Deploying...' : 'Deploy OpenClaw'}

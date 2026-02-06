@@ -54,19 +54,28 @@ export async function startBot(configId: string) {
         channels: {
             telegram: {
                 enabled: config.telegramEnabled,
-                token: config.telegramToken || ""
+                token: config.telegramToken || "",
+                allow_from: []
             },
             discord: {
                 enabled: config.discordEnabled,
-                token: config.discordToken || ""
+                token: config.discordToken || "",
+                allow_from: [],
+                gateway_url: "wss://gateway.discord.gg/?v=10&encoding=json",
+                intents: 37377
             },
             whatsapp: {
-                enabled: config.whatsappEnabled
+                enabled: config.whatsappEnabled,
+                bridge_url: config.whatsappBridgeUrl || "ws://localhost:3001",
+                allow_from: []
             },
             feishu: {
                 enabled: config.feishuEnabled,
                 app_id: config.feishuAppId || "",
-                app_secret: config.feishuAppSecret || ""
+                app_secret: config.feishuAppSecret || "",
+                encrypt_key: config.feishuEncryptKey || "",
+                verification_token: config.feishuVerificationToken || "",
+                allow_from: []
             }
         },
         tools: {

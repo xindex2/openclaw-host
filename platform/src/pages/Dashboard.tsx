@@ -1,11 +1,8 @@
 import { useState, useEffect } from 'react';
 import {
-    Bot, Settings, Cpu, Share2, Play, Square,
-    Globe, MessageSquare, Github, Terminal, Search,
-    Zap, Layout, ShieldAlert, Server, Activity,
-    ChevronRight, Database, Lock, Rocket, Sparkles,
-    RefreshCcw, Plus, Trash2, Edit3, X, ChevronLeft,
-    FileText, Clock, HardDrive, Command, CreditCard, User, LogOut
+    Bot, Cpu, Share2, Terminal, Server, CreditCard, User, LogOut, Search, Globe, HardDrive, Clock,
+    Trash2, Play, Square, Settings, LayoutDashboard, ChevronRight, CheckCircle, Plus, Rocket,
+    Cloud, FileText, Lock, Sparkles, ChevronLeft, Edit3
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
@@ -23,11 +20,20 @@ const ICONS = {
     discord: 'https://discord.com/favicon.ico',
     whatsapp: 'https://whatsapp.com/favicon.ico',
     feishu: 'https://www.feishu.cn/favicon.ico',
-    openai: 'https://openai.com/favicon.ico',
-    anthropic: 'https://www.anthropic.com/favicon.ico',
-    google: 'https://www.google.com/favicon.ico',
-    brave: 'https://brave.com/static-assets/images/brave-favicon.png'
+    github: 'https://github.com/favicon.ico'
 };
+
+const PROVIDERS = [
+    { id: 'openrouter', name: 'OpenRouter', icon: 'https://openrouter.ai/favicon.ico' },
+    { id: 'anthropic', name: 'Anthropic', icon: 'https://www.anthropic.com/favicon.ico' },
+    { id: 'openai', name: 'OpenAI', icon: 'https://openai.com/favicon.ico' },
+    { id: 'deepseek', name: 'DeepSeek', icon: 'https://www.deepseek.com/favicon.ico' },
+    { id: 'google', name: 'Google Gemini', icon: 'https://www.google.com/favicon.ico' },
+    { id: 'groq', name: 'Groq', icon: 'https://groq.com/favicon.ico' },
+    { id: 'moonshot', name: 'Moonshot AI', icon: 'https://www.moonshot.cn/favicon.ico' },
+    { id: 'zhipu', name: 'Zhipu AI', icon: 'https://www.zhipuai.cn/favicon.ico' },
+    { id: 'vllm', name: 'vLLM (Local)', icon: 'https://vllm.ai/favicon.ico' },
+];
 
 interface AgentConfig {
     id: string;
@@ -42,23 +48,28 @@ interface AgentConfig {
     discordEnabled: boolean;
     discordToken: string;
     whatsappEnabled: boolean;
+    whatsappBridgeUrl: string;
     feishuEnabled: boolean;
     feishuAppId: string;
     feishuAppSecret: string;
+    feishuEncryptKey: string;
+    feishuVerificationToken: string;
     webSearchApiKey: string;
+    githubEnabled: boolean;
     githubToken: string;
-    firecrawlApiKey: string;
-    apifyApiToken: string;
     browserEnabled: boolean;
     shellEnabled: boolean;
     tmuxEnabled: boolean;
+    restrictToWorkspace: boolean;
     weatherEnabled: boolean;
     summarizeEnabled: boolean;
-    restrictToWorkspace: boolean;
+    firecrawlApiKey: string;
+    apifyApiToken: string;
     gatewayHost: string;
     gatewayPort: number;
     maxToolIterations: number;
     status: string;
+    lastRun?: string;
 }
 
 export default function Dashboard() {
@@ -75,7 +86,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (user) {
-            setProfileForm({ full_name: user.full_name, avatar_url: user.avatar_url || '', password: '' });
+            setProfileForm({ full_name: user.full_name || '', avatar_url: user.avatar_url || '', password: '' });
             fetchAgents();
             const interval = setInterval(fetchAgents, 5000);
             return () => clearInterval(interval);
@@ -289,17 +300,11 @@ export default function Dashboard() {
                                                 <select
                                                     value={editingAgent.provider}
                                                     onChange={e => setEditingAgent({ ...editingAgent, provider: e.target.value })}
-                                                    className="form-select"
+                                                    className="form-input"
                                                 >
-                                                    <option value="openrouter">OpenRouter (Recommended)</option>
-                                                    <option value="anthropic">Anthropic</option>
-                                                    <option value="openai">OpenAI</option>
-                                                    <option value="deepseek">DeepSeek</option>
-                                                    <option value="gemini">Google Gemini</option>
-                                                    <option value="groq">Groq</option>
-                                                    <option value="moonshot">Moonshot AI (Kimi)</option>
-                                                    <option value="zhipu">Zhipu AI (GLM)</option>
-                                                    <option value="vllm">vLLM / Self-Hosted</option>
+                                                    {PROVIDERS.map(p => (
+                                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                                    ))}
                                                 </select>
                                             </InputWrapper>
                                             <InputWrapper label="Model">
@@ -326,7 +331,7 @@ export default function Dashboard() {
                                         <ChannelInput
                                             name="Telegram" icon={ICONS.telegram}
                                             enabled={editingAgent.telegramEnabled}
-                                            onToggle={(v) => setEditingAgent({ ...editingAgent, telegramEnabled: v })}
+                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, telegramEnabled: v })}
                                         >
                                             <input
                                                 type="password"
@@ -339,15 +344,60 @@ export default function Dashboard() {
                                         <ChannelInput
                                             name="Discord" icon={ICONS.discord}
                                             enabled={editingAgent.discordEnabled}
-                                            onToggle={(v) => setEditingAgent({ ...editingAgent, discordEnabled: v })}
+                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, discordEnabled: v })}
                                         >
                                             <input
                                                 type="password"
-                                                placeholder="Bot Token"
-                                                value={editingAgent.discordToken}
+                                                placeholder="Discord Bot Token"
+                                                value={editingAgent.discordToken || ''}
                                                 onChange={e => setEditingAgent({ ...editingAgent, discordToken: e.target.value })}
                                                 className="form-input font-mono text-sm"
                                             />
+                                        </ChannelInput>
+                                        <ChannelInput
+                                            name="WhatsApp" icon={ICONS.whatsapp}
+                                            enabled={editingAgent.whatsappEnabled}
+                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, whatsappEnabled: v })}
+                                        >
+                                            <input
+                                                placeholder="Bridge URL (ws://...)"
+                                                value={editingAgent.whatsappBridgeUrl || ''}
+                                                onChange={e => setEditingAgent({ ...editingAgent, whatsappBridgeUrl: e.target.value })}
+                                                className="form-input text-xs mt-2"
+                                            />
+                                        </ChannelInput>
+                                        <ChannelInput
+                                            name="Feishu / Lark" icon={ICONS.feishu}
+                                            enabled={editingAgent.feishuEnabled}
+                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, feishuEnabled: v })}
+                                        >
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <input
+                                                    placeholder="App ID"
+                                                    value={editingAgent.feishuAppId || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, feishuAppId: e.target.value })}
+                                                    className="form-input text-xs"
+                                                />
+                                                <input
+                                                    type="password"
+                                                    placeholder="App Secret"
+                                                    value={editingAgent.feishuAppSecret || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, feishuAppSecret: e.target.value })}
+                                                    className="form-input text-xs"
+                                                />
+                                                <input
+                                                    placeholder="Encrypt Key"
+                                                    value={editingAgent.feishuEncryptKey || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, feishuEncryptKey: e.target.value })}
+                                                    className="form-input text-[10px]"
+                                                />
+                                                <input
+                                                    placeholder="Verification Token"
+                                                    value={editingAgent.feishuVerificationToken || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, feishuVerificationToken: e.target.value })}
+                                                    className="form-input text-[10px]"
+                                                />
+                                            </div>
                                         </ChannelInput>
                                     </div>
                                 )}
@@ -369,15 +419,64 @@ export default function Dashboard() {
                                         <ToolCard
                                             title="Browser" icon={<Globe className="text-[#00f2ff]" />}
                                             desc="Headless Chrome automation."
-                                            onToggle={(v) => setEditingAgent({ ...editingAgent, browserEnabled: v })}
+                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, browserEnabled: v })}
                                             checked={editingAgent.browserEnabled}
                                         />
                                         <ToolCard
                                             title="Shell" icon={<Terminal className="text-amber-500" />}
                                             desc="Isolated command execution."
-                                            onToggle={(v) => setEditingAgent({ ...editingAgent, shellEnabled: v })}
+                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, shellEnabled: v })}
                                             checked={editingAgent.shellEnabled}
                                         />
+                                        <ToolCard
+                                            title="Tmux Manager" icon={<Terminal className="text-emerald-500" />}
+                                            desc="Persistent background tasks."
+                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, tmuxEnabled: v })}
+                                            checked={editingAgent.tmuxEnabled}
+                                        />
+                                        <ToolCard
+                                            title="GitHub" icon={<img src={ICONS.github} className="w-4 h-4" />}
+                                            desc="Code & Repo management."
+                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, githubEnabled: v })}
+                                            checked={editingAgent.githubToken ? true : false}
+                                        >
+                                            <input
+                                                type="password"
+                                                placeholder="GitHub Token"
+                                                value={editingAgent.githubToken || ''}
+                                                onChange={e => setEditingAgent({ ...editingAgent, githubToken: e.target.value })}
+                                                className="form-input text-xs mt-2"
+                                            />
+                                        </ToolCard>
+                                        <ToolCard
+                                            title="Weather" icon={<Cloud className="text-sky-400" />}
+                                            desc="Live weather conditions."
+                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, weatherEnabled: v })}
+                                            checked={editingAgent.weatherEnabled}
+                                        />
+                                        <ToolCard
+                                            title="Summarize" icon={<FileText className="text-orange-400" />}
+                                            desc="Web content extraction."
+                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, summarizeEnabled: v })}
+                                            checked={editingAgent.summarizeEnabled}
+                                        >
+                                            <div className="space-y-2 mt-2">
+                                                <input
+                                                    type="password"
+                                                    placeholder="Firecrawl API Key"
+                                                    value={editingAgent.firecrawlApiKey || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, firecrawlApiKey: e.target.value })}
+                                                    className="form-input text-[10px]"
+                                                />
+                                                <input
+                                                    type="password"
+                                                    placeholder="Apify API Token"
+                                                    value={editingAgent.apifyApiToken || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, apifyApiToken: e.target.value })}
+                                                    className="form-input text-[10px]"
+                                                />
+                                            </div>
+                                        </ToolCard>
                                         <ToolCard
                                             title="File System" icon={<HardDrive className="text-gray-400" />}
                                             desc="Read/Write access to workspace."
@@ -406,7 +505,7 @@ export default function Dashboard() {
                                                 label="Restrict to Workspace"
                                                 desc="Prevent access outside project folder."
                                                 checked={editingAgent.restrictToWorkspace}
-                                                onToggle={(v) => setEditingAgent({ ...editingAgent, restrictToWorkspace: v })}
+                                                onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, restrictToWorkspace: v })}
                                             />
                                         </Section>
                                         <Section icon={<Server className="text-purple-500" />} title="Gateway" desc="Network binding.">
@@ -534,6 +633,29 @@ export default function Dashboard() {
                                         </Section>
                                     </div>
                                 )}
+                                <div className="flex items-center gap-4">
+                                    {[
+                                        { id: 'intelligence', label: 'Intelligence', icon: <Cpu size={16} /> },
+                                        { id: 'channels', label: 'Connectors', icon: <Share2 size={16} /> },
+                                        { id: 'tools', label: 'Abilities', icon: <Rocket size={16} /> },
+                                        { id: 'system', label: 'Security', icon: <Lock size={16} /> },
+                                        { id: 'billing', label: 'Subscription', icon: <CreditCard size={16} /> },
+                                        { id: 'profile', label: 'Profile', icon: <User size={16} /> },
+                                    ].map((tab) => (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={cn(
+                                                "flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all",
+                                                activeTab === tab.id
+                                                    ? "bg-white text-black shadow-2xl shadow-white/5 scale-105"
+                                                    : "text-gray-600 hover:text-gray-400 hover:bg-white/5"
+                                            )}
+                                        >
+                                            {tab.icon}
+                                            {tab.label}
+                                        </button>
+                                    ))}    </div>
 
                                 <div className="fixed bottom-12 right-12 flex items-center gap-6 z-50">
                                     <button

@@ -75,13 +75,17 @@ model BotConfig {
   discordToken    String?
   
   whatsappEnabled Boolean @default(false)
+  whatsappBridgeUrl String? @default("ws://localhost:3001")
   
   feishuEnabled   Boolean @default(false)
   feishuAppId     String?
   feishuAppSecret String?
+  feishuEncryptKey String?
+  feishuVerificationToken String?
   
   // Tools/Skills
   webSearchApiKey String?
+  githubEnabled   Boolean @default(false)
   githubToken     String?
   
   // Browser

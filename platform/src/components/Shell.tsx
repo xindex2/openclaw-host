@@ -102,7 +102,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-y-auto relative z-10 p-20 bg-[#050505]">
+                <main className="flex-1 overflow-y-auto relative z-10 p-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-[#050505] to-[#050505]">
                     <div className="max-w-7xl mx-auto">
                         {children}
                     </div>
@@ -117,8 +117,8 @@ function SidebarItem({ icon, label, active, onClick }: any) {
         <button
             onClick={onClick}
             className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-wider transition-all text-left group ${active
-                    ? 'bg-white/5 text-white shadow-xl shadow-black/20 border border-white/5'
-                    : 'text-gray-600 hover:text-white hover:bg-white/[0.02]'
+                ? 'bg-white/5 text-white shadow-xl shadow-black/20 border border-white/5'
+                : 'text-gray-600 hover:text-white hover:bg-white/[0.02]'
                 }`}
         >
             <div className={`transition-all duration-300 ${active ? 'text-white' : 'text-gray-800 group-hover:text-gray-600'}`}>
