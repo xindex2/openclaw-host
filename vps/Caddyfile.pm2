@@ -1,0 +1,28 @@
+{
+    email admin@openclaw-host.com
+}
+
+# Main Dashboard
+{$BASE_DOMAIN:openclaw-host.com} {
+    # Proxy API and Socket.io to PM2 Backend
+    # (Match these before the SPA rewrite)
+    handle /api/* {
+        reverse_proxy localhost:3000
+    }
+    handle /socket.io/* {
+        reverse_proxy localhost:3000
+    }
+
+    # Frontend - SPA Routing
+    handle {
+        root * /home/ubuntu/vps/frontend/dist
+        try_files {path} /index.html
+        file_server
+    }
+}
+
+# Wildcard Agent Subdomains
+*.{$BASE_DOMAIN:openclaw-host.com} {
+    # Every subdomain request is sent to the backend pathRouter
+    reverse_proxy localhost:3000
+}
