@@ -61,7 +61,7 @@ interface AgentConfig {
 }
 
 export default function Dashboard() {
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const [agents, setAgents] = useState<AgentConfig[]>([]);
     const [editingAgent, setEditingAgent] = useState<AgentConfig | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -153,7 +153,10 @@ export default function Dashboard() {
         const action = currentStatus === 'running' ? 'stop' : 'start';
         const resp = await fetch('/api/bot/control', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ configId, action })
         });
         if (resp.ok) {

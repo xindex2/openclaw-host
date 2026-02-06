@@ -53,7 +53,7 @@ export default function AdminDashboard() {
     if (loading || !stats) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <div className="w-12 h-12 border-4 border-[#ff6b6b] border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-[#ff4d4d] border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
@@ -187,8 +187,7 @@ export default function AdminDashboard() {
                             {stats.agentUsage.map((agent) => (
                                 <tr key={agent.id} className="group">
                                     <td className="py-6">
-                                        <div className="font-black italic uppercase tracking-tight group-hover:text-[#ff6b6b] transition-colors">{agent.name}</div>
-                                        <div className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{agent.subdomain}</div>
+                                        <div className="font-black italic uppercase tracking-tight group-hover:text-[#ff4d4d] transition-colors">{agent.name}</div>
                                     </td>
                                     <td className="py-6">
                                         <div className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${agent.status === 'running' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
@@ -207,7 +206,7 @@ export default function AdminDashboard() {
                                     <td className="py-6 w-48">
                                         <div className="flex items-center gap-4">
                                             <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-                                                <div className="h-full bg-[#ff6b6b]/50" style={{ width: `${agent.memory.percent}%` }} />
+                                                <div className="h-full bg-[#ff4d4d]/50" style={{ width: `${agent.memory.percent}%` }} />
                                             </div>
                                             <span className="text-[10px] font-bold text-gray-400">{agent.memory.usage}</span>
                                         </div>
