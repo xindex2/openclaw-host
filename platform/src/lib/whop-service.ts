@@ -81,13 +81,13 @@ export class WhopService {
             });
         }
 
-        // Map Whop plans to instances (from legacy pricing)
-        // Ke7ZeyJO29DwZ -> 1 Agent ($19)
-        // 9NRNdPMrVzwi8 -> 5 Agents ($69)
-        // XXO2Ey0ki51AI -> 10 Agents ($99)
-        let maxInstances = 1;
-        if (planId === '9NRNdPMrVzwi8') maxInstances = 5;
-        if (planId === 'XXO2Ey0ki51AI') maxInstances = 10;
+        // Map Whop plans to instances from DB
+        const planConfig = await prisma.whopPlan.findUnique({
+            where: { whopPlanId: planId }
+        });
+
+        const maxInstances = planConfig ? planConfig.maxInstances : 1;
+        const planName = planConfig ? planConfig.planName : (planId === 'XXO2Ey0ki51AI' ? 'Elite' : (planId === '9NRNdPMrVzwi8' ? 'Pro' : 'Starter'));
 
         await prisma.subscription.upsert({
             where: { userId: user.id },
@@ -103,7 +103,7 @@ export class WhopService {
                 maxInstances,
                 whopMembershipId: membershipId,
                 whopPlanId: planId,
-                plan: planId === 'XXO2Ey0ki51AI' ? 'Elite' : (planId === '9NRNdPMrVzwi8' ? 'Pro' : 'Starter')
+                plan: planName
             }
         });
 

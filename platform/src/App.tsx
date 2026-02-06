@@ -6,6 +6,8 @@ import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import UserManagement from './pages/UserManagement';
 import Maintenance from './pages/Maintenance';
+import AdminEvents from './pages/AdminEvents';
+import PlansEdit from './pages/PlansEdit';
 import ThankYou from './pages/ThankYou';
 import Hosting from './pages/seo/Hosting';
 import VPS from './pages/seo/VPS';
@@ -68,6 +70,16 @@ function AppRoutes() {
             <Route path="/admin/users" element={
                 <ProtectedRoute adminOnly>
                     <UserManagement />
+                </ProtectedRoute>
+            } />
+            <Route path="/admin/events" element={
+                <ProtectedRoute adminOnly>
+                    <AdminEvents />
+                </ProtectedRoute>
+            } />
+            <Route path="/admin/plans" element={
+                <ProtectedRoute adminOnly>
+                    <PlansEdit />
                 </ProtectedRoute>
             } />
             <Route path="/admin/maintenance" element={

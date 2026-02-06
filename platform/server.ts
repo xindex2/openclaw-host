@@ -6,6 +6,7 @@ import os from 'os';
 import { startBot, stopBot, getBotStatus, killAllUserProcesses } from './src/lib/bot-executor.js';
 import whopRoutes from './src/routes/webhooks/whop.js';
 import authRoutes from './src/routes/auth.js';
+import adminRoutes from './src/routes/admin.js';
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -204,7 +205,7 @@ app.get('/api/admin/stats', authenticateToken, isAdmin, async (req: any, res: an
 app.get('/api/admin/users', authenticateToken, isAdmin, async (req: any, res: any) => {
     try {
         const users = await prisma.user.findMany({
-            include: { subscription: true, _count: { select: { configs: true } } },
+            include: { subscription: true as any, _count: { select: { configs: true } } },
             orderBy: { createdAt: 'desc' }
         });
         res.json({ users });
@@ -212,6 +213,8 @@ app.get('/api/admin/users', authenticateToken, isAdmin, async (req: any, res: an
         res.status(500).json({ error: 'Failed' });
     }
 });
+
+app.use('/api/admin', authenticateToken, isAdmin, adminRoutes);
 
 // --- Bot Control Routes ---
 

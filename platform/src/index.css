@@ -7,6 +7,8 @@
   --coral-dark: #cc0000;
   --cyan-bright: #00f2ff;
   --bg-deep: #050505;
+  --bg-card: #0a0a0a;
+  --border-dim: rgba(255, 255, 255, 0.05);
   --foreground-rgb: 255, 255, 255;
 
   --color-primary: var(--coral-bright);
@@ -17,7 +19,8 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: var(--bg-deep);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
 

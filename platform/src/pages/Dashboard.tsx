@@ -5,13 +5,14 @@ import {
     Zap, Layout, ShieldAlert, Server, Activity,
     ChevronRight, Database, Lock, Rocket, Sparkles,
     RefreshCcw, Plus, Trash2, Edit3, X, ChevronLeft,
-    FileText, Clock, HardDrive, Command, CreditCard, User
+    FileText, Clock, HardDrive, Command, CreditCard, User, LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import { useAuth } from '../context/AuthContext';
+import DeployWizard from '../components/DeployWizard';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -141,6 +142,30 @@ export default function Dashboard() {
         }
     };
 
+    const handleCreateAgentFromWizard = async (config: any) => {
+        const newAgent: any = {
+            ...config,
+            description: 'Autonomous research and execution agent.',
+            apiKey: '', // User will need to add this in the editor or we could ask in wizard
+            apiBase: '',
+            feishuEnabled: false,
+            browserEnabled: true,
+            shellEnabled: false,
+            tmuxEnabled: false,
+            weatherEnabled: false,
+            summarizeEnabled: false,
+            webSearchApiKey: '',
+            githubToken: '',
+            firecrawlApiKey: '',
+            apifyApiToken: '',
+            restrictToWorkspace: true,
+            gatewayHost: '0.0.0.0',
+            gatewayPort: 18790 + (agents.length * 10),
+            maxToolIterations: 20
+        };
+        await saveConfig(newAgent);
+    };
+
     const deleteAgent = async (id: string) => {
         if (!confirm('Are you sure you want to decommission this agent?')) return;
         try {
@@ -173,84 +198,87 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white flex font-sans overflow-hidden">
-            <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none z-50 mix-blend-overlay" />
-
+        <div className="min-h-full">
             <AnimatePresence mode="wait">
                 {!editingAgent ? (
                     <motion.div
                         key="list"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        className="flex-1 p-16 overflow-y-auto"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-16"
                     >
-                        <header className="flex justify-between items-end mb-16">
-                            <div>
-                                <div className="flex items-center gap-2 text-[#ff4d4d] font-bold text-xs uppercase tracking-[0.4em] mb-4">
-                                    <Sparkles size={14} /> Fleet Intelligence
-                                </div>
-                                <h1 className="text-7xl font-black italic uppercase tracking-tighter decoration-[#ff4d4d]/30 underline underline-offset-8">
-                                    The Squad
-                                </h1>
-                            </div>
-                            <button
-                                onClick={handleCreateAgent}
-                                className="bg-white text-black px-10 py-5 rounded-3xl font-black text-sm tracking-widest flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/10"
-                            >
-                                <Plus size={20} strokeWidth={3} /> RECRUIT AGENT
-                            </button>
-                        </header>
+                        {agents.length === 0 ? (
+                            <DeployWizard
+                                user={user}
+                                onDeploy={handleCreateAgentFromWizard}
+                                isDeploying={isSaving}
+                            />
+                        ) : (
+                            <>
+                                <header className="flex justify-between items-end">
+                                    <div>
+                                        <div className="flex items-center gap-2 text-gray-500 font-bold text-[10px] uppercase tracking-[0.4em] mb-4">
+                                            <Sparkles size={14} className="text-coral-bright" /> Operational Units
+                                        </div>
+                                        <h1 className="text-5xl font-black italic uppercase tracking-tighter">
+                                            The Squad
+                                        </h1>
+                                    </div>
+                                    <button
+                                        onClick={handleCreateAgent}
+                                        className="bg-white text-black px-10 py-5 rounded-[2rem] font-black text-[11px] tracking-widest flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/5 uppercase"
+                                    >
+                                        <Plus size={18} strokeWidth={3} /> Recruit Member
+                                    </button>
+                                </header>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {agents.map(agent => (
-                                <AgentCard
-                                    key={agent.id}
-                                    agent={agent}
-                                    onEdit={() => setEditingAgent(agent)}
-                                    onDelete={() => deleteAgent(agent.id)}
-                                    onToggle={() => toggleBot(agent.id, agent.status)}
-                                />
-                            ))}
-                            {agents.length === 0 && (
-                                <div className="col-span-full py-32 border-2 border-dashed border-white/5 rounded-[3rem] flex flex-col items-center justify-center text-gray-600">
-                                    <Bot size={80} className="mb-6 opacity-20" />
-                                    <p className="font-bold text-xl uppercase tracking-widest italic">No Active Agents in Fleet</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {agents.map(agent => (
+                                        <AgentCard
+                                            key={agent.id}
+                                            agent={agent}
+                                            onEdit={() => setEditingAgent(agent)}
+                                            onDelete={() => deleteAgent(agent.id)}
+                                            onToggle={() => toggleBot(agent.id, agent.status)}
+                                        />
+                                    ))}
                                 </div>
-                            )}
-                        </div>
+                            </>
+                        )}
                     </motion.div>
                 ) : (
                     <motion.div
                         key="editor"
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.05 }}
-                        className="flex-1 flex"
+                        exit={{ opacity: 0, scale: 1.02 }}
+                        className="flex-1 flex min-h-[70vh] bg-white/[0.01] border border-white/5 rounded-[4rem] overflow-hidden"
                     >
                         <Sidebar
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
                             onBack={() => setEditingAgent(null)}
                         />
-                        <main className="flex-1 p-16 overflow-y-auto relative">
+                        <main className="flex-1 p-16 overflow-y-auto relative custom-scrollbar">
                             <header className="mb-12">
-                                <button onClick={() => setEditingAgent(null)} className="flex items-center gap-2 text-gray-500 hover:text-white transition-colors text-xs font-black uppercase tracking-widest mb-6">
-                                    <ChevronLeft size={16} /> Return to Fleet
+                                <button onClick={() => setEditingAgent(null)} className="flex items-center gap-2 text-gray-700 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest mb-8">
+                                    <ChevronLeft size={14} /> Return to Squad
                                 </button>
-                                <div className="flex items-center gap-3 mb-2">
+                                <div className="space-y-2">
                                     <input
                                         value={editingAgent.name}
                                         onChange={e => setEditingAgent({ ...editingAgent, name: e.target.value })}
-                                        className="bg-transparent text-6xl font-black tracking-tighter uppercase italic outline-none border-b border-transparent focus:border-white/10 w-full"
+                                        className="bg-transparent text-5xl font-black tracking-tighter uppercase italic outline-none border-b border-transparent focus:border-white/5 w-full placeholder:text-gray-800"
+                                        placeholder="Unit Designation"
+                                    />
+                                    <input
+                                        value={editingAgent.description}
+                                        onChange={e => setEditingAgent({ ...editingAgent, description: e.target.value })}
+                                        placeholder="Define the mission objective..."
+                                        className="bg-transparent text-gray-600 text-sm font-medium outline-none w-full"
                                     />
                                 </div>
-                                <input
-                                    value={editingAgent.description}
-                                    onChange={e => setEditingAgent({ ...editingAgent, description: e.target.value })}
-                                    placeholder="Short mission description..."
-                                    className="bg-transparent text-gray-500 text-lg font-medium outline-none w-full"
-                                />
                             </header>
 
                             <div className="max-w-4xl space-y-12 pb-32">
@@ -409,17 +437,21 @@ export default function Dashboard() {
                                         <Section icon={<CreditCard className="text-green-500" />} title="Subscription & Billing" desc="Manage your fleet plan.">
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                 {[
-                                                    { name: 'One Agent', price: '$19', color: 'border-blue-500/20', btn: 'bg-white/5' },
-                                                    { name: '5 Agents', price: '$69', color: 'border-amber-500/20', btn: 'bg-amber-500/10 text-amber-500', popular: true },
-                                                    { name: '10 Agents', price: '$99', color: 'border-purple-500/20', btn: 'bg-white/5' }
+                                                    { name: 'Starter', price: '$19', color: 'border-blue-500/20', btn: 'bg-white/5', link: 'https://whop.com/checkout/plan_Ke7ZeyJO29DwZ', agents: 1 },
+                                                    { name: 'Professional', price: '$69', color: 'border-amber-500/20', btn: 'bg-amber-500/10 text-amber-500', popular: true, link: 'https://whop.com/checkout/plan_9NRNdPMrVzwi8', agents: 5 },
+                                                    { name: 'Elite', price: '$99', color: 'border-purple-500/20', btn: 'bg-white/5', link: 'https://whop.com/checkout/plan_XXO2Ey0ki51AI', agents: 10 }
                                                 ].map((plan: any) => (
-                                                    <div key={plan.name} className={cn("p-6 rounded-[2rem] border bg-white/2 flex flex-col gap-4", plan.color, plan.popular && "bg-amber-500/5")}>
+                                                    <div key={plan.name} className={cn("p-8 rounded-[2.5rem] border bg-white/2 flex flex-col gap-6", plan.color, plan.popular && "bg-amber-500/5")}>
                                                         <div>
-                                                            <h3 className="font-black italic uppercase text-lg">{plan.name}</h3>
-                                                            <div className="text-3xl font-black mt-2">{plan.price}<span className="text-sm text-gray-500 font-medium">/mo</span></div>
+                                                            <div className="flex items-center justify-between mb-4">
+                                                                <h3 className="font-black italic uppercase text-lg">{plan.name}</h3>
+                                                                {plan.popular && <span className="px-3 py-1 bg-amber-500/20 text-amber-500 text-[9px] font-black uppercase tracking-widest rounded-full">Popular</span>}
+                                                            </div>
+                                                            <div className="text-4xl font-black">{plan.price}<span className="text-sm text-gray-500 font-medium">/mo</span></div>
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-600 mt-2">{plan.agents} Agent Slot{plan.agents > 1 ? 's' : ''}</p>
                                                         </div>
-                                                        <a href="https://whop.com/hub/" target="_blank" className={cn("mt-auto py-3 rounded-xl font-bold text-center text-xs uppercase tracking-widest transition-all hover:scale-105", plan.btn)}>
-                                                            {plan.popular ? 'Most Popular' : 'Select Plan'}
+                                                        <a href={plan.link} target="_blank" className={cn("mt-auto py-4 rounded-2xl font-black text-center text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95", plan.btn)}>
+                                                            {plan.popular ? 'Upgrade Now' : 'Select Fleet'}
                                                         </a>
                                                     </div>
                                                 ))}
@@ -533,53 +565,53 @@ function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
         <motion.div
             layout
             className={cn(
-                "bg-white/2 border border-white/5 rounded-[3rem] p-10 flex flex-col gap-8 transition-all relative overflow-hidden group hover:border-white/10",
-                isRunning && "bg-[#ff4d4d]/[0.03] border-[#ff4d4d]/20"
+                "bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-10 flex flex-col gap-8 transition-all relative overflow-hidden group hover:border-white/10",
+                isRunning && "border-coral-bright/20 shadow-[0_0_50px_rgba(255,77,77,0.02)]"
             )}
         >
             <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={onDelete} className="text-gray-600 hover:text-red-500 transition-colors">
-                    <Trash2 size={18} />
+                <button onClick={onDelete} className="text-gray-800 hover:text-red-500 transition-colors">
+                    <Trash2 size={16} />
                 </button>
             </div>
 
             <div className="flex items-center justify-between">
                 <div className={cn(
-                    "w-16 h-16 rounded-3xl flex items-center justify-center transition-all",
-                    isRunning ? "bg-[#ff4d4d] text-white shadow-2xl shadow-[#ff4d4d]/40" : "bg-white/5 text-gray-500"
+                    "w-14 h-14 rounded-2xl flex items-center justify-center transition-all",
+                    isRunning ? "bg-white text-black shadow-2xl" : "bg-white/5 text-gray-700"
                 )}>
-                    <Bot size={32} />
+                    <Bot size={24} />
                 </div>
-                <div className="flex items-center gap-2">
-                    {agent.telegramEnabled && <img src={ICONS.telegram} className="w-4 h-4 rounded-full" />}
-                    {agent.discordEnabled && <img src={ICONS.discord} className="w-4 h-4 rounded-full" />}
+                <div className="flex items-center gap-1.5 grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
+                    {agent.telegramEnabled && <img src={ICONS.telegram} className="w-3.5 h-3.5 rounded-full" />}
+                    {agent.discordEnabled && <img src={ICONS.discord} className="w-3.5 h-3.5 rounded-full" />}
                 </div>
             </div>
 
             <div>
-                <h3 className="text-2xl font-black italic uppercase tracking-tighter mb-1 leading-none">{agent.name}</h3>
-                <p className="text-sm text-gray-500 font-medium line-clamp-1">{agent.description}</p>
+                <h3 className="text-xl font-black uppercase tracking-tight mb-1">{agent.name}</h3>
+                <p className="text-xs text-gray-600 font-medium line-clamp-2 leading-relaxed">{agent.description}</p>
             </div>
 
-            <div className="flex items-center justify-between mt-auto">
+            <div className="flex items-center justify-between mt-auto pt-4">
                 <div className="flex items-center gap-2">
-                    <div className={cn("w-2 h-2 rounded-full", isRunning ? "bg-green-500 animate-pulse" : "bg-gray-700")} />
-                    <span className={cn("text-[10px] font-black uppercase tracking-widest", isRunning ? "text-green-500" : "text-gray-600")}>
-                        {isRunning ? 'Deployed' : 'IDLE'}
+                    <div className={cn("w-1.5 h-1.5 rounded-full", isRunning ? "bg-green-500 animate-pulse" : "bg-gray-800")} />
+                    <span className={cn("text-[9px] font-black uppercase tracking-widest", isRunning ? "text-green-500" : "text-gray-700")}>
+                        {isRunning ? 'Operational' : 'Idle'}
                     </span>
                 </div>
-                <div className="flex gap-4">
-                    <button onClick={onEdit} className="p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors text-gray-400">
-                        <Edit3 size={18} />
+                <div className="flex gap-3">
+                    <button onClick={onEdit} className="p-3.5 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-gray-600">
+                        <Edit3 size={16} />
                     </button>
                     <button
                         onClick={onToggle}
                         className={cn(
-                            "p-4 rounded-2xl transition-all shadow-xl",
-                            isRunning ? "bg-red-500/10 text-red-500 hover:bg-red-500/20" : "bg-white text-black hover:scale-105"
+                            "p-3.5 rounded-xl transition-all",
+                            isRunning ? "bg-red-500/10 text-red-500 hover:bg-red-500/20" : "bg-white text-black hover:scale-105 active:scale-95"
                         )}
                     >
-                        {isRunning ? <Square size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+                        {isRunning ? <Square size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
                     </button>
                 </div>
             </div>
@@ -589,27 +621,24 @@ function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
 
 function Sidebar({ activeTab, setActiveTab, onBack }: any) {
     return (
-        <aside className="w-80 border-r border-white/5 bg-black/40 backdrop-blur-3xl p-8 flex flex-col gap-10">
-            <div className="flex items-center gap-4 px-2">
-                <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center">
-                    <Bot size={22} className="text-white" />
-                </div>
-                <div>
-                    <span className="text-xl font-black italic tracking-tighter uppercase block leading-none">zakibot</span>
-                    <span className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Enterprise</span>
-                </div>
+        <aside className="w-80 border-r border-white/5 bg-white/[0.02] p-8 flex flex-col gap-12 shrink-0">
+            <div className="px-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700 mb-6 font-mono">Configuration</p>
+                <nav className="flex flex-col gap-1">
+                    <SidebarTab active={activeTab === 'provider'} onClick={() => setActiveTab('provider')} icon={<Cpu size={14} />} label="Intelligence" />
+                    <SidebarTab active={activeTab === 'channels'} onClick={() => setActiveTab('channels')} icon={<Share2 size={14} />} label="Connectors" />
+                    <SidebarTab active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={<Terminal size={14} />} label="Abilities" />
+                    <SidebarTab active={activeTab === 'system'} onClick={() => setActiveTab('system')} icon={<Server size={14} />} label="Structure" />
+                </nav>
             </div>
-            <nav className="flex flex-col gap-2">
-                <SidebarTab active={activeTab === 'provider'} onClick={() => setActiveTab('provider')} icon={<Cpu size={18} />} label="Intelligence" />
-                <SidebarTab active={activeTab === 'channels'} onClick={() => setActiveTab('channels')} icon={<Share2 size={18} />} label="Chat Hub" />
-                <SidebarTab active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={<Terminal size={18} />} label="Capabilities" />
-                <SidebarTab active={activeTab === 'system'} onClick={() => setActiveTab('system')} icon={<Server size={18} />} label="Deployment" />
 
-                <div className="h-px bg-white/5 my-4" />
-
-                <SidebarTab active={activeTab === 'billing'} onClick={() => setActiveTab('billing')} icon={<CreditCard size={18} />} label="Billing" />
-                <SidebarTab active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} icon={<User size={18} />} label="Profile" />
-            </nav>
+            <div className="px-4 mt-auto">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700 mb-6 font-mono">Account</p>
+                <nav className="flex flex-col gap-1">
+                    <SidebarTab active={activeTab === 'billing'} onClick={() => setActiveTab('billing')} icon={<CreditCard size={14} />} label="Quota" />
+                    <SidebarTab active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} icon={<User size={14} />} label="Identity" />
+                </nav>
+            </div>
         </aside>
     );
 }
@@ -619,14 +648,14 @@ function SidebarTab({ icon, label, active, onClick }: any) {
         <button
             onClick={onClick}
             className={cn(
-                "flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-sm tracking-tight transition-all text-left",
-                active ? "bg-[#ff4d4d]/10 text-[#ff4d4d]" : "text-gray-500 hover:text-white"
+                "flex items-center gap-4 px-5 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-wider transition-all text-left",
+                active ? "bg-white/5 text-white border border-white/5 shadow-xl" : "text-gray-600 hover:text-white"
             )}
         >
-            <div className={cn("transition-colors", active ? "text-[#ff4d4d]" : "text-gray-600")}>
+            <div className={cn("transition-colors", active ? "text-white" : "text-gray-800")}>
                 {icon}
             </div>
-            {label}
+            <span className="translate-y-px">{label}</span>
         </button>
     );
 }
@@ -674,17 +703,17 @@ function ChannelInput({ name, icon, enabled, onToggle, children }: any) {
 function ToolCard({ title, icon, desc, checked, onToggle, children }: any) {
     return (
         <div className={cn(
-            "p-10 rounded-[2.5rem] border transition-all relative overflow-hidden group",
-            (checked || (!onToggle && children)) ? "bg-[#ff4d4d]/5 border-[#ff4d4d]/20" : "bg-white/2 border-white/5"
+            "p-10 rounded-[2.5rem] border transition-all relative overflow-hidden group hover:border-white/10",
+            (checked || (!onToggle && children)) ? "bg-white/[0.02] border-white/10" : "bg-transparent border-white/5"
         )}>
             <div className="flex items-center justify-between mb-8">
-                <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center">
+                <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-gray-500 group-hover:text-white transition-colors">
                     {icon}
                 </div>
                 {onToggle && <Toggle checked={checked} onChange={onToggle} />}
             </div>
-            <h3 className="text-xl font-black italic uppercase mb-2">{title}</h3>
-            <p className="text-sm text-gray-500 font-medium mb-6 leading-relaxed">{desc}</p>
+            <h3 className="text-lg font-black uppercase mb-2">{title}</h3>
+            <p className="text-[11px] text-gray-500 font-medium mb-6 leading-relaxed">{desc}</p>
             {children}
         </div>
     );

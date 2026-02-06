@@ -142,6 +142,7 @@ class Config(BaseSettings):
             "openai": self.providers.openai,
             "gpt": self.providers.openai,
             "gemini": self.providers.gemini,
+            "google": self.providers.gemini,
             "zhipu": self.providers.zhipu,
             "glm": self.providers.zhipu,
             "zai": self.providers.zhipu,

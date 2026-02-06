@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Users, Bot, Activity, Server, Shield, Cpu, Zap, HardDrive, TrendingUp } from 'lucide-react';
+import { Users, Bot, Activity, Server, Shield, Cpu, Zap, HardDrive, TrendingUp, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
+
+function AdminNavLink({ to, icon, label, color }: any) {
+    return (
+        <Link to={to} className="flex flex-col items-center gap-4 p-8 bg-white/2 border border-white/5 rounded-[2rem] hover:bg-white/5 transition-all group">
+            <div className={`w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center transition-colors ${color}`}>
+                {icon}
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors">{label}</span>
+        </Link>
+    );
+}
 
 interface Stats {
     summary: {
@@ -71,6 +83,14 @@ export default function AdminDashboard() {
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">System Nominal</span>
                 </div>
+            </div>
+
+            {/* Admin Quick Navigation */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <AdminNavLink to="/admin/users" icon={<Users size={18} />} label="User Registry" color="text-blue-500" />
+                <AdminNavLink to="/admin/events" icon={<Activity size={18} />} label="Whop Logs" color="text-[#ff4d4d]" />
+                <AdminNavLink to="/admin/plans" icon={<Settings size={18} />} label="Plan Config" color="text-amber-500" />
+                <AdminNavLink to="/admin/maintenance" icon={<Zap size={18} />} label="Maintenance" color="text-purple-500" />
             </div>
 
             {/* Summary Row */}

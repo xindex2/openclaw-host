@@ -108,17 +108,26 @@ class LiteLLMProvider(LLMProvider):
             model = f"moonshot/{model}"
 
         # For Gemini, ensure gemini/ prefix if not already present
-        if "gemini" in model.lower() and not model.startswith("gemini/"):
+        if ("gemini" in model.lower() or "google" in model.lower()) and not (
+            model.startswith("gemini/") or model.startswith("google/")
+        ):
             model = f"gemini/{model}"
+        elif model.startswith("google/"):
+             # LiteLLM standard is gemini/ for Google AI Studio
+             model = model.replace("google/", "gemini/", 1)
 
-        # For vLLM, use hosted_vllm/ prefix per LiteLLM docs
-        # Convert openai/ prefix to hosted_vllm/ if user specified it
-        if self.is_vllm:
-            model = f"hosted_vllm/{model}"
-        
-        # kimi-k2.5 only supports temperature=1.0
+        # KIMI temperature special case
         if "kimi-k2.5" in model.lower():
             temperature = 1.0
+
+        # For Gemini/Google/Anthropic/OpenAI, we only use api_base if it looks like a proxy for that provider
+        # or if the user explicitly wants vLLM/custom endpoint.
+        # If is_vllm is true, we use it. Otherwise, we try to be smart.
+        
+        is_known_provider = any(model.startswith(p) for p in ["gemini/", "anthropic/", "openai/", "google/", "vertex_ai/"])
+        
+        if self.is_vllm and not is_known_provider:
+             model = f"hosted_vllm/{model}"
 
         kwargs: dict[str, Any] = {
             "model": model,
@@ -127,7 +136,11 @@ class LiteLLMProvider(LLMProvider):
             "temperature": temperature,
         }
         
-        # Pass api_base directly for custom endpoints (vLLM, etc.)
+        # Pass api_key directly to acompletion to avoid environment variable issues
+        if self.api_key:
+            kwargs["api_key"] = self.api_key
+        
+        # Pass api_base directly only for custom endpoints or if specified
         if self.api_base:
             kwargs["api_base"] = self.api_base
         
