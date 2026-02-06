@@ -505,6 +505,7 @@ export default function Dashboard() {
                                         <Rocket size={18} /> DEPLOY AGENT
                                     </button>
                                 </div>
+                            </div>
                         </main>
                     </motion.div>
                 )}
