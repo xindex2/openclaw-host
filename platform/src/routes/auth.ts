@@ -8,6 +8,10 @@ const router = express.Router();
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_zakibot';
 
+// Fix for ESM/CJS interop
+const jwtSign = (jwt as any).default?.sign || (jwt as any).sign || jwt.sign;
+const jwtVerify = (jwt as any).default?.verify || (jwt as any).verify || jwt.verify;
+
 // Google OAuth Setup
 const googleClient = new OAuth2Client(
     process.env.GOOGLE_CLIENT_ID,
@@ -85,7 +89,7 @@ router.get('/auth/google/callback', async (req, res) => {
         }
 
         // Generate JWT token
-        const token = jwt.sign(
+        const token = jwtSign(
             { userId: user.id, full_name: user.full_name, role: user.role },
             JWT_SECRET,
             { expiresIn: '7d' }
@@ -121,7 +125,7 @@ router.put('/profile', async (req: any, res: any) => {
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
     try {
-        const decoded: any = jwt.verify(token, JWT_SECRET);
+        const decoded: any = jwtVerify(token, JWT_SECRET);
         const userId = decoded.userId;
 
         const { full_name, avatar_url, password } = req.body;
@@ -136,7 +140,7 @@ router.put('/profile', async (req: any, res: any) => {
         });
 
         // Return new token with updated info
-        const newToken = jwt.sign(
+        const newToken = jwtSign(
             { userId: user.id, full_name: user.full_name, role: user.role },
             JWT_SECRET,
             { expiresIn: '7d' }

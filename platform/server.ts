@@ -10,6 +10,10 @@ import jwt from 'jsonwebtoken';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Fix for ESM/CJS interop (getting jwt.sign)
+const jwtSign = (jwt as any).default?.sign || (jwt as any).sign || jwt.sign;
+const jwtVerify = (jwt as any).default?.verify || (jwt as any).verify || jwt.verify;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -36,7 +40,7 @@ const authenticateToken = async (req: any, res: any, next: any) => {
         // Handle both simple userId (legacy) and real JWT
         let userId;
         try {
-            const decoded: any = jwt.verify(token, JWT_SECRET);
+            const decoded: any = jwtVerify(token, JWT_SECRET);
             userId = decoded.userId;
         } catch (e) {
             // Fallback for demo-token or direct userId if not a valid JWT
