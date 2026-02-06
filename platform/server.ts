@@ -6,7 +6,7 @@ import os from 'os';
 import { startBot, stopBot, getBotStatus, killAllUserProcesses } from './src/lib/bot-executor.js';
 import whopRoutes from './src/routes/webhooks/whop.js';
 import authRoutes from './src/routes/auth.js';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
