@@ -3,9 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import os from 'os';
-import { startBot, stopBot, getBotStatus, killAllUserProcesses } from './src/lib/bot-executor';
-import whopRoutes from './src/routes/webhooks/whop';
-import authRoutes from './src/routes/auth';
+import { startBot, stopBot, getBotStatus, killAllUserProcesses } from './src/lib/bot-executor.js';
+import whopRoutes from './src/routes/webhooks/whop.js';
+import authRoutes from './src/routes/auth.js';
 import * as jwt from 'jsonwebtoken';
 
 dotenv.config();

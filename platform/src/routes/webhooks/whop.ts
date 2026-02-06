@@ -1,5 +1,5 @@
 import express from 'express';
-import { WhopService } from '../../lib/whop-service';
+import { WhopService } from '../../lib/whop-service.js';
 
 const router = express.Router();
 
