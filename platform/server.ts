@@ -7,6 +7,11 @@ import { startBot, stopBot, getBotStatus, killAllUserProcesses } from './src/lib
 import whopRoutes from './src/routes/webhooks/whop.js';
 import authRoutes from './src/routes/auth.js';
 import * as jwt from 'jsonwebtoken';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -230,6 +235,20 @@ app.post('/api/bot/control', authenticateToken, async (req: any, res: any) => {
     }
 });
 
+// --- Serve Frontend ---
+const distPath = path.join(__dirname, 'dist');
+app.use(express.static(distPath));
+
+// For all other routes, serve index.html (SPA routing)
+app.get('*', (req, res, next) => {
+    // Skip if it's an API route
+    if (req.path.startsWith('/api')) {
+        return next();
+    }
+    res.sendFile(path.join(distPath, 'index.html'));
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Zakibot Backend running on http://localhost:${PORT}`);
+    console.log(`📂 Serving static files from: ${distPath}`);
 });
