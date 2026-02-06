@@ -19,27 +19,56 @@ export async function startBot(userId: string) {
     if (!fs.existsSync(configsDir)) fs.mkdirSync(configsDir);
 
     const configPath = path.join(configsDir, `${userId}.json`);
-    const nanobotConfig = {
+
+    // Build Nanobot configuration object
+    const nanobotConfig: any = {
         providers: {
             [config.provider]: {
-                apiKey: config.apiKey
+                apiKey: config.apiKey,
+                apiBase: config.apiBase
             }
         },
         agents: {
             defaults: {
-                model: config.model || "openai/gpt-4o"
+                model: config.model
             }
         },
-        channels: {
-            [config.channel]: {
-                enabled: true,
-                token: config.channelToken
-            }
-        },
+        channels: {},
         tools: {
+            web: {
+                search: {
+                    apiKey: config.webSearchApiKey
+                }
+            },
             restrictToWorkspace: true
         }
     };
+
+    // Add enabled channels
+    if (config.telegramEnabled) {
+        nanobotConfig.channels.telegram = {
+            enabled: true,
+            token: config.telegramToken
+        };
+    }
+    if (config.discordEnabled) {
+        nanobotConfig.channels.discord = {
+            enabled: true,
+            token: config.discordToken
+        };
+    }
+    if (config.whatsappEnabled) {
+        nanobotConfig.channels.whatsapp = {
+            enabled: true
+        };
+    }
+    if (config.feishuEnabled) {
+        nanobotConfig.channels.feishu = {
+            enabled: true,
+            appId: config.feishuAppId,
+            appSecret: config.feishuAppSecret
+        };
+    }
 
     fs.writeFileSync(configPath, JSON.stringify(nanobotConfig, null, 2));
 
@@ -48,7 +77,6 @@ export async function startBot(userId: string) {
     if (!fs.existsSync(workspacePath)) fs.mkdirSync(workspacePath, { recursive: true });
 
     // Spawn nanobot
-    // We point to the nanobot root directory since we're in /platform
     const nanobotRoot = path.join(process.cwd(), '..');
 
     const child = spawn('python3', ['-m', 'nanobot', 'gateway'], {

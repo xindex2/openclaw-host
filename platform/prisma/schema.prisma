@@ -21,15 +21,30 @@ model BotConfig {
   userId         String
   user           User     @relation(fields: [userId], references: [id])
   
-  // Model Provider
-  provider       String   // e.g., "openai", "anthropic", "gemini", "deepseek"
-  apiKey         String
-  model          String?  // Optional specific model
+  // Model & Provider
+  provider       String   @default("openrouter") // openrouter, openai, anthropic, deepseek, groq, zhipu, gemini, moonshot, vllm
+  apiKey         String   @default("")
+  apiBase        String?
+  model          String   @default("anthropic/claude-opus-4-5")
   
-  // Channel
-  channel        String   // e.g., "discord", "telegram", "whatsapp"
-  channelToken   String   // Discord Token, Telegram Bot Token, etc.
-  channelId      String?  // Target channel ID if applicable
+  // Channels
+  telegramEnabled Boolean @default(false)
+  telegramToken   String?
+  
+  discordEnabled  Boolean @default(false)
+  discordToken    String?
+  
+  whatsappEnabled Boolean @default(false)
+  
+  feishuEnabled   Boolean @default(false)
+  feishuAppId     String?
+  feishuAppSecret String?
+  
+  // Tools/Skills
+  webSearchApiKey String?
+  githubToken     String?
+  browserEnabled  Boolean @default(true)
+  shellEnabled    Boolean @default(false)
   
   status         String   @default("stopped") // "running", "stopped", "error"
   lastRun        DateTime?

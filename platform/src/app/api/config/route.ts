@@ -15,14 +15,17 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
-        const { userId, provider, apiKey, channel, channelToken } = await req.json();
+        const body = await req.json();
+        const { userId, ...configData } = body;
 
         if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+        const existingConfig = await prisma.botConfig.findFirst({ where: { userId } });
+
         const config = await prisma.botConfig.upsert({
-            where: { id: (await prisma.botConfig.findFirst({ where: { userId } }))?.id || 'new' },
-            update: { provider, apiKey, channel, channelToken },
-            create: { userId, provider, apiKey, channel, channelToken },
+            where: { id: existingConfig?.id || 'new' },
+            update: configData,
+            create: { userId, ...configData },
         });
 
         return NextResponse.json(config);
