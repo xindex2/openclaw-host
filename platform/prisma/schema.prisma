@@ -21,6 +21,8 @@ model BotConfig {
   userId         String
   user           User     @relation(fields: [userId], references: [id])
   
+  name           String   @default("New Agent")
+  description    String?
   // Model & Provider
   provider       String   @default("openrouter") // openrouter, openai, anthropic, deepseek, groq, zhipu, gemini, moonshot, vllm
   apiKey         String   @default("")

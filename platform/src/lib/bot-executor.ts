@@ -5,39 +5,38 @@ import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
+// Process cache keyed by BOT CONFIG ID (allowing multiple bots per user)
 const processes: Record<string, ChildProcess> = {};
 
-export async function startBot(userId: string) {
-    // 1. Attempt to kill any legacy or orphaned processes for this specific user
+export async function startBot(configId: string) {
+    // 1. Attempt to kill any legacy or orphaned processes for this specific config
     try {
-        // Find and kill processes running with this user's config file
-        const configFileName = `${userId}.json`;
-        const killCmd = `pkill -f "nanobot.*${configFileName}" || true`;
+        const killCmd = `pkill -f "nanobot.*${configId}.json" || true`;
         execSync(killCmd);
-        console.log(`[Bot ${userId}] Checked and cleaned existing processes.`);
+        console.log(`[Bot ${configId}] Checked and cleaned existing processes.`);
     } catch (e) {
-        console.warn(`[Bot ${userId}] Cleanup error (non-fatal):`, e);
+        console.warn(`[Bot ${configId}] Cleanup error (non-fatal):`, e);
     }
 
-    if (processes[userId]) {
+    if (processes[configId]) {
         try {
-            processes[userId].kill('SIGKILL');
-            delete processes[userId];
+            processes[configId].kill('SIGKILL');
+            delete processes[configId];
         } catch (e) { }
     }
 
-    const config = await prisma.botConfig.findFirst({ where: { userId } });
-    if (!config) throw new Error('Please save your configuration first before starting the bot.');
+    const config = await prisma.botConfig.findUnique({ where: { id: configId } });
+    if (!config) throw new Error('Bot configuration not found.');
 
     // Create temporary config file
     const configsDir = path.join(process.cwd(), 'configs');
     if (!fs.existsSync(configsDir)) fs.mkdirSync(configsDir, { recursive: true });
 
-    const configPath = path.join(configsDir, `${userId}.json`);
-    const workspacePath = path.join(process.cwd(), 'workspaces', userId);
+    const configPath = path.join(configsDir, `${config.id}.json`);
+    const workspacePath = path.join(process.cwd(), 'workspaces', config.userId, config.id);
     if (!fs.existsSync(workspacePath)) fs.mkdirSync(workspacePath, { recursive: true });
 
-    // Build Nanobot configuration object strictly matching nanobot/config/schema.py
+    // Build Nanobot configuration object matching nanobot/config/schema.py
     const nanobotConfig: any = {
         providers: {
             [config.provider]: {
@@ -99,9 +98,9 @@ export async function startBot(userId: string) {
     if (fs.existsSync(venvPython)) {
         pythonPath = venvPython;
         env.PATH = `${venvBin}:${process.env.PATH}`;
-        console.log(`[Bot ${userId}] Using venv python: ${pythonPath}`);
+        console.log(`[Bot ${config.name}] Using venv python: ${pythonPath}`);
     } else {
-        console.log(`[Bot ${userId}] Using system python: ${pythonPath}`);
+        console.log(`[Bot ${config.name}] Using system python: ${pythonPath}`);
     }
 
     const child = spawn(pythonPath, ['-m', 'nanobot', 'gateway'], {
@@ -113,52 +112,51 @@ export async function startBot(userId: string) {
         }
     });
 
-    child.stdout?.on('data', (data) => console.log(`[Bot ${userId}]: ${data}`));
-    child.stderr?.on('data', (data) => console.error(`[Bot error ${userId}]: ${data}`));
+    child.stdout?.on('data', (data) => console.log(`[Bot ${config.name}]: ${data}`));
+    child.stderr?.on('data', (data) => console.error(`[Bot error ${config.name}]: ${data}`));
 
     child.on('close', (code) => {
-        console.log(`[Bot ${userId}] stopped with code ${code}`);
-        delete processes[userId];
-        prisma.botConfig.updateMany({
-            where: { userId },
+        console.log(`[Bot ${config.name}] stopped with code ${code}`);
+        delete processes[configId];
+        prisma.botConfig.update({
+            where: { id: configId },
             data: { status: 'stopped' }
         }).catch(console.error);
     });
 
-    processes[userId] = child;
+    processes[configId] = child;
 
-    await prisma.botConfig.updateMany({
-        where: { userId },
+    await prisma.botConfig.update({
+        where: { id: configId },
         data: { status: 'running' }
     });
 
     return { success: true };
 }
 
-export async function stopBot(userId: string) {
-    // Robust kill
+export async function stopBot(configId: string) {
+    // Robust kill by config ID reference in command line
     try {
-        const configFileName = `${userId}.json`;
-        execSync(`pkill -f "nanobot.*${configFileName}" || true`);
+        execSync(`pkill -f "nanobot.*${configId}.json" || true`);
     } catch (e) { }
 
-    const child = processes[userId];
+    const child = processes[configId];
     if (child) {
         child.kill('SIGTERM');
         setTimeout(() => {
             try { child.kill('SIGKILL'); } catch (e) { }
         }, 1000);
-        delete processes[userId];
+        delete processes[configId];
     }
 
-    await prisma.botConfig.updateMany({
-        where: { userId },
+    await prisma.botConfig.update({
+        where: { id: configId },
         data: { status: 'stopped' }
     });
 
     return { success: true };
 }
 
-export function getBotStatus(userId: string) {
-    return processes[userId] ? 'running' : 'stopped';
+export function getBotStatus(configId: string) {
+    return processes[configId] ? 'running' : 'stopped';
 }
