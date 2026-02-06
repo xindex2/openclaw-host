@@ -15,9 +15,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     ];
 
     const adminItems = [
-        { icon: <Activity size={20} />, label: 'Command Center', path: '/admin', color: 'text-[#ff6b6b]' },
-        { icon: <Users size={20} />, label: 'Personnel', path: '/admin/users', color: 'text-[#ff6b6b]' },
-        { icon: <ShieldCheck size={20} />, label: 'Maintenance', path: '/admin/maintenance', color: 'text-[#ff6b6b]' },
+        { icon: <Activity size={20} />, label: 'Command Center', path: '/admin', color: 'text-[#ff4d4d]' },
+        { icon: <Users size={20} />, label: 'Personnel', path: '/admin/users', color: 'text-[#ff4d4d]' },
+        { icon: <ShieldCheck size={20} />, label: 'Maintenance', path: '/admin/maintenance', color: 'text-[#ff4d4d]' },
     ];
 
     return (
@@ -27,7 +27,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             {/* Sidebar */}
             <aside className="w-80 border-r border-white/5 bg-black/40 backdrop-blur-3xl p-8 flex flex-col gap-10 relative z-10">
                 <div className="flex items-center gap-4 px-2">
-                    <div className="w-10 h-10 bg-[#ff6b6b] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#ff6b6b]/20">
+                    <div className="w-10 h-10 bg-[#ff4d4d] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#ff4d4d]/20">
                         <Bot size={22} className="text-white" />
                     </div>
                     <div>
@@ -51,7 +51,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
                     {isAdmin && (
                         <div className="space-y-2 pt-8 border-t border-white/5">
-                            <p className="px-4 text-[9px] font-black uppercase tracking-[0.4em] text-[#ff6b6b]/40 mb-4">Command Clearance</p>
+                            <p className="px-4 text-[9px] font-black uppercase tracking-[0.4em] text-[#ff4d4d]/40 mb-4">Command Clearance</p>
                             {adminItems.map((item) => (
                                 <SidebarItem
                                     key={item.path}
@@ -67,7 +67,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 {/* User Section */}
                 <div className="mt-auto pt-8 border-t border-white/5">
                     <div className="flex items-center gap-4 px-4 mb-6">
-                        <div className="w-10 h-10 bg-white/5 rounded-2xl flex items-center justify-center font-black italic text-[#ff6b6b]">
+                        <div className="w-10 h-10 bg-white/5 rounded-2xl flex items-center justify-center font-black italic text-[#ff4d4d]">
                             {user?.full_name?.charAt(0) || 'U'}
                         </div>
                         <div className="flex-1 min-w-0">
