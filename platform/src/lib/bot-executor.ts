@@ -82,9 +82,15 @@ export async function startBot(userId: string) {
 
     // Detect python binary (prefer venv if exists)
     let pythonPath = 'python3';
-    const venvPython = path.join(nanobotRoot, 'venv', 'bin', 'python3');
+    let env = { ...process.env };
+
+    const venvBin = path.join(nanobotRoot, 'venv', 'bin');
+    const venvPython = path.join(venvBin, 'python3');
+
     if (fs.existsSync(venvPython)) {
         pythonPath = venvPython;
+        // Prepend venv/bin to PATH to ensure subprocesses use the venv
+        env.PATH = `${venvBin}:${process.env.PATH}`;
         console.log(`[Bot ${userId}] Using venv python: ${pythonPath}`);
     } else {
         console.log(`[Bot ${userId}] Using system python: ${pythonPath}`);
@@ -93,7 +99,7 @@ export async function startBot(userId: string) {
     const child = spawn(pythonPath, ['-m', 'nanobot', 'gateway'], {
         cwd: nanobotRoot,
         env: {
-            ...process.env,
+            ...env,
             NANOBOT_CONFIG: configPath,
             NANOBOT_WORKSPACE: workspacePath
         }
