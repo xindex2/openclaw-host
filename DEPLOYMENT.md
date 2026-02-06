@@ -124,6 +124,35 @@ sudo systemctl restart nginx
 3. Configure your **API Keys** (OpenRouter, OpenAI, etc.) in the dashboard.
 4. Launch your bot instance!
 
+## 10. Updating Zakibot
+
+Whenever you push new changes to GitHub and want to update your VPS:
+
+1.  **Pull the latest code**:
+    ```bash
+    cd ~/zakibot
+    git pull origin main
+    ```
+
+2.  **Update dependencies & Database**:
+    ```bash
+    # Update web dependencies
+    cd ~/zakibot/platform
+    npm install
+    
+    # Apply new database migrations
+    npx prisma migrate dev --name sync
+    ```
+
+3.  **Restart the services**:
+    ```bash
+    # Restart the Next.js platform
+    pm2 restart zakibot-platform
+    
+    # Optional: Check logs to ensure everything is fine
+    pm2 logs zakibot-platform
+    ```
+
 ## External Access Troubleshooting
 
 If you cannot access your platform via your VPS IP:
