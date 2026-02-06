@@ -41,7 +41,8 @@ class LiteLLMProvider(LLMProvider):
                 # OpenRouter mode - set key
                 os.environ["OPENROUTER_API_KEY"] = api_key
             elif self.is_vllm:
-                # vLLM/custom endpoint - uses OpenAI-compatible API
+                # vLLM/custom endpoint - uses OpenAI-compatible API or HOSTED_VLLM
+                os.environ["HOSTED_VLLM_API_KEY"] = api_key
                 os.environ["OPENAI_API_KEY"] = api_key
             elif "deepseek" in default_model:
                 os.environ.setdefault("DEEPSEEK_API_KEY", api_key)
@@ -49,7 +50,7 @@ class LiteLLMProvider(LLMProvider):
                 os.environ.setdefault("ANTHROPIC_API_KEY", api_key)
             elif "openai" in default_model or "gpt" in default_model:
                 os.environ.setdefault("OPENAI_API_KEY", api_key)
-            elif "gemini" in default_model.lower():
+            elif "gemini" in default_model.lower() or "google" in default_model.lower():
                 os.environ.setdefault("GEMINI_API_KEY", api_key)
             elif "zhipu" in default_model or "glm" in default_model or "zai" in default_model:
                 os.environ.setdefault("ZHIPUAI_API_KEY", api_key)
@@ -59,8 +60,8 @@ class LiteLLMProvider(LLMProvider):
                 os.environ.setdefault("MOONSHOT_API_KEY", api_key)
                 os.environ.setdefault("MOONSHOT_API_BASE", api_base or "https://api.moonshot.cn/v1")
         
-        if api_base:
-            litellm.api_base = api_base
+        # CRITICAL: Do NOT set litellm.api_base globally to avoid pollution
+        # We pass it explicitly in each chat call.
         
         # Disable LiteLLM logging noise
         litellm.suppress_debug_info = True
@@ -88,45 +89,45 @@ class LiteLLMProvider(LLMProvider):
         """
         model = model or self.default_model
         
+        # Normalize model names
+        model_low = model.lower()
+
         # For OpenRouter, prefix model name if not already prefixed
         if self.is_openrouter and not model.startswith("openrouter/"):
             model = f"openrouter/{model}"
         
         # For Zhipu/Z.ai, ensure prefix is present
-        # Handle cases like "glm-4.7-flash" -> "zai/glm-4.7-flash"
-        if ("glm" in model.lower() or "zhipu" in model.lower()) and not (
-            model.startswith("zhipu/") or 
-            model.startswith("zai/") or 
-            model.startswith("openrouter/")
+        elif ("glm" in model_low or "zhipu" in model_low) and not (
+            model.startswith("zhipu/") or model.startswith("zai/") or model.startswith("openrouter/")
         ):
             model = f"zai/{model}"
 
-        # For Moonshot/Kimi, ensure moonshot/ prefix (before vLLM check)
-        if ("moonshot" in model.lower() or "kimi" in model.lower()) and not (
+        # For Moonshot/Kimi, ensure moonshot/ prefix
+        elif ("moonshot" in model_low or "kimi" in model_low) and not (
             model.startswith("moonshot/") or model.startswith("openrouter/")
         ):
             model = f"moonshot/{model}"
 
         # For Gemini, ensure gemini/ prefix if not already present
-        if ("gemini" in model.lower() or "google" in model.lower()) and not (
-            model.startswith("gemini/") or model.startswith("google/")
+        # Handle cases like "gemini-1.5-flash" -> "gemini/gemini-1.5-flash"
+        # Handle cases like "google/gemini-1.5-flash" -> "gemini/gemini-1.5-flash"
+        elif ("gemini" in model_low or "google" in model_low) and not (
+            model.startswith("gemini/") or model.startswith("vertex_ai/")
         ):
-            model = f"gemini/{model}"
-        elif model.startswith("google/"):
-             # LiteLLM standard is gemini/ for Google AI Studio
-             model = model.replace("google/", "gemini/", 1)
+            if model.startswith("google/"):
+                model = model.replace("google/", "gemini/", 1)
+            else:
+                model = f"gemini/{model}"
 
         # KIMI temperature special case
-        if "kimi-k2.5" in model.lower():
+        if "kimi-k2.5" in model_low:
             temperature = 1.0
 
-        # For Gemini/Google/Anthropic/OpenAI, we only use api_base if it looks like a proxy for that provider
-        # or if the user explicitly wants vLLM/custom endpoint.
-        # If is_vllm is true, we use it. Otherwise, we try to be smart.
+        # For vLLM/custom endpoints, use hosted_vllm/ prefix UNLESS it's a known provider
+        # This allows users to use proxies for known providers by setting api_base
+        is_standard_provider = any(model.startswith(p) for p in ["gemini/", "anthropic/", "openai/", "google/", "vertex_ai/"])
         
-        is_known_provider = any(model.startswith(p) for p in ["gemini/", "anthropic/", "openai/", "google/", "vertex_ai/"])
-        
-        if self.is_vllm and not is_known_provider:
+        if self.is_vllm and not is_standard_provider:
              model = f"hosted_vllm/{model}"
 
         kwargs: dict[str, Any] = {
@@ -136,12 +137,13 @@ class LiteLLMProvider(LLMProvider):
             "temperature": temperature,
         }
         
-        # Pass api_key directly to acompletion to avoid environment variable issues
+        # Pass api_key directly to acompletion to ensure it's used for this call
         if self.api_key:
             kwargs["api_key"] = self.api_key
         
-        # Pass api_base directly only for custom endpoints or if specified
-        if self.api_base:
+        # Pass api_base directly - override any global state
+        # Pass it even if None if we want to be sure, but LiteLLM handles None
+        if self.api_base is not None:
             kwargs["api_base"] = self.api_base
         
         if tools:
