@@ -59,14 +59,17 @@ npx prisma migrate dev --name init
 
 ## 6. Configure Environment Variables
 
-Create a `.env` file for the platform.
+Create a `.env` file for the platform. This is required for Prisma to find the database.
 
 ```bash
-cat <<EOF > .env
-DATABASE_URL="file:./dev.db"
-# If using a custom port or domain, add more vars here
-EOF
+# Make sure you are in the platform directory
+cd ~/zakibot/platform
+
+# Create the .env file
+echo 'DATABASE_URL="file:./dev.db"' > .env
 ```
+
+> **Troubleshooting**: If you see "Missing required environment variable: DATABASE_URL", double check that the `.env` file exists in `platform/.env` and contains the line above.
 
 ## 7. Launching the Services
 
