@@ -58,7 +58,7 @@ export default function UserManagement() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <div className="w-12 h-12 border-4 border-[#ff6b6b] border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-[#ff4d4d] border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
@@ -78,7 +78,7 @@ export default function UserManagement() {
                         placeholder="SEARCH COMMANDERS..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-white/5 border border-white/5 rounded-2xl pl-16 pr-6 py-4 outline-none focus:border-[#ff6b6b]/50 transition-all font-bold text-xs tracking-widest uppercase"
+                        className="w-full bg-white/5 border border-white/5 rounded-2xl pl-16 pr-6 py-4 outline-none focus:border-[#ff4d4d]/50 transition-all font-bold text-xs tracking-widest uppercase"
                     />
                 </div>
             </div>
@@ -101,7 +101,7 @@ export default function UserManagement() {
                                 <tr key={u.id} className="group hover:bg-white/[0.01] transition-colors">
                                     <td className="px-10 py-8">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center font-black italic text-[#ff6b6b]">
+                                            <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center font-black italic text-[#ff4d4d]">
                                                 {u.full_name.charAt(0)}
                                             </div>
                                             <div>
@@ -111,7 +111,7 @@ export default function UserManagement() {
                                         </div>
                                     </td>
                                     <td className="px-10 py-8">
-                                        <div className={`inline-flex px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border ${u.role === 'admin' ? 'bg-[#ff6b6b]/10 border-[#ff6b6b]/20 text-[#ff6b6b]' : 'bg-white/5 border-white/5 text-gray-400'
+                                        <div className={`inline-flex px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border ${u.role === 'admin' ? 'bg-[#ff4d4d]/10 border-[#ff4d4d]/20 text-[#ff4d4d]' : 'bg-white/5 border-white/5 text-gray-400'
                                             }`}>
                                             {u.role}
                                         </div>
@@ -146,10 +146,10 @@ export default function UserManagement() {
                     Showing {filteredUsers.length} of {users.length} profiles
                 </p>
                 <div className="flex items-center gap-4">
-                    <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-[#ff6b6b]/20 transition-all">
+                    <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-[#ff4d4d]/20 transition-all">
                         <ChevronLeft size={20} />
                     </button>
-                    <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-[#ff6b6b]/20 transition-all">
+                    <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-[#ff4d4d]/20 transition-all">
                         <ChevronRight size={20} />
                     </button>
                 </div>

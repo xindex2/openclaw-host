@@ -77,7 +77,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {[
                     { label: "Total Recruits", value: stats.summary.totalUsers, icon: <Users className="text-blue-500" /> },
-                    { label: "Total Assets", value: stats.summary.totalAgents, icon: <Bot className="text-[#ff6b6b]" /> },
+                    { label: "Total Assets", value: stats.summary.totalAgents, icon: <Bot className="text-[#ff4d4d]" /> },
                     { label: "Active Deployments", value: stats.summary.activeAgents, icon: <Server className="text-green-500" /> }
                 ].map((s, i) => (
                     <div key={i} className="bg-white/2 border border-white/5 rounded-[2.5rem] p-10 flex items-center justify-between">
@@ -124,14 +124,14 @@ export default function AdminDashboard() {
                 {/* Growth Chart (Simplified) */}
                 <div className="bg-white/2 border border-white/5 rounded-[3rem] p-12">
                     <div className="flex items-center gap-3 mb-12">
-                        <TrendingUp size={20} className="text-[#ff6b6b]" />
+                        <TrendingUp size={20} className="text-[#ff4d4d]" />
                         <h3 className="font-black italic uppercase tracking-tighter text-xl">Recruitment Trend</h3>
                     </div>
                     <div className="h-[200px] flex items-end gap-4">
                         {stats.growth.map((day, i) => (
                             <div key={i} className="flex-1 flex flex-col items-center gap-4 group">
                                 <div
-                                    className="w-full bg-[#ff6b6b]/20 group-hover:bg-[#ff6b6b] transition-all rounded-t-xl min-h-[4px]"
+                                    className="w-full bg-[#ff4d4d]/20 group-hover:bg-[#ff4d4d] transition-all rounded-t-xl min-h-[4px]"
                                     style={{ height: `${(day.count / Math.max(...stats.growth.map(d => d.count), 1)) * 100}%` }}
                                 />
                                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
             {/* Agent List */}
             <div className="bg-white/2 border border-white/5 rounded-[3rem] p-12 overflow-hidden">
                 <div className="flex items-center gap-3 mb-12">
-                    <Activity size={20} className="text-[#ff6b6b]" />
+                    <Activity size={20} className="text-[#ff4d4d]" />
                     <h3 className="font-black italic uppercase tracking-tighter text-xl">Active Assets Telemetry</h3>
                 </div>
                 <div className="overflow-x-auto">
