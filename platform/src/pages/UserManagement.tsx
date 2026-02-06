@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Trash2, Shield, Gem, CheckCircle, XCircle, ChevronLeft, ChevronRight, User as UserIcon } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 interface UserData {
     id: string;

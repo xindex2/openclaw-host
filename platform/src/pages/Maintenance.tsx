@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Settings, Rocket, RefreshCw, Terminal as TerminalIcon, AlertTriangle, CheckCircle, Info } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 interface LogEntry {
     message: string;
@@ -97,7 +97,7 @@ export default function Maintenance() {
                         <div className="space-y-4">
                             {logs.map((log, i) => (
                                 <div key={i} className={`flex gap-4 border-l-2 pl-6 ${log.type === 'success' ? 'border-green-500/50' :
-                                        log.type === 'error' ? 'border-red-500/50' : 'border-[#ff6b6b]/50'
+                                    log.type === 'error' ? 'border-red-500/50' : 'border-[#ff6b6b]/50'
                                     }`}>
                                     <span className="text-gray-700 font-bold shrink-0">[{log.timestamp}]</span>
                                     <div className={

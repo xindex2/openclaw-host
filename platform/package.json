@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev:client": "vite",
-    "dev:server": "nodemon --loader ts-node/esm server.ts",
+    "dev:server": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' nodemon server.ts",
+    "start": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' node server.ts",
     "build": "vite build",
     "preview": "vite preview",
     "db:generate": "prisma generate",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Users, Bot, Activity, Server, Shield, Cpu, Zap, HardDrive, TrendingUp } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 interface Stats {
     summary: {
