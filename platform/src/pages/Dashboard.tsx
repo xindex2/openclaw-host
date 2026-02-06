@@ -5,17 +5,17 @@ import {
     Zap, Layout, ShieldAlert, Server, Activity,
     ChevronRight, Database, Lock, Rocket, Sparkles,
     RefreshCcw, Plus, Trash2, Edit3, X, ChevronLeft,
-    FileText, Clock, HardDrive, Command
+    FileText, Clock, HardDrive, Command, CreditCard, User
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { useAuth } from '../context/AuthContext';
+
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
-
-const USER_ID = 'demo-user';
 
 const ICONS = {
     telegram: 'https://telegram.org/favicon.ico',
@@ -56,21 +56,30 @@ interface AgentConfig {
 }
 
 export default function Dashboard() {
+    const { user } = useAuth();
     const [agents, setAgents] = useState<AgentConfig[]>([]);
     const [editingAgent, setEditingAgent] = useState<AgentConfig | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('provider');
     const [isSaving, setIsSaving] = useState(false);
 
+    // Profile State
+    const [profileForm, setProfileForm] = useState({ full_name: '', avatar_url: '', password: '' });
+    const [profileStatus, setProfileStatus] = useState({ loading: false, error: '', success: '' });
+
     useEffect(() => {
-        fetchAgents();
-        const interval = setInterval(fetchAgents, 5000);
-        return () => clearInterval(interval);
-    }, []);
+        if (user) {
+            setProfileForm({ full_name: user.full_name, avatar_url: user.avatar_url || '', password: '' });
+            fetchAgents();
+            const interval = setInterval(fetchAgents, 5000);
+            return () => clearInterval(interval);
+        }
+    }, [user]);
 
     const fetchAgents = async () => {
+        if (!user) return;
         try {
-            const resp = await fetch(`/api/config?userId=${USER_ID}`);
+            const resp = await fetch(`/api/config?userId=${user.id}`);
             if (resp.ok) {
                 const data = await resp.json();
                 setAgents(data);
@@ -105,12 +114,13 @@ export default function Dashboard() {
     };
 
     const saveConfig = async (config: AgentConfig) => {
+        if (!user) return;
         setIsSaving(true);
         try {
             const resp = await fetch('/api/config', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: USER_ID, ...config })
+                body: JSON.stringify({ userId: user.id, ...config })
             });
             if (resp.ok) {
                 await fetchAgents();
@@ -380,28 +390,126 @@ export default function Dashboard() {
                                         </Section>
                                     </div>
                                 )}
-                            </div>
 
-                            <div className="fixed bottom-12 right-12 flex items-center gap-6 z-50">
-                                <button
-                                    onClick={() => deleteAgent(editingAgent.id)}
-                                    className="bg-red-500/10 text-red-500 px-8 py-5 rounded-[2rem] font-black text-sm tracking-widest border border-red-500/20 hover:bg-red-500/20 transition-all"
-                                >
-                                    DECOMMISSION
-                                </button>
-                                <button
-                                    onClick={() => saveConfig(editingAgent)}
-                                    disabled={isSaving}
-                                    className="bg-blue-600 text-white px-12 py-5 rounded-[2rem] font-black text-sm tracking-widest shadow-2xl shadow-blue-600/30 flex items-center gap-3 hover:scale-105 active:scale-95 transition-all"
-                                >
-                                    <Rocket size={18} /> DEPLOY AGENT
-                                </button>
-                            </div>
+                                {activeTab === 'billing' && (
+                                    <div className="space-y-8">
+                                        <Section icon={<CreditCard className="text-green-500" />} title="Subscription & Billing" desc="Manage your fleet plan.">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                {[
+                                                    { name: 'One Agent', price: '$19', color: 'border-blue-500/20', btn: 'bg-white/5' },
+                                                    { name: '5 Agents', price: '$69', color: 'border-amber-500/20', btn: 'bg-amber-500/10 text-amber-500', popular: true },
+                                                    { name: '10 Agents', price: '$99', color: 'border-purple-500/20', btn: 'bg-white/5' }
+                                                ].map((plan: any) => (
+                                                    <div key={plan.name} className={cn("p-6 rounded-[2rem] border bg-white/2 flex flex-col gap-4", plan.color, plan.popular && "bg-amber-500/5")}>
+                                                        <div>
+                                                            <h3 className="font-black italic uppercase text-lg">{plan.name}</h3>
+                                                            <div className="text-3xl font-black mt-2">{plan.price}<span className="text-sm text-gray-500 font-medium">/mo</span></div>
+                                                        </div>
+                                                        <a href="https://whop.com/hub/" target="_blank" className={cn("mt-auto py-3 rounded-xl font-bold text-center text-xs uppercase tracking-widest transition-all hover:scale-105", plan.btn)}>
+                                                            {plan.popular ? 'Most Popular' : 'Select Plan'}
+                                                        </a>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="mt-8 p-6 rounded-[2rem] bg-white/5 border border-white/5 flex items-center justify-between">
+                                                <div>
+                                                    <h4 className="font-bold">Manage Subscription</h4>
+                                                    <p className="text-sm text-gray-500">View invoices and change payment methods via Whop.</p>
+                                                </div>
+                                                <a href="https://whop.com/hub/" target="_blank" className="bg-white text-black px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all">
+                                                    Open Hub
+                                                </a>
+                                            </div>
+                                        </Section>
+                                    </div>
+                                )}
+
+                                {activeTab === 'profile' && (
+                                    <div className="space-y-8">
+                                        <Section icon={<User className="text-blue-500" />} title="Commander Profile" desc="Identity and credentials.">
+                                            <div className="flex gap-8 items-start">
+                                                <div className="w-32 h-32 rounded-full bg-white/5 flex items-center justify-center overflow-hidden border-2 border-white/10 relative group">
+                                                    {profileForm.avatar_url ? (
+                                                        <img src={profileForm.avatar_url} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <User size={48} className="text-gray-500" />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 space-y-6">
+                                                    <InputWrapper label="Full Name">
+                                                        <input
+                                                            value={profileForm.full_name}
+                                                            onChange={e => setProfileForm({ ...profileForm, full_name: e.target.value })}
+                                                            className="form-input"
+                                                        />
+                                                    </InputWrapper>
+                                                    <InputWrapper label="Avatar URL">
+                                                        <input
+                                                            value={profileForm.avatar_url}
+                                                            onChange={e => setProfileForm({ ...profileForm, avatar_url: e.target.value })}
+                                                            className="form-input"
+                                                            placeholder="https://..."
+                                                        />
+                                                    </InputWrapper>
+                                                    <InputWrapper label="New Password">
+                                                        <input
+                                                            type="password"
+                                                            value={profileForm.password}
+                                                            onChange={e => setProfileForm({ ...profileForm, password: e.target.value })}
+                                                            className="form-input"
+                                                            placeholder="Leave blank to keep current"
+                                                        />
+                                                    </InputWrapper>
+
+                                                    <div className="flex justify-end pt-4">
+                                                        <button
+                                                            onClick={async () => {
+                                                                setProfileStatus({ ...profileStatus, loading: true });
+                                                                try {
+                                                                    const res = await fetch('/api/profile', {
+                                                                        method: 'PUT',
+                                                                        headers: {
+                                                                            'Content-Type': 'application/json',
+                                                                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                                                        },
+                                                                        body: JSON.stringify(profileForm)
+                                                                    });
+                                                                    if (res.ok) alert('Profile updated!');
+                                                                } finally {
+                                                                    setProfileStatus({ ...profileStatus, loading: false });
+                                                                }
+                                                            }}
+                                                            className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-black text-xs tracking-widest uppercase hover:scale-105 transition-all"
+                                                        >
+                                                            Save Profile
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Section>
+                                    </div>
+                                )}
+
+                                <div className="fixed bottom-12 right-12 flex items-center gap-6 z-50">
+                                    <button
+                                        onClick={() => deleteAgent(editingAgent.id)}
+                                        className="bg-red-500/10 text-red-500 px-8 py-5 rounded-[2rem] font-black text-sm tracking-widest border border-red-500/20 hover:bg-red-500/20 transition-all"
+                                    >
+                                        DECOMMISSION
+                                    </button>
+                                    <button
+                                        onClick={() => saveConfig(editingAgent)}
+                                        disabled={isSaving}
+                                        className="bg-blue-600 text-white px-12 py-5 rounded-[2rem] font-black text-sm tracking-widest shadow-2xl shadow-blue-600/30 flex items-center gap-3 hover:scale-105 active:scale-95 transition-all"
+                                    >
+                                        <Rocket size={18} /> DEPLOY AGENT
+                                    </button>
+                                </div>
                         </main>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 }
 
@@ -472,13 +580,21 @@ function Sidebar({ activeTab, setActiveTab, onBack }: any) {
                 <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center">
                     <Bot size={22} className="text-white" />
                 </div>
-                <span className="text-xl font-black italic tracking-tighter uppercase">zakibot</span>
+                <div>
+                    <span className="text-xl font-black italic tracking-tighter uppercase block leading-none">zakibot</span>
+                    <span className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Enterprise</span>
+                </div>
             </div>
             <nav className="flex flex-col gap-2">
                 <SidebarTab active={activeTab === 'provider'} onClick={() => setActiveTab('provider')} icon={<Cpu size={18} />} label="Intelligence" />
                 <SidebarTab active={activeTab === 'channels'} onClick={() => setActiveTab('channels')} icon={<Share2 size={18} />} label="Chat Hub" />
                 <SidebarTab active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={<Terminal size={18} />} label="Capabilities" />
                 <SidebarTab active={activeTab === 'system'} onClick={() => setActiveTab('system')} icon={<Server size={18} />} label="Deployment" />
+
+                <div className="h-px bg-white/5 my-4" />
+
+                <SidebarTab active={activeTab === 'billing'} onClick={() => setActiveTab('billing')} icon={<CreditCard size={18} />} label="Billing" />
+                <SidebarTab active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} icon={<User size={18} />} label="Profile" />
             </nav>
         </aside>
     );

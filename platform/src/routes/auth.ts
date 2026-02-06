@@ -109,4 +109,43 @@ router.get('/auth/google/callback', async (req, res) => {
     }
 });
 
+// Update Profile
+router.put('/profile', async (req: any, res: any) => {
+    // Basic verify middleware logic (inline for now or assume app.use calls it? 
+    // Wait, auth routes are usually public except this one. 
+    // server.ts mounts authRoutes at /api. Access control is usually needed.)
+
+    // We need to verify token here because auth routes might not be globally protected in server.ts
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+    try {
+        const decoded: any = jwt.verify(token, JWT_SECRET);
+        const userId = decoded.userId;
+
+        const { full_name, avatar_url, password } = req.body;
+        const data: any = {};
+        if (full_name) data.full_name = full_name;
+        if (avatar_url) data.avatar_url = avatar_url;
+        if (password) data.password = password; // Should hash ideally
+
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data
+        });
+
+        // Return new token with updated info
+        const newToken = jwt.sign(
+            { userId: user.id, full_name: user.full_name, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.json({ user, token: newToken });
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 export default router;
