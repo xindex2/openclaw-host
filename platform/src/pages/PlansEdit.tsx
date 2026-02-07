@@ -18,7 +18,12 @@ export default function PlansEdit() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await resp.json();
-            setPlans(data);
+            if (Array.isArray(data)) {
+                setPlans(data);
+            } else {
+                console.error('Invalid plans format:', data);
+                setPlans([]);
+            }
         } catch (err) {
             console.error('Failed to fetch plans:', err);
         } finally {
