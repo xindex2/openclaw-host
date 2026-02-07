@@ -71,18 +71,32 @@ class BrowserTool(Tool):
         )
         self.page = await self.context.new_page()
         
-        # Apply stealth patterns with robust import
+        # Apply stealth patterns with extreme robustness
         try:
-            try:
-                from playwright_stealth import stealth_async
-            except ImportError:
-                # Fallback for versions where it's just 'stealth'
-                from playwright_stealth import stealth as stealth_async
+            import playwright_stealth
             
-            await stealth_async(self.page)
-            logger.debug("Successfully applied stealth patterns to the browser.")
+            # Try to find the appropriate stealth function
+            stealth_func = None
+            if hasattr(playwright_stealth, 'stealth_async'):
+                stealth_func = playwright_stealth.stealth_async
+            elif hasattr(playwright_stealth, 'stealth'):
+                # Some versions/configurations might use 'stealth'
+                stealth_func = playwright_stealth.stealth
+            
+            if stealth_func:
+                # Execution might be sync or async depending on the library version
+                import inspect
+                if inspect.iscoroutinefunction(stealth_func):
+                    await stealth_func(self.page)
+                else:
+                    stealth_func(self.page)
+                logger.debug("Successfully applied stealth patterns.")
+            else:
+                logger.warning("No recognized stealth function found in playwright_stealth.")
+        except ImportError:
+            logger.warning("playwright_stealth library not found. Continuing without stealth.")
         except Exception as e:
-            logger.warning(f"Failed to apply stealth patterns: {e}. Continuing without stealth.")
+            logger.warning(f"Stealth initialization failed: {e}. Continuing without stealth.")
 
     async def execute(self, action: str, **kwargs: Any) -> str:
         try:
