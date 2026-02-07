@@ -55,19 +55,19 @@ export async function startBot(configId: string) {
             telegram: {
                 enabled: config.telegramEnabled,
                 token: config.telegramToken || "",
-                allow_from: []
+                allow_from: (config as any).telegramAllowFrom ? (config as any).telegramAllowFrom.split(',').map((s: string) => s.trim()) : []
             },
             discord: {
                 enabled: config.discordEnabled,
                 token: config.discordToken || "",
-                allow_from: [],
+                allow_from: (config as any).discordAllowFrom ? (config as any).discordAllowFrom.split(',').map((s: string) => s.trim()) : [],
                 gateway_url: "wss://gateway.discord.gg/?v=10&encoding=json",
                 intents: 37377
             },
             whatsapp: {
                 enabled: config.whatsappEnabled,
                 bridge_url: config.whatsappBridgeUrl || "ws://localhost:3001",
-                allow_from: []
+                allow_from: (config as any).whatsappAllowFrom ? (config as any).whatsappAllowFrom.split(',').map((s: string) => s.trim()) : []
             },
             feishu: {
                 enabled: config.feishuEnabled,
@@ -75,7 +75,7 @@ export async function startBot(configId: string) {
                 app_secret: config.feishuAppSecret || "",
                 encrypt_key: config.feishuEncryptKey || "",
                 verification_token: config.feishuVerificationToken || "",
-                allow_from: []
+                allow_from: (config as any).feishuAllowFrom ? (config as any).feishuAllowFrom.split(',').map((s: string) => s.trim()) : []
             }
         },
         tools: {

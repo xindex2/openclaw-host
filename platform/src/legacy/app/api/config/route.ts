@@ -38,7 +38,7 @@ export async function POST(req: Request) {
             user = await prisma.user.create({
                 data: {
                     id: 'demo-user',
-                    email: 'demo@zakibot.ai',
+                    email: 'demo@openclaw-host.ai',
                     password: 'demo_password_hash'
                 }
             });

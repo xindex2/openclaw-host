@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+from pathlib import Path
 from typing import Any
 
 from loguru import logger
@@ -22,8 +23,8 @@ class WhatsAppChannel(BaseChannel):
     
     name = "whatsapp"
     
-    def __init__(self, config: WhatsAppConfig, bus: MessageBus):
-        super().__init__(config, bus)
+    def __init__(self, config: WhatsAppConfig, bus: MessageBus, workspace: Any = None):
+        super().__init__(config, bus, workspace=workspace)
         self.config: WhatsAppConfig = config
         self._ws = None
         self._connected = False
@@ -130,11 +131,24 @@ class WhatsAppChannel(BaseChannel):
             
             if status == "connected":
                 self._connected = True
+                if self.workspace:
+                    qr_path = Path(self.workspace) / "whatsapp_qr.txt"
+                    if qr_path.exists():
+                        qr_path.unlink()
+                        logger.info("WhatsApp QR code file removed")
             elif status == "disconnected":
                 self._connected = False
         
         elif msg_type == "qr":
             # QR code for authentication
+            qr_string = data.get("qr")
+            if qr_string and self.workspace:
+                qr_path = Path(self.workspace) / "whatsapp_qr.txt"
+                try:
+                    qr_path.write_text(qr_string)
+                    logger.info(f"WhatsApp QR code written to {qr_path}")
+                except Exception as e:
+                    logger.error(f"Failed to write WhatsApp QR code: {e}")
             logger.info("Scan QR code in the bridge terminal to connect WhatsApp")
         
         elif msg_type == "error":

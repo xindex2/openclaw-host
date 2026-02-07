@@ -1,6 +1,6 @@
-# Deploying zakibot on Ubuntu 22.04
+# Deploying openclaw-host on Ubuntu 22.04
 
-This guide provides a step-by-step walkthrough for setting up **zakibot** (Nanobot + SaaS Platform) on a fresh Ubuntu 22.04 server.
+This guide provides a step-by-step walkthrough for setting up **openclaw-host** (Nanobot + SaaS Platform) on a fresh Ubuntu 22.04 server.
 
 ## 1. Prerequisites & System Update
 
@@ -23,8 +23,8 @@ sudo apt install -y nodejs
 ## 3. Clone the Repository
 
 ```bash
-git clone https://github.com/xindex2/zakibot.git
-cd zakibot
+git clone https://github.com/xindex2/openclaw-host.git
+cd openclaw-host
 ```
 
 ## 4. Setup Nanobot (Python Backend)
@@ -63,7 +63,7 @@ Create a `.env` file for the platform. This is required for Prisma to find the d
 
 ```bash
 # Make sure you are in the platform directory
-cd ~/zakibot/platform
+cd ~/openclaw-host/platform
 
 # Create the .env file
 echo 'DATABASE_URL="file:./dev.db"' > .env
@@ -80,7 +80,7 @@ For production, we recommend using **PM2** to keep your services running.
 sudo npm install -g pm2
 
 # Start the SaaS Platform
-pm2 start npm --name "zakibot-platform" -- run dev -- --port 3000
+pm2 start npm --name "openclaw-host-platform" -- run dev -- --port 3000
 
 # Verify status
 pm2 status
@@ -94,7 +94,7 @@ To access your platform via a domain on port 80/443:
 sudo apt install -y nginx
 ```
 
-Create a configuration: `/etc/nginx/sites-available/zakibot`
+Create a configuration: `/etc/nginx/sites-available/openclaw-host`
 ```nginx
 server {
     listen 80;
@@ -112,7 +112,7 @@ server {
 ```
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/zakibot /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/openclaw-host /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
@@ -124,20 +124,20 @@ sudo systemctl restart nginx
 3. Configure your **API Keys** (OpenRouter, OpenAI, etc.) in the dashboard.
 4. Launch your bot instance!
 
-## 10. Updating Zakibot
+## 10. Updating OpenClaw Host
 
 Whenever you push new changes to GitHub and want to update your VPS:
 
 1.  **Pull the latest code**:
     ```bash
-    cd ~/zakibot
+    cd ~/openclaw-host
     git pull origin main
     ```
 
 2.  **Update dependencies & Database**:
     ```bash
     # Update web dependencies
-    cd ~/zakibot/platform
+    cd ~/openclaw-host/platform
     npm install
     
     # Apply new database migrations
@@ -147,10 +147,10 @@ Whenever you push new changes to GitHub and want to update your VPS:
 3.  **Restart the services**:
     ```bash
     # Restart the Next.js platform
-    pm2 restart zakibot-platform
+    pm2 restart openclaw-host-platform
     
     # Optional: Check logs to ensure everything is fine
-    pm2 logs zakibot-platform
+    pm2 logs openclaw-host-platform
     ```
 
 ## External Access Troubleshooting

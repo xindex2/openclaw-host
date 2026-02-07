@@ -70,18 +70,22 @@ model BotConfig {
   // Channels
   telegramEnabled Boolean @default(false)
   telegramToken   String?
+  telegramAllowFrom String?
   
   discordEnabled  Boolean @default(false)
   discordToken    String?
+  discordAllowFrom String?
   
   whatsappEnabled Boolean @default(false)
   whatsappBridgeUrl String? @default("ws://localhost:3001")
+  whatsappAllowFrom String?
   
   feishuEnabled   Boolean @default(false)
   feishuAppId     String?
   feishuAppSecret String?
   feishuEncryptKey String?
   feishuVerificationToken String?
+  feishuAllowFrom   String?
   
   // Tools/Skills
   webSearchApiKey String?

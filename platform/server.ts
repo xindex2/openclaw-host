@@ -9,6 +9,7 @@ import authRoutes from './src/routes/auth.js';
 import adminRoutes from './src/routes/admin.js';
 import jwt from 'jsonwebtoken';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 // Fix for ESM/CJS interop (getting jwt.sign)
@@ -36,7 +37,7 @@ const authenticateToken = async (req: any, res: any, next: any) => {
     if (!token) return res.status(401).json({ error: 'Token missing' });
 
     try {
-        const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_zakibot';
+        const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_openclaw_host';
 
         // Handle both simple userId (legacy) and real JWT
         let userId;
@@ -110,7 +111,7 @@ app.post('/api/config', async (req, res) => {
             user = await prisma.user.create({
                 data: {
                     id: 'demo-user',
-                    email: 'demo@zakibot.ai',
+                    email: 'demo@openclaw.ai',
                     password: 'demo_password_hash'
                 }
             });
@@ -242,6 +243,29 @@ app.post('/api/bot/control', authenticateToken, async (req: any, res: any) => {
     }
 });
 
+app.get('/api/bot/qr/:configId', authenticateToken, async (req: any, res: any) => {
+    try {
+        const configId = req.params.configId;
+        const config = await prisma.botConfig.findUnique({ where: { id: configId } });
+        if (!config) return res.status(404).json({ error: 'Config not found' });
+        if (config.userId !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const workspacePath = path.join(process.cwd(), 'workspaces', config.userId, config.id);
+        const qrPath = path.join(workspacePath, 'whatsapp_qr.txt');
+
+        if (fs.existsSync(qrPath)) {
+            const qr = fs.readFileSync(qrPath, 'utf-8');
+            res.json({ qr });
+        } else {
+            res.json({ qr: null }); // explicitly return null if not found
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch QR' });
+    }
+});
+
 // --- Serve Frontend ---
 const distPath = path.join(__dirname, 'dist');
 app.use(express.static(distPath));
@@ -256,6 +280,6 @@ app.get('*', (req, res, next) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Zakibot Backend running on http://localhost:${PORT}`);
+    console.log(`🚀 OpenClaw Host Backend running on http://localhost:${PORT}`);
     console.log(`📂 Serving static files from: ${distPath}`);
 });

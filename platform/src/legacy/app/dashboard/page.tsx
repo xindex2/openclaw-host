@@ -147,7 +147,7 @@ export default function Dashboard() {
                         <Bot size={28} className="text-white" />
                     </div>
                     <div>
-                        <span className="text-2xl font-black tracking-tighter block uppercase italic leading-none">zakibot</span>
+                        <span className="text-2xl font-black tracking-tighter block uppercase italic leading-none">openclaw-host</span>
                         <span className="text-[10px] text-blue-500 font-bold tracking-[0.2em] uppercase opacity-80 mt-1 block">Autonomous Core</span>
                     </div>
                 </div>
@@ -311,7 +311,7 @@ export default function Dashboard() {
                                         <RefreshCcw size={14} className="text-blue-500 animate-spin-slow" />
                                         <p className="text-xs text-blue-500 font-black uppercase tracking-widest">Awaiting Bridge Login</p>
                                     </div>
-                                    <p className="text-xs text-gray-500 ml-6">Initialize QR scan via system terminal or Zakibot CLI.</p>
+                                    <p className="text-xs text-gray-500 ml-6">Initialize QR scan via system terminal or OpenClaw Host CLI.</p>
                                 </div>
                             </ChannelRow>
 

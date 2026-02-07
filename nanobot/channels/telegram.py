@@ -85,8 +85,8 @@ class TelegramChannel(BaseChannel):
     
     name = "telegram"
     
-    def __init__(self, config: TelegramConfig, bus: MessageBus, groq_api_key: str = ""):
-        super().__init__(config, bus)
+    def __init__(self, config: TelegramConfig, bus: MessageBus, workspace: Any = None, groq_api_key: str = ""):
+        super().__init__(config, bus, workspace=workspace)
         self.config: TelegramConfig = config
         self.groq_api_key = groq_api_key
         self._app: Application | None = None

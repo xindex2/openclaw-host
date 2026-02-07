@@ -68,7 +68,7 @@ export default function UserManagement() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-4xl font-black italic uppercase tracking-tighter mb-2">Personnel Files</h1>
-                    <p className="text-gray-500 font-medium uppercase tracking-[0.2em] text-[10px]">Zakibot Registered Commanders</p>
+                    <p className="text-gray-500 font-medium uppercase tracking-[0.2em] text-[10px]">OpenClaw Host Registered Commanders</p>
                 </div>
 
                 <div className="relative w-full md:w-96">

@@ -7,7 +7,7 @@ import Logo from '../components/Logo';
 
 export default function Contact() {
     useEffect(() => {
-        document.title = "Contact | Zakibot Support";
+        document.title = "Contact | OpenClaw Host Support";
     }, []);
 
     return (
@@ -18,7 +18,7 @@ export default function Contact() {
                 <div className="max-w-7xl mx-auto px-8 h-24 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-4 hover:scale-105 transition-transform active:scale-95">
                         <Logo size={40} />
-                        <span className="text-xl font-black italic uppercase tracking-tighter">Zakibot</span>
+                        <span className="text-xl font-black italic uppercase tracking-tighter">OpenClaw Host</span>
                     </Link>
                     <Link to="/login" className="px-8 py-3 bg-white/5 border border-white/10 rounded-xl font-bold text-xs tracking-widest uppercase hover:bg-white hover:text-black transition-all">
                         Login

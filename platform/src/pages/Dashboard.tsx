@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
     Bot, Cpu, Share2, Terminal, Server, CreditCard, User, LogOut, Search, Globe, HardDrive, Clock,
     Trash2, Play, Square, Settings, LayoutDashboard, ChevronRight, CheckCircle, Plus, Rocket,
-    Cloud, FileText, Lock, Sparkles, ChevronLeft, Edit3, Activity, Check
+    Cloud, FileText, Lock, Sparkles, ChevronLeft, Edit3, Activity, Check, Info, Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
@@ -45,15 +45,19 @@ interface AgentConfig {
     model: string;
     telegramEnabled: boolean;
     telegramToken: string;
+    telegramAllowFrom: string;
     discordEnabled: boolean;
     discordToken: string;
+    discordAllowFrom: string;
     whatsappEnabled: boolean;
     whatsappBridgeUrl: string;
+    whatsappAllowFrom: string;
     feishuEnabled: boolean;
     feishuAppId: string;
     feishuAppSecret: string;
     feishuEncryptKey: string;
     feishuVerificationToken: string;
+    feishuAllowFrom: string;
     webSearchApiKey: string;
     githubEnabled: boolean;
     githubToken: string;
@@ -354,38 +358,83 @@ export default function Dashboard() {
                                             enabled={editingAgent.telegramEnabled}
                                             onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, telegramEnabled: v })}
                                         >
-                                            <input
-                                                type="password"
-                                                placeholder="Bot Token"
-                                                value={editingAgent.telegramToken}
-                                                onChange={e => setEditingAgent({ ...editingAgent, telegramToken: e.target.value })}
-                                                className="form-input font-mono text-sm"
-                                            />
+                                            <div className="space-y-4">
+                                                <SetupInstructions content={[
+                                                    "Talk to @BotFather to create your bot.",
+                                                    "Paste your API Token below.",
+                                                    "(Optional) Enter your Chat ID to restrict access."
+                                                ]} />
+                                                <input
+                                                    type="password"
+                                                    placeholder="Bot Token"
+                                                    value={editingAgent.telegramToken}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, telegramToken: e.target.value })}
+                                                    className="form-input font-mono text-sm"
+                                                />
+                                                <input
+                                                    placeholder="Allow From (ID, comma separated)"
+                                                    value={editingAgent.telegramAllowFrom || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, telegramAllowFrom: e.target.value })}
+                                                    className="form-input text-xs"
+                                                />
+                                            </div>
                                         </ChannelInput>
                                         <ChannelInput
                                             name="Discord" icon={ICONS.discord}
                                             enabled={editingAgent.discordEnabled}
                                             onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, discordEnabled: v })}
                                         >
-                                            <input
-                                                type="password"
-                                                placeholder="Discord Bot Token"
-                                                value={editingAgent.discordToken || ''}
-                                                onChange={e => setEditingAgent({ ...editingAgent, discordToken: e.target.value })}
-                                                className="form-input font-mono text-sm"
-                                            />
+                                            <div className="space-y-4">
+                                                <SetupInstructions content={[
+                                                    "Go to Discord Developer Portal & create an App.",
+                                                    "Enable 'Message Content Intent' in the Bot tab.",
+                                                    "Copy Bot Token & paste below.",
+                                                    "(Optional) Enter Channel IDs to restrict access."
+                                                ]} />
+                                                <input
+                                                    type="password"
+                                                    placeholder="Discord Bot Token"
+                                                    value={editingAgent.discordToken || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, discordToken: e.target.value })}
+                                                    className="form-input font-mono text-sm"
+                                                />
+                                                <input
+                                                    placeholder="Allow From (Channel ID, comma separated)"
+                                                    value={editingAgent.discordAllowFrom || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, discordAllowFrom: e.target.value })}
+                                                    className="form-input text-xs"
+                                                />
+                                            </div>
                                         </ChannelInput>
                                         <ChannelInput
                                             name="WhatsApp" icon={ICONS.whatsapp}
                                             enabled={editingAgent.whatsappEnabled}
                                             onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, whatsappEnabled: v })}
                                         >
-                                            <input
-                                                placeholder="Bridge URL (ws://...)"
-                                                value={editingAgent.whatsappBridgeUrl || ''}
-                                                onChange={e => setEditingAgent({ ...editingAgent, whatsappBridgeUrl: e.target.value })}
-                                                className="form-input text-xs"
-                                            />
+                                            <div className="space-y-4">
+                                                <SetupInstructions content={[
+                                                    "Ensure Bridge Provider is running.",
+                                                    "Start the Agent & scan the QR code below.",
+                                                    "(Optional) Enter Phone Numbers to restrict access."
+                                                ]} />
+                                                <input
+                                                    placeholder="Bridge URL (ws://...)"
+                                                    value={editingAgent.whatsappBridgeUrl || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, whatsappBridgeUrl: e.target.value })}
+                                                    className="form-input text-xs font-mono"
+                                                />
+                                                <input
+                                                    placeholder="Allow From (Phone, comma separated)"
+                                                    value={editingAgent.whatsappAllowFrom || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, whatsappAllowFrom: e.target.value })}
+                                                    className="form-input text-xs"
+                                                />
+                                                {editingAgent.id !== 'new' && editingAgent.status === 'running' && (
+                                                    <div className="pt-2">
+                                                        <WhatsAppQR configId={editingAgent.id} />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </ChannelInput>
                                         <ChannelInput
                                             name="Feishu / Lark" icon={ICONS.feishu}
@@ -741,6 +790,71 @@ function Toggle({ checked, onChange }: any) {
             />
             <div className="w-10 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:shadow-sm after:transition-all peer-checked:bg-red-600 shadow-inner"></div>
         </label>
+    );
+}
+
+function SetupInstructions({ content }: { content: string[] }) {
+    return (
+        <div className="bg-zinc-800/30 p-4 rounded-xl border border-zinc-800 space-y-2.5">
+            <h4 className="text-[10px] font-black text-red-500 uppercase tracking-widest flex items-center gap-2 italic">
+                <Info size={12} />
+                Setup Protocol
+            </h4>
+            <ul className="space-y-1.5 list-none m-0 p-0 text-left">
+                {content.map((step, i) => (
+                    <li key={i} className="text-[10px] text-zinc-500 font-medium flex gap-2 leading-relaxed text-left">
+                        <span className="text-zinc-700 font-bold">{i + 1}.</span>
+                        {step}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
+function WhatsAppQR({ configId }: { configId: string }) {
+    const [qr, setQr] = useState<string | null>(null);
+
+    useEffect(() => {
+        let interval: any;
+        const fetchQr = async () => {
+            try {
+                const res = await fetch(`/api/bot/qr/${configId}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || 'demo-token'}` }
+                });
+                const data = await res.json();
+                if (data.qr) setQr(data.qr);
+                else setQr(null);
+            } catch (e) { }
+        };
+
+        fetchQr();
+        interval = setInterval(fetchQr, 5000);
+        return () => clearInterval(interval);
+    }, [configId]);
+
+    if (!qr) return (
+        <div className="bg-zinc-950 border border-zinc-900 rounded-2xl p-10 flex flex-col items-center justify-center gap-5 aspect-square">
+            <Loader2 className="animate-spin text-red-600/50" size={32} />
+            <div className="text-center">
+                <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest italic">Acquiring Token</p>
+                <p className="text-[8px] text-zinc-800 font-bold uppercase tracking-[0.2em] mt-1">Standby for bridge link...</p>
+            </div>
+        </div>
+    );
+
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
+
+    return (
+        <div className="bg-white p-5 rounded-2xl flex flex-col items-center gap-5 shadow-2xl shadow-red-600/5">
+            <div className="p-2 bg-white rounded-lg">
+                <img src={qrUrl} alt="WhatsApp QR" className="w-[180px] h-[180px]" />
+            </div>
+            <div className="text-center">
+                <p className="text-[10px] text-black font-black uppercase tracking-tight italic text-center">Scan Link Protocol</p>
+                <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-[0.2em] mt-1 text-center">Open WhatsApp &gt; Linked Devices</p>
+            </div>
+        </div>
     );
 }
 

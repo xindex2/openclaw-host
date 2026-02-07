@@ -19,16 +19,18 @@ class BaseChannel(ABC):
     
     name: str = "base"
     
-    def __init__(self, config: Any, bus: MessageBus):
+    def __init__(self, config: Any, bus: MessageBus, workspace: Any = None):
         """
         Initialize the channel.
         
         Args:
             config: Channel-specific configuration.
             bus: The message bus for communication.
+            workspace: The workspace directory path.
         """
         self.config = config
         self.bus = bus
+        self.workspace = workspace
         self._running = False
     
     @abstractmethod

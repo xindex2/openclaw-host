@@ -6,7 +6,7 @@ import { PrismaClient } from '@prisma/client';
 
 const router = express.Router();
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_zakibot';
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_openclaw-host';
 
 // Fix for ESM/CJS interop
 const jwtSign = (jwt as any).default?.sign || (jwt as any).sign || jwt.sign;

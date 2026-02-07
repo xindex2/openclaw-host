@@ -39,6 +39,7 @@ class ChannelManager:
                 self.channels["telegram"] = TelegramChannel(
                     self.config.channels.telegram,
                     self.bus,
+                    workspace=self.config.workspace_path,
                     groq_api_key=self.config.providers.groq.api_key,
                 )
                 logger.info("Telegram channel enabled")
@@ -50,7 +51,7 @@ class ChannelManager:
             try:
                 from nanobot.channels.whatsapp import WhatsAppChannel
                 self.channels["whatsapp"] = WhatsAppChannel(
-                    self.config.channels.whatsapp, self.bus
+                    self.config.channels.whatsapp, self.bus, workspace=self.config.workspace_path
                 )
                 logger.info("WhatsApp channel enabled")
             except ImportError as e:
@@ -61,7 +62,7 @@ class ChannelManager:
             try:
                 from nanobot.channels.discord import DiscordChannel
                 self.channels["discord"] = DiscordChannel(
-                    self.config.channels.discord, self.bus
+                    self.config.channels.discord, self.bus, workspace=self.config.workspace_path
                 )
                 logger.info("Discord channel enabled")
             except ImportError as e:
@@ -72,7 +73,7 @@ class ChannelManager:
             try:
                 from nanobot.channels.feishu import FeishuChannel
                 self.channels["feishu"] = FeishuChannel(
-                    self.config.channels.feishu, self.bus
+                    self.config.channels.feishu, self.bus, workspace=self.config.workspace_path
                 )
                 logger.info("Feishu channel enabled")
             except ImportError as e:

@@ -37,7 +37,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 </Link>
 
                 <div className="flex items-center gap-6">
-                    <a href="mailto:support@zakibot.com" className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 hover:text-red-500 transition-colors">
+                    <a href="mailto:support@openclaw-host.com" className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 hover:text-red-500 transition-colors">
                         <MessageSquare size={14} /> Mission Support
                     </a>
                 </div>
