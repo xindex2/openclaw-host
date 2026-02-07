@@ -83,7 +83,7 @@ export async function startBot(configId: string) {
         tools: {
             web: {
                 search: {
-                    api_key: config.webSearchApiKey || ""
+                    api_key: config.webSearchApiKey || process.env.BRAVE_API_KEY || ""
                 }
             },
             browser: {
