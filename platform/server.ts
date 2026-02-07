@@ -70,12 +70,13 @@ const isAdmin = (req: any, res: any, next: any) => {
 
 app.post('/api/register', async (req, res) => {
     try {
-        const { email, password, full_name } = req.body;
+        const { email, password, full_name, acquisition_source } = req.body;
         const user = await prisma.user.create({
             data: {
                 email,
                 password, // Hash password in production
-                full_name: full_name || 'Commander'
+                full_name: full_name || 'Commander',
+                acquisition_source: acquisition_source || 'Direct'
             }
         });
         res.json(user);

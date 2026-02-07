@@ -33,7 +33,8 @@ export default function Register() {
                 body: JSON.stringify({
                     full_name: formData.full_name,
                     email: formData.email,
-                    password: formData.password
+                    password: formData.password,
+                    acquisition_source: new URLSearchParams(window.location.search).get('utm_source') || new URLSearchParams(window.location.search).get('ref') || 'Direct'
                 })
             });
 

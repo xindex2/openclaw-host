@@ -4,113 +4,78 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
     --radius: 0.75rem;
 
-    /* Crimson & Obsidian Dark Theme */
-    --bg-main: #09090b;
-    --bg-sidebar: #000000;
-    --border-clean: #27272a;
-    --crimson-primary: #dc2626;
-    --text-muted: #a1a1aa;
-    --bg-deep: #050505;
-    --color-border: rgba(255, 255, 255, 0.05);
-    --coral-bright: #ff6b6b;
-    --spacing-xs: 0.5rem;
-    --spacing-sm: 1rem;
-    --spacing-md: 1.5rem;
-    --spacing-lg: 2rem;
-    --spacing-xl: 3rem;
-    --spacing-2xl: 6rem;
-    --radius-md: 0.75rem;
-    --radius-xl: 1.5rem;
-    --radius-full: 9999px;
-    --color-text-secondary: #a1a1aa;
-    --color-text-muted: #71717a;
-    --color-success: #22c55e;
-    --font-weight-bold: 700;
+    /* Custom Modern Palette */
+    --vibrant-primary: #8b5cf6;
+    /* Violet */
+    --vibrant-secondary: #ec4899;
+    /* Pink */
+    --vibrant-accent: #06b6d4;
+    /* Cyan */
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
 }
 
 body {
-  color: #ffffff;
-  background: var(--bg-main);
+  @apply bg-background text-foreground;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+  background-attachment: fixed;
 }
 
 @layer components {
-  .form-input {
-    @apply w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/10 transition-all duration-200 placeholder:text-zinc-500 text-sm font-medium text-white;
+  .glass-panel {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-xl;
   }
 
-  .form-select {
-    @apply w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/10 transition-all duration-200 appearance-none text-sm font-medium text-white;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ef4444'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    background-size: 1rem;
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-all duration-300;
   }
 
-  .card-minimal {
-    @apply bg-zinc-900/50 border border-zinc-800 rounded-2xl shadow-sm hover:border-red-600/30 transition-all duration-300;
+  .btn-primary-modern {
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-2.5 rounded-lg transition-all duration-200 shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5;
   }
 
-  .btn-minimal {
-    @apply bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs tracking-wider transition-all transform active:scale-95 shadow-lg shadow-red-600/10;
+  .btn-secondary-modern {
+    @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium px-6 py-2.5 rounded-lg transition-all duration-200 border border-white/5;
   }
 
-  .container {
-    @apply max-w-7xl mx-auto px-8;
-  }
-
-  .flex-between {
-    @apply flex items-center justify-between;
-  }
-
-  .flex-center {
-    @apply flex items-center justify-center;
-  }
-
-  .btn {
-    @apply inline-flex items-center justify-center font-black transition-all duration-300 rounded-2xl cursor-pointer;
-  }
-
-  .btn-primary {
-    @apply bg-[#ff6b6b] text-white hover:scale-105 active:scale-95 shadow-2xl shadow-[#ff6b6b]/20;
-  }
-
-  .btn-ghost {
-    @apply text-zinc-400 hover:text-white transition-colors;
-  }
-
-  .card-glass {
-    @apply bg-white/[0.02] border border-white/5 backdrop-blur-sm transition-all duration-700;
+  .input-modern {
+    @apply bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all text-sm placeholder:text-muted-foreground;
   }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -118,41 +83,5 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-zinc-800 rounded-full hover:bg-red-900/40 transition-colors;
-}
-
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-@keyframes star-pulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.5;
-  }
-
-  50% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: .5;
-  }
+  @apply bg-muted rounded-full hover:bg-muted-foreground/50 transition-colors;
 }

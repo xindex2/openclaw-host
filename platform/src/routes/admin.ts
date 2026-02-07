@@ -136,21 +136,101 @@ router.post('/config', async (req, res) => {
 
 /**
  * GET /api/admin/users
- * List all users with subscription info
+ * List all users with subscription info, pagination, and search
  */
 router.get('/users', async (req, res) => {
     try {
-        const users = await prisma.user.findMany({
-            include: {
-                subscription: true,
-                _count: {
-                    select: { configs: true }
-                }
-            },
-            orderBy: { createdAt: 'desc' }
-        });
-        res.json({ users });
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const search = req.query.search as string || '';
+        const skip = (page - 1) * limit;
+
+        const where: any = {};
+        if (search) {
+            where.OR = [
+                { email: { contains: search } }, // email is unique, often case-insensitive depending on DB
+                { full_name: { contains: search } },
+                { id: { contains: search } }
+            ];
+        }
+
+        const [users, total] = await Promise.all([
+            prisma.user.findMany({
+                where,
+                include: {
+                    subscription: true,
+                    _count: {
+                        select: { configs: true }
+                    }
+                },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit
+            }),
+            prisma.user.count({ where })
+        ]);
+
+        res.json({ users, total, page, totalPages: Math.ceil(total / limit) });
     } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * PUT /api/admin/users/:id
+ * Update user details (Plan, Role)
+ */
+router.put('/users/:id', async (req, res) => {
+    const { id } = req.params;
+    const { role, plan, maxInstances } = req.body;
+
+    try {
+        // Update User Role
+        const user = await prisma.user.update({
+            where: { id },
+            data: { role }
+        });
+
+        // Update or Create Subscription
+        if (plan) {
+            await prisma.subscription.upsert({
+                where: { userId: id },
+                update: {
+                    plan,
+                    maxInstances: Number(maxInstances || 1),
+                    status: 'active'
+                },
+                create: {
+                    userId: id,
+                    plan,
+                    maxInstances: Number(maxInstances || 1),
+                    status: 'active'
+                }
+            });
+        }
+
+        res.json({ success: true, user });
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * DELETE /api/admin/users/:id
+ * Delete a user and their associated data
+ */
+router.delete('/users/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Transaction to ensure clean cleanup
+        await prisma.$transaction([
+            prisma.botConfig.deleteMany({ where: { userId: id } }),
+            prisma.subscription.deleteMany({ where: { userId: id } }),
+            prisma.user.delete({ where: { id } })
+        ]);
+        res.json({ success: true });
+    } catch (e: any) {
+        console.error("Delete error:", e);
         res.status(500).json({ error: e.message });
     }
 });

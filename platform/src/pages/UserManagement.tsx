@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Search, Trash2, Shield, Gem, CheckCircle, XCircle, ChevronLeft, ChevronRight, User as UserIcon } from 'lucide-react';
+import { Search, Trash2, Shield, Gem, CheckCircle, XCircle, ChevronLeft, ChevronRight, User as UserIcon, Edit2, Loader2, Save, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface UserData {
     id: string;
@@ -24,19 +25,37 @@ export default function UserManagement() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalUsers, setTotalUsers] = useState(0);
+
+    // Edit State
+    const [editingUser, setEditingUser] = useState<UserData | null>(null);
+    const [editForm, setEditForm] = useState({ role: '', plan: '', maxInstances: 1 });
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        loadUsers();
-    }, [token]);
+        const timeoutId = setTimeout(() => {
+            loadUsers();
+        }, 300); // Simple debounce
+        return () => clearTimeout(timeoutId);
+    }, [token, page, search]);
 
     const loadUsers = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/api/admin/users', {
+            const params = new URLSearchParams({
+                page: page.toString(),
+                limit: '10',
+                search: search
+            });
+
+            const response = await fetch(`/api/admin/users?${params}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
             setUsers(data.users);
+            setTotalPages(data.totalPages);
+            setTotalUsers(data.total);
         } catch (error) {
             console.error('Failed to load users:', error);
         } finally {
@@ -45,115 +64,264 @@ export default function UserManagement() {
     };
 
     const handleDeleteUser = async (id: string) => {
-        if (!confirm('Are you sure? This will mission-kill the user and all their assets.')) return;
-        // Mocking delete for now
-        alert('Deletion command sent to core.');
+        if (!confirm('WARNING: You are about to permanently delete this user and all their agents. Proceed?')) return;
+        try {
+            await fetch(`/api/admin/users/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadUsers();
+        } catch (e) {
+            alert('Failed to delete user');
+        }
     };
 
-    const filteredUsers = users.filter(u =>
-        u.email.toLowerCase().includes(search.toLowerCase()) ||
-        u.full_name.toLowerCase().includes(search.toLowerCase())
-    );
+    const handleEditUser = (user: UserData) => {
+        setEditingUser(user);
+        setEditForm({
+            role: user.role,
+            plan: user.subscription?.plan || 'Free',
+            maxInstances: user.subscription?.maxInstances || 1
+        });
+    };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="w-12 h-12 border-4 border-[#ff4d4d] border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    const saveUser = async () => {
+        if (!editingUser) return;
+        setIsSaving(true);
+        try {
+            await fetch(`/api/admin/users/${editingUser.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(editForm)
+            });
+            setEditingUser(null);
+            loadUsers();
+        } catch (e) {
+            alert('Failed to save user');
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     return (
-        <div className="space-y-12 animate-in fade-in duration-700">
+        <div className="space-y-8 animate-in fade-in duration-700 container mx-auto py-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black italic uppercase tracking-tighter mb-2">Personnel Files</h1>
-                    <p className="text-gray-500 font-medium uppercase tracking-[0.2em] text-[10px]">OpenClaw Host Registered Commanders</p>
+                    <h1 className="text-4xl font-black italic uppercase tracking-tighter mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                        Fleet Commanders
+                    </h1>
+                    <p className="text-primary font-bold uppercase tracking-[0.2em] text-[10px]">
+                        Global User Registry & Management
+                    </p>
                 </div>
 
-                <div className="relative w-full md:w-96">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                <div className="relative w-full md:w-96 group">
+                    <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/40" size={18} />
                     <input
                         type="text"
-                        placeholder="SEARCH COMMANDERS..."
+                        placeholder="Search by Email, Name, or ID..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-white/5 border border-white/5 rounded-2xl pl-16 pr-6 py-4 outline-none focus:border-[#ff4d4d]/50 transition-all font-bold text-xs tracking-widest uppercase"
+                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                        className="input-modern w-full pl-14 relative z-10"
                     />
                 </div>
             </div>
 
-            <div className="bg-white/2 border border-white/5 rounded-[3.5rem] overflow-hidden">
+            <div className="glass-panel rounded-3xl overflow-hidden relative">
+                {loading && (
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-20 flex items-center justify-center">
+                        <Loader2 className="animate-spin text-primary" size={32} />
+                    </div>
+                )}
+
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
-                            <tr className="text-left border-b border-white/5">
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">Commander</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">Clearance</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">Assigned Fleet</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">Assets</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">Joined</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">Actions</th>
+                            <tr className="text-left border-b border-white/5 bg-white/[0.02]">
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Commander</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Role</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Plan Status</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Origin</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Registered</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/40 text-right">Control</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
-                            {filteredUsers.map((u) => (
-                                <tr key={u.id} className="group hover:bg-white/[0.01] transition-colors">
-                                    <td className="px-10 py-8">
+                            {users.map((u) => (
+                                <tr key={u.id} className="group hover:bg-white/[0.02] transition-colors">
+                                    <td className="px-8 py-6">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center font-black italic text-[#ff4d4d]">
+                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center font-bold text-white shadow-inner">
                                                 {u.full_name.charAt(0)}
                                             </div>
                                             <div>
-                                                <div className="font-black italic uppercase tracking-tighter group-hover:text-white transition-colors">{u.full_name}</div>
-                                                <div className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{u.email}</div>
+                                                <div className="font-bold text-sm text-white/90 group-hover:text-primary transition-colors">{u.full_name}</div>
+                                                <div className="text-[11px] text-white/40">{u.email}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-10 py-8">
-                                        <div className={`inline-flex px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border ${u.role === 'admin' ? 'bg-[#ff4d4d]/10 border-[#ff4d4d]/20 text-[#ff4d4d]' : 'bg-white/5 border-white/5 text-gray-400'
+                                    <td className="px-8 py-6">
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${u.role === 'admin'
+                                                ? 'bg-primary/10 border-primary/20 text-primary'
+                                                : 'bg-white/5 border-white/10 text-white/60'
                                             }`}>
+                                            {u.role === 'admin' && <Shield size={10} className="mr-1.5" />}
                                             {u.role}
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2">
+                                                <Gem size={12} className={u.subscription?.plan !== 'Free' ? "text-vibrant-secondary" : "text-white/30"} />
+                                                <span className="text-xs font-bold">{u.subscription?.plan || 'Free'}</span>
+                                            </div>
+                                            <span className="text-[10px] text-white/30 tracking-wide">
+                                                {u._count.configs} / {u.subscription?.maxInstances || 1} Agents
+                                            </span>
                                         </div>
                                     </td>
-                                    <td className="px-10 py-8">
-                                        <div className="flex items-center gap-3">
-                                            <Gem size={14} className="text-blue-400" />
-                                            <span className="text-xs font-black italic uppercase tracking-tight">{u.subscription?.plan || 'Free'}</span>
-                                        </div>
+                                    <td className="px-8 py-6">
+                                        <span className="text-[11px] font-medium text-white/50 bg-white/5 px-2 py-1 rounded-lg">
+                                            {u.acquisition_source || 'Direct'}
+                                        </span>
                                     </td>
-                                    <td className="px-10 py-8 font-black italic">{u._count.configs}</td>
-                                    <td className="px-10 py-8 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+                                    <td className="px-8 py-6 text-[11px] font-mono text-white/40">
                                         {new Date(u.createdAt).toLocaleDateString()}
                                     </td>
-                                    <td className="px-10 py-8">
-                                        <button
-                                            onClick={() => handleDeleteUser(u.id)}
-                                            className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                onClick={() => handleEditUser(u)}
+                                                className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteUser(u.id)}
+                                                className="p-2 hover:bg-red-500/20 rounded-lg text-white/60 hover:text-red-500 transition-colors"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-            </div>
 
-            <div className="flex items-center justify-between px-10">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-600">
-                    Showing {filteredUsers.length} of {users.length} profiles
-                </p>
-                <div className="flex items-center gap-4">
-                    <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-[#ff4d4d]/20 transition-all">
-                        <ChevronLeft size={20} />
-                    </button>
-                    <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-[#ff4d4d]/20 transition-all">
-                        <ChevronRight size={20} />
-                    </button>
+                <div className="flex items-center justify-between px-8 py-6 border-t border-white/5 bg-white/[0.01]">
+                    <div className="text-[11px] font-medium text-white/40 uppercase tracking-widest">
+                        Total {totalUsers} Commanders
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 transition-colors"
+                        >
+                            <ChevronLeft size={16} />
+                        </button>
+                        <span className="text-xs font-mono px-2 text-white/50">
+                            {page} / {totalPages || 1}
+                        </span>
+                        <button
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                            disabled={page >= totalPages}
+                            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 transition-colors"
+                        >
+                            <ChevronRight size={16} />
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            {/* Edit Modal */}
+            <AnimatePresence>
+                {editingUser && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 content-center"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.95 }}
+                            className="glass-panel w-full max-w-lg rounded-3xl p-8 relative"
+                        >
+                            <button
+                                onClick={() => setEditingUser(null)}
+                                className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+
+                            <h2 className="text-2xl font-black italic uppercase tracking-tight mb-8">
+                                Updating Commander
+                                <span className="block text-sm font-normal text-white/40 not-italic normal-case mt-1">{editingUser.email}</span>
+                            </h2>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 block mb-2">System Role</label>
+                                    <select
+                                        className="input-modern w-full appearance-none"
+                                        value={editForm.role}
+                                        onChange={e => setEditForm({ ...editForm, role: e.target.value })}
+                                    >
+                                        <option value="user">User</option>
+                                        <option value="admin">Administrator</option>
+                                    </select>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 block mb-2">Subscription Plan</label>
+                                        <input
+                                            className="input-modern w-full"
+                                            value={editForm.plan}
+                                            onChange={e => setEditForm({ ...editForm, plan: e.target.value })}
+                                            placeholder="e.g. Pro, Enterprise"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 block mb-2">Bot Allowance</label>
+                                        <input
+                                            type="number"
+                                            className="input-modern w-full"
+                                            value={editForm.maxInstances}
+                                            onChange={e => setEditForm({ ...editForm, maxInstances: parseInt(e.target.value) })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="pt-6 flex gap-4">
+                                    <button
+                                        onClick={() => setEditingUser(null)}
+                                        className="btn-secondary-modern w-full"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={saveUser}
+                                        disabled={isSaving}
+                                        className="btn-primary-modern w-full flex items-center justify-center gap-2"
+                                    >
+                                        {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
