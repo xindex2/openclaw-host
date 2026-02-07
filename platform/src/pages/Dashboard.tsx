@@ -453,7 +453,7 @@ export default function Dashboard() {
                                             name="Telegram"
                                             icon={<MessageSquare size={18} />}
                                             checked={selectedAgent.telegramEnabled}
-                                            onToggle={v => setSelectedAgent({ ...selectedAgent, telegramEnabled: v })}
+                                            onToggle={(v: boolean) => setSelectedAgent({ ...selectedAgent, telegramEnabled: v })}
                                         >
                                             <div className="space-y-4 pt-4">
                                                 <input
@@ -475,7 +475,7 @@ export default function Dashboard() {
                                             name="Discord"
                                             icon={<Layout size={18} />}
                                             checked={selectedAgent.discordEnabled}
-                                            onToggle={v => setSelectedAgent({ ...selectedAgent, discordEnabled: v })}
+                                            onToggle={(v: boolean) => setSelectedAgent({ ...selectedAgent, discordEnabled: v })}
                                         >
                                             <div className="space-y-4 pt-4">
                                                 <input
@@ -491,7 +491,7 @@ export default function Dashboard() {
                                             name="WhatsApp"
                                             icon={<Smartphone size={18} />}
                                             checked={selectedAgent.whatsappEnabled}
-                                            onToggle={v => setSelectedAgent({ ...selectedAgent, whatsappEnabled: v })}
+                                            onToggle={(v: boolean) => setSelectedAgent({ ...selectedAgent, whatsappEnabled: v })}
                                         >
                                             <div className="space-y-4 pt-4">
                                                 <div className="flex items-center gap-4 p-4 bg-[#f9fafb] rounded-lg border border-[#eaecf0]">

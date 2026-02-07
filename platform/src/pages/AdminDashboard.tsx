@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { Users, Bot, Activity, Server, Shield, Cpu, Zap, HardDrive, TrendingUp, Settings, BarChart3, Clock, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
+}
 
 function AdminNavLink({ to, icon, label, count }: any) {
     return (

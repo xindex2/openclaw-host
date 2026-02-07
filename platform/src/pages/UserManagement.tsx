@@ -241,12 +241,17 @@ export default function UserManagement() {
 
                                 <div>
                                     <label className="label-text">Subscription Plan</label>
-                                    <input
+                                    <select
                                         className="input-field"
                                         value={editForm.plan}
                                         onChange={e => setEditForm({ ...editForm, plan: e.target.value })}
-                                        placeholder="Free, Pro, etc."
-                                    />
+                                    >
+                                        <option value="Free">Free</option>
+                                        <option value="Starter">Starter</option>
+                                        <option value="Pro">Pro</option>
+                                        <option value="Elite">Elite</option>
+                                        <option value="Enterprise">Enterprise</option>
+                                    </select>
                                 </div>
 
                                 <div>

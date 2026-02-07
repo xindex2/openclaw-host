@@ -5,20 +5,20 @@ import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
-// Process cache keyed by BOT CONFIG ID (allowing multiple bots per user)
-const processes: Record<string, ChildProcess> = {};
+// Process cache keyed by BOT CONFIG ID
+const processes: Record<string, { bot: ChildProcess, bridge?: ChildProcess }> = {};
 
 export async function startBot(configId: string) {
     try {
+        // Cleanup existing processes with this config ID in command line
         const killCmd = `pkill -f "nanobot.*${configId}.json" > /dev/null 2>&1 || true`;
         execSync(killCmd, { stdio: 'ignore' });
-    } catch (e) {
-        // Silently handle pkill non-zero exits (usually means no process found)
-    }
+    } catch (e) { }
 
     if (processes[configId]) {
         try {
-            processes[configId].kill('SIGKILL');
+            processes[configId].bot.kill('SIGKILL');
+            processes[configId].bridge?.kill('SIGKILL');
             delete processes[configId];
         } catch (e) { }
     }
@@ -37,7 +37,12 @@ export async function startBot(configId: string) {
     const workspacePath = path.join(process.cwd(), 'workspaces', config.userId, config.id);
     if (!fs.existsSync(workspacePath)) fs.mkdirSync(workspacePath, { recursive: true });
 
-    // Build Nanobot configuration object matching nanobot/config/schema.py
+    // Assign bridge port based on gateway port
+    const gatewayPort = config.gatewayPort || 18790;
+    const bridgePort = gatewayPort + 1;
+    const bridgeUrl = `ws://localhost:${bridgePort}`;
+
+    // Build Nanobot configuration object
     const nanobotConfig: any = {
         providers: {
             [config.provider]: {
@@ -68,7 +73,7 @@ export async function startBot(configId: string) {
             },
             whatsapp: {
                 enabled: config.whatsappEnabled,
-                bridge_url: config.whatsappBridgeUrl || "ws://localhost:3001",
+                bridge_url: bridgeUrl,
                 allow_from: (config as any).whatsappAllowFrom ? (config as any).whatsappAllowFrom.split(',').map((s: string) => s.trim()) : []
             },
             feishu: {
@@ -96,41 +101,60 @@ export async function startBot(configId: string) {
         },
         gateway: {
             host: config.gatewayHost || "0.0.0.0",
-            port: config.gatewayPort || 18790
+            port: gatewayPort
         }
     };
 
     fs.writeFileSync(configPath, JSON.stringify(nanobotConfig, null, 2));
 
-    // Spawn nanobot
     const nanobotRoot = path.join(process.cwd(), '..');
+    const env = { ...process.env };
 
     // Detect python binary (prefer venv if exists)
     let pythonPath = 'python3';
-    let env = { ...process.env };
-
     const venvBin = path.join(nanobotRoot, 'venv', 'bin');
     const venvPython = path.join(venvBin, 'python3');
 
     if (fs.existsSync(venvPython)) {
         pythonPath = venvPython;
         env.PATH = `${venvBin}:${process.env.PATH}`;
-        console.log(`[Bot ${config.name}] Using venv python: ${pythonPath}`);
-    } else {
-        console.log(`[Bot ${config.name}] Using system python: ${pythonPath}`);
     }
 
+    // Initialize process record
+    processes[configId] = { bot: null as any };
+
+    // Start WhatsApp Bridge if enabled
+    if (config.whatsappEnabled) {
+        const bridgeDir = path.join(nanobotRoot, 'bridge');
+        const authDir = path.join(workspacePath, 'whatsapp-auth');
+        if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true });
+
+        // Start bridge
+        const bridge = spawn('node', ['dist/index.js'], {
+            cwd: bridgeDir,
+            env: {
+                ...process.env,
+                BRIDGE_PORT: bridgePort.toString(),
+                AUTH_DIR: authDir
+            }
+        });
+
+        bridge.stdout?.on('data', (data) => console.log(`[Bridge ${config.name}]: ${data}`));
+        bridge.stderr?.on('data', (data) => console.error(`[Bridge error ${config.name}]: ${data}`));
+
+        processes[configId].bridge = bridge;
+    }
+
+    // Spawn nanobot
     const child = spawn(pythonPath, ['-m', 'nanobot', 'gateway'], {
         cwd: nanobotRoot,
         env: {
             ...env,
             NANOBOT_CONFIG: configPath,
             NANOBOT_WORKSPACE: workspacePath,
-            // Tool/Skill Secrets
             GITHUB_TOKEN: config.githubToken || env.GITHUB_TOKEN,
             FIRECRAWL_API_KEY: config.firecrawlApiKey || env.FIRECRAWL_API_KEY,
             APIFY_API_TOKEN: config.apifyApiToken || env.APIFY_API_TOKEN,
-            // Feature Flags (optional, dependent on skill implementation)
             ENABLE_WEATHER: config.weatherEnabled ? "true" : "false",
             ENABLE_SUMMARIZE: config.summarizeEnabled ? "true" : "false",
             ENABLE_TMUX: config.tmuxEnabled ? "true" : "false"
@@ -142,6 +166,7 @@ export async function startBot(configId: string) {
 
     child.on('close', (code) => {
         console.log(`[Bot ${config.name}] stopped with code ${code}`);
+        processes[configId]?.bridge?.kill('SIGTERM');
         delete processes[configId];
         prisma.botConfig.update({
             where: { id: configId },
@@ -149,7 +174,7 @@ export async function startBot(configId: string) {
         }).catch(console.error);
     });
 
-    processes[configId] = child;
+    processes[configId].bot = child;
 
     await prisma.botConfig.update({
         where: { id: configId },
@@ -160,16 +185,19 @@ export async function startBot(configId: string) {
 }
 
 export async function stopBot(configId: string) {
-    // Robust kill by config ID reference in command line
     try {
         execSync(`pkill -f "nanobot.*${configId}.json" > /dev/null 2>&1 || true`, { stdio: 'ignore' });
     } catch (e) { }
 
-    const child = processes[configId];
-    if (child) {
-        child.kill('SIGTERM');
+    const p = processes[configId];
+    if (p) {
+        p.bot.kill('SIGTERM');
+        p.bridge?.kill('SIGTERM');
         setTimeout(() => {
-            try { child.kill('SIGKILL'); } catch (e) { }
+            try {
+                p.bot.kill('SIGKILL');
+                p.bridge?.kill('SIGKILL');
+            } catch (e) { }
         }, 1000);
         delete processes[configId];
     }
