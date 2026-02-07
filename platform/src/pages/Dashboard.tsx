@@ -151,16 +151,32 @@ export default function Dashboard() {
     };
 
     const fetchQr = async (configId: string) => {
+        if (!configId) return;
         try {
             const resp = await fetch(`/api/bot/qr/${configId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (resp.ok) {
                 const data = await resp.json();
-                setQrCode(data.qr);
+                if (data.qr) {
+                    setQrCode(data.qr);
+                }
             }
         } catch (e) { }
     };
+
+    useEffect(() => {
+        let interval: any;
+        if (activeTab === 'channels' && editingAgent?.whatsappEnabled && editingAgent.id) {
+            fetchQr(editingAgent.id);
+            interval = setInterval(() => {
+                fetchQr(editingAgent.id);
+            }, 3000);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [activeTab, editingAgent?.whatsappEnabled, editingAgent?.id]);
 
     const handleCreateAgent = () => {
         if (subscription && subscription.currentCount >= subscription.maxInstances) {
