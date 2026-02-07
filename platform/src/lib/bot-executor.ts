@@ -92,7 +92,8 @@ export async function startBot(configId: string) {
                 }
             },
             browser: {
-                enabled: config.browserEnabled
+                enabled: config.browserEnabled,
+                max_tool_retries: 3
             },
             exec: {
                 enabled: config.shellEnabled

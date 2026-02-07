@@ -246,7 +246,7 @@ class AgentLoop:
                         # Check for error signature in result
                         if isinstance(result, str) and result.startswith("Error:"):
                             sequential_failures += 1
-                            logger.warning(f"Tool {tool_call.name} failed ({sequential_failures}/{3})")
+                            logger.warning(f"Tool {tool_call.name} failed ({sequential_failures}/{self.browser_config.max_tool_retries})")
                         else:
                             sequential_failures = 0
                             
@@ -261,7 +261,7 @@ class AgentLoop:
                     
                     # Stop if we hit too many failures in a row within this turn
                     # This prevents the LLM from trying the same failing thing 20 times
-                    max_fails = 3 # Hardcoded default
+                    max_fails = self.browser_config.max_tool_retries
                     if sequential_failures >= max_fails:
                         final_content = f"I've encountered repeated errors while trying to complete your request. The last error was: {result}. Please double-check the requirements or provide more details so I can assist better."
                         break
