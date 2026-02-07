@@ -166,8 +166,8 @@ export default function UserManagement() {
                                     </td>
                                     <td className="px-8 py-6">
                                         <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${u.role === 'admin'
-                                                ? 'bg-primary/10 border-primary/20 text-primary'
-                                                : 'bg-white/5 border-white/10 text-white/60'
+                                            ? 'bg-primary/10 border-primary/20 text-primary'
+                                            : 'bg-white/5 border-white/10 text-white/60'
                                             }`}>
                                             {u.role === 'admin' && <Shield size={10} className="mr-1.5" />}
                                             {u.role}
@@ -283,12 +283,31 @@ export default function UserManagement() {
                                 <div className="grid grid-cols-2 gap-6">
                                     <div>
                                         <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 block mb-2">Subscription Plan</label>
-                                        <input
+                                        <select
                                             className="input-modern w-full"
                                             value={editForm.plan}
-                                            onChange={e => setEditForm({ ...editForm, plan: e.target.value })}
-                                            placeholder="e.g. Pro, Enterprise"
-                                        />
+                                            onChange={e => {
+                                                const newPlan = e.target.value;
+                                                const limits: Record<string, number> = {
+                                                    'Free': 1,
+                                                    'Starter': 1,
+                                                    'Pro': 5,
+                                                    'Elite': 10,
+                                                    'Enterprise': 100
+                                                };
+                                                setEditForm({
+                                                    ...editForm,
+                                                    plan: newPlan,
+                                                    maxInstances: limits[newPlan] || editForm.maxInstances
+                                                });
+                                            }}
+                                        >
+                                            <option value="Free">Free</option>
+                                            <option value="Starter">Starter</option>
+                                            <option value="Pro">Pro</option>
+                                            <option value="Elite">Elite</option>
+                                            <option value="Enterprise">Enterprise</option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 block mb-2">Bot Allowance</label>
