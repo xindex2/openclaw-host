@@ -31,6 +31,22 @@
     --border-clean: #27272a;
     --crimson-primary: #dc2626;
     --text-muted: #a1a1aa;
+    --bg-deep: #050505;
+    --color-border: rgba(255, 255, 255, 0.05);
+    --coral-bright: #ff6b6b;
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+    --spacing-2xl: 6rem;
+    --radius-md: 0.75rem;
+    --radius-xl: 1.5rem;
+    --radius-full: 9999px;
+    --color-text-secondary: #a1a1aa;
+    --color-text-muted: #71717a;
+    --color-success: #22c55e;
+    --font-weight-bold: 700;
   }
 }
 
@@ -61,6 +77,34 @@ body {
 
   .btn-minimal {
     @apply bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs tracking-wider transition-all transform active:scale-95 shadow-lg shadow-red-600/10;
+  }
+
+  .container {
+    @apply max-w-7xl mx-auto px-8;
+  }
+
+  .flex-between {
+    @apply flex items-center justify-between;
+  }
+
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center font-black transition-all duration-300 rounded-2xl cursor-pointer;
+  }
+
+  .btn-primary {
+    @apply bg-[#ff6b6b] text-white hover:scale-105 active:scale-95 shadow-2xl shadow-[#ff6b6b]/20;
+  }
+
+  .btn-ghost {
+    @apply text-zinc-400 hover:text-white transition-colors;
+  }
+
+  .card-glass {
+    @apply bg-white/2 border border-white/5 backdrop-blur-sm transition-all duration-700;
   }
 }
 

@@ -43,6 +43,13 @@ export default function Billing() {
         },
     ];
 
+    const checkoutLinks = {
+        'Starter': 'https://whop.com/checkout/plan_Ke7ZeyJO29DwZ',
+        'Pro': 'https://whop.com/checkout/plan_9NRNdPMrVzwi8',
+        'Elite': 'https://whop.com/checkout/plan_XXO2Ey0ki51AI',
+        'Enterprise': 'mailto:support@openclaw-host.com'
+    };
+
     return (
         <div className="space-y-12 max-w-6xl mx-auto">
             <header className="text-center space-y-4">
@@ -51,6 +58,12 @@ export default function Billing() {
                 </div>
                 <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic">Fleet Capacity</h1>
                 <p className="text-zinc-500 max-w-xl mx-auto text-sm font-medium">Select your operational scale. All plans include full access to the core engine and skill architecture.</p>
+
+                {/* Usage Limit Hit Warning */}
+                <div className="mt-8 p-4 bg-red-600/10 border border-red-600/20 rounded-2xl flex items-center justify-center gap-4 animate-pulse">
+                    <Zap className="text-red-500" size={16} />
+                    <p className="text-[10px] font-black text-white uppercase tracking-widest">Capacity Limit reached? Upgrade your account to initialize more agents.</p>
+                </div>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -88,14 +101,19 @@ export default function Billing() {
                             ))}
                         </ul>
 
-                        <button className={cn(
-                            "w-full py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all transform active:scale-95 shadow-xl",
-                            plan.popular
-                                ? "bg-red-600 text-white shadow-red-600/20 hover:bg-red-700"
-                                : "bg-black text-zinc-400 hover:text-white border border-zinc-800"
-                        )}>
+                        <a
+                            href={checkoutLinks[plan.name as keyof typeof checkoutLinks]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={cn(
+                                "w-full py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all transform active:scale-95 shadow-xl text-center block",
+                                plan.popular
+                                    ? "bg-red-600 text-white shadow-red-600/20 hover:bg-red-700"
+                                    : "bg-black text-zinc-400 hover:text-white border border-zinc-800"
+                            )}
+                        >
                             {plan.name === 'Enterprise' ? 'Contact Intelligence' : 'Initialize Plan'}
-                        </button>
+                        </a>
                     </motion.div>
                 ))}
             </div>
@@ -107,7 +125,7 @@ export default function Billing() {
                     </div>
                     <div>
                         <h4 className="text-white font-bold text-sm uppercase italic tracking-wide">Secure Transaction Protocol</h4>
-                        <p className="text-zinc-500 text-[10px] font-medium uppercase tracking-widest">Enterprise-grade encryption via Whop Payments</p>
+                        <p className="text-zinc-500 text-[10px] font-medium uppercase tracking-widest">Direct support: support@openclaw-host.com</p>
                     </div>
                 </div>
                 <div className="flex gap-4 grayscale opacity-40">

@@ -16,9 +16,9 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const ICONS = {
-    telegram: 'https://telegram.org/favicon.ico',
-    discord: 'https://discord.com/favicon.ico',
-    whatsapp: 'https://whatsapp.com/favicon.ico',
+    telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
+    discord: 'https://cdn-icons-png.flaticon.com/512/3670/3670157.png',
+    whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png',
     feishu: 'https://www.feishu.cn/favicon.ico',
     github: 'https://github.com/favicon.ico'
 };
@@ -114,8 +114,8 @@ export default function Dashboard() {
             telegramEnabled: false,
             feishuEnabled: false,
             browserEnabled: true,
-            shellEnabled: false,
-            tmuxEnabled: false,
+            shellEnabled: true,
+            tmuxEnabled: true,
             weatherEnabled: false,
             summarizeEnabled: false,
             webSearchApiKey: '',
@@ -125,7 +125,7 @@ export default function Dashboard() {
             restrictToWorkspace: true,
             gatewayHost: '0.0.0.0',
             gatewayPort: 18790 + (agents.length * 10), // Auto-offset ports
-            maxToolIterations: 20
+            maxToolIterations: 30
         };
         setEditingAgent(newAgent);
     };
@@ -421,89 +421,73 @@ export default function Dashboard() {
                                 )}
 
                                 {activeTab === 'tools' && (
-                                    <div className="grid grid-cols-2 gap-6 pt-4">
-                                        <ToolCard
-                                            title="Web Search" icon={<Search className="text-zinc-500" />}
-                                            desc="Live searching via Brave API."
-                                        >
-                                            <input
-                                                type="password"
-                                                placeholder="Brave API Key"
-                                                value={editingAgent.webSearchApiKey}
-                                                onChange={e => setEditingAgent({ ...editingAgent, webSearchApiKey: e.target.value })}
-                                                className="form-input text-xs mt-2"
-                                            />
-                                        </ToolCard>
-                                        <ToolCard
-                                            title="Browser" icon={<Globe className="text-zinc-500" />}
-                                            desc="Headless Chrome automation."
-                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, browserEnabled: v })}
-                                            checked={editingAgent.browserEnabled}
-                                        />
-                                        <ToolCard
-                                            title="Shell" icon={<Terminal className="text-zinc-500" />}
-                                            desc="Isolated command execution."
-                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, shellEnabled: v })}
-                                            checked={editingAgent.shellEnabled}
-                                        />
-                                        <ToolCard
-                                            title="Tmux Manager" icon={<Terminal className="text-zinc-500" />}
-                                            desc="Persistent background tasks."
-                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, tmuxEnabled: v })}
-                                            checked={editingAgent.tmuxEnabled}
-                                        />
-                                        <ToolCard
-                                            title="GitHub" icon={<img src={ICONS.github} className="w-4 h-4 opacity-50" />}
-                                            desc="Code & Repo management."
-                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, githubEnabled: v })}
-                                            checked={editingAgent.githubToken ? true : false}
-                                        >
-                                            <input
-                                                type="password"
-                                                placeholder="GitHub Token"
-                                                value={editingAgent.githubToken || ''}
-                                                onChange={e => setEditingAgent({ ...editingAgent, githubToken: e.target.value })}
-                                                className="form-input text-xs mt-2"
-                                            />
-                                        </ToolCard>
-                                        <ToolCard
-                                            title="Weather" icon={<Cloud className="text-zinc-500" />}
-                                            desc="Live weather conditions."
-                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, weatherEnabled: v })}
-                                            checked={editingAgent.weatherEnabled}
-                                        />
-                                        <ToolCard
-                                            title="Summarize" icon={<FileText className="text-zinc-500" />}
-                                            desc="Web content extraction."
-                                            onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, summarizeEnabled: v })}
-                                            checked={editingAgent.summarizeEnabled}
-                                        >
-                                            <div className="space-y-2 mt-4 pt-4 border-t border-zinc-800">
-                                                <input
-                                                    type="password"
-                                                    placeholder="Firecrawl API Key"
-                                                    value={editingAgent.firecrawlApiKey || ''}
-                                                    onChange={e => setEditingAgent({ ...editingAgent, firecrawlApiKey: e.target.value })}
-                                                    className="form-input text-xs"
+                                    <div className="space-y-12 pt-4">
+                                        <Section icon={<Terminal size={18} />} title="Operational Skills" desc="Extended autonomous capabilities.">
+                                            <div className="grid grid-cols-2 gap-8 mt-8">
+                                                <ToolCard
+                                                    title="Web Browser" icon={<Globe className="text-zinc-500" />}
+                                                    desc="Headless Chrome automation for research."
+                                                    onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, browserEnabled: v })}
+                                                    checked={editingAgent.browserEnabled}
                                                 />
-                                                <input
-                                                    type="password"
-                                                    placeholder="Apify API Token"
-                                                    value={editingAgent.apifyApiToken || ''}
-                                                    onChange={e => setEditingAgent({ ...editingAgent, apifyApiToken: e.target.value })}
-                                                    className="form-input text-xs"
+                                                <ToolCard
+                                                    title="System Shell" icon={<Terminal className="text-zinc-500" />}
+                                                    desc="Isolated command execution & processing."
+                                                    onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, shellEnabled: v })}
+                                                    checked={editingAgent.shellEnabled}
                                                 />
+                                                <ToolCard
+                                                    title="Tmux Manager" icon={<Terminal size={20} className="text-zinc-500" />}
+                                                    desc="Persistent background session management."
+                                                    onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, tmuxEnabled: v })}
+                                                    checked={editingAgent.tmuxEnabled}
+                                                />
+                                                <ToolCard
+                                                    title="Brave Search" icon={<Search className="text-zinc-500" />}
+                                                    desc="Live searching via Brave API."
+                                                >
+                                                    <input
+                                                        type="password"
+                                                        placeholder="Brave API Key"
+                                                        value={editingAgent.webSearchApiKey}
+                                                        onChange={e => setEditingAgent({ ...editingAgent, webSearchApiKey: e.target.value })}
+                                                        className="form-input text-xs mt-2"
+                                                    />
+                                                </ToolCard>
+                                                <ToolCard
+                                                    title="Summarize" icon={<FileText className="text-zinc-500" />}
+                                                    desc="Web content extraction & cleaning."
+                                                    onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, summarizeEnabled: v })}
+                                                    checked={editingAgent.summarizeEnabled}
+                                                >
+                                                    <div className="space-y-2 mt-4 pt-4 border-t border-zinc-800">
+                                                        <input
+                                                            type="password"
+                                                            placeholder="Firecrawl API Key"
+                                                            value={editingAgent.firecrawlApiKey || ''}
+                                                            onChange={e => setEditingAgent({ ...editingAgent, firecrawlApiKey: e.target.value })}
+                                                            className="form-input text-xs"
+                                                        />
+                                                        <input
+                                                            type="password"
+                                                            placeholder="Apify API Token"
+                                                            value={editingAgent.apifyApiToken || ''}
+                                                            onChange={e => setEditingAgent({ ...editingAgent, apifyApiToken: e.target.value })}
+                                                            className="form-input text-xs"
+                                                        />
+                                                    </div>
+                                                </ToolCard>
+                                                <ToolCard
+                                                    title="Workspace" icon={<HardDrive className="text-zinc-500" />}
+                                                    desc="Read/Write access to local filesystem."
+                                                    checked={true}
+                                                >
+                                                    <div className="mt-4 px-3 py-2 text-[10px] text-zinc-500 font-bold uppercase tracking-widest bg-black rounded-lg border border-zinc-800 shadow-inner">
+                                                        Platform Active
+                                                    </div>
+                                                </ToolCard>
                                             </div>
-                                        </ToolCard>
-                                        <ToolCard
-                                            title="File System" icon={<HardDrive className="text-zinc-500" />}
-                                            desc="Read/Write access to workspace."
-                                            checked={true}
-                                        >
-                                            <div className="mt-4 px-3 py-2 text-[10px] text-zinc-500 font-bold uppercase tracking-widest bg-black rounded-lg border border-zinc-800 shadow-inner">
-                                                Platform Active
-                                            </div>
-                                        </ToolCard>
+                                        </Section>
                                     </div>
                                 )}
 
@@ -637,7 +621,7 @@ function Sidebar({ activeTab, setActiveTab, onBack }: any) {
                 <nav className="flex flex-col gap-0.5">
                     <SidebarTab active={activeTab === 'provider'} onClick={() => setActiveTab('provider')} icon={<Cpu size={14} />} label="Intelligence" />
                     <SidebarTab active={activeTab === 'channels'} onClick={() => setActiveTab('channels')} icon={<Share2 size={14} />} label="Connectors" />
-                    <SidebarTab active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={<Terminal size={14} />} label="Abilities" />
+                    <SidebarTab active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={<Terminal size={14} />} label="Skills" />
                     <SidebarTab active={activeTab === 'system'} onClick={() => setActiveTab('system')} icon={<Server size={14} />} label="Platform" />
                 </nav>
             </div>

@@ -1,160 +1,328 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Server, Terminal, Zap, HardDrive, Bot, CheckCircle, ArrowRight } from 'lucide-react';
-import StarField from '../components/StarField';
+import { useAuth } from '../context/AuthContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    faServer,
+    faTerminal,
+    faBolt,
+    faHdd,
+    faRobot,
+    faArrowRight,
+    faQuestionCircle,
+    faCheckCircle
+} from '@fortawesome/free-solid-svg-icons';
 import Logo from '../components/Logo';
+import StarField from '../components/StarField';
 import Footer from '../components/Footer';
 
 export default function Landing() {
+    const { isAuthenticated } = useAuth();
     useEffect(() => {
         document.title = "OpenClaw Hosting, OpenClaw VPS, Install OpenClaw, Deploy OpenClaw - OpenClaw Host";
         const metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) {
             metaDesc.setAttribute("content", "The professional way to hosting OpenClaw. High-performance OpenClaw VPS, 1-click install, and instant deployment for your AI agents.");
         }
+
+        // Track acquisition source
+        if (!sessionStorage.getItem('acquisition_source')) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const utmSource = urlParams.get('utm_source');
+            const referrer = document.referrer;
+
+            let source = 'Direct';
+
+            if (utmSource) {
+                source = utmSource;
+            } else if (referrer) {
+                try {
+                    const refUrl = new URL(referrer);
+                    if (refUrl.hostname.includes('google')) {
+                        source = 'Google';
+                    } else if (refUrl.hostname.includes('bing')) {
+                        source = 'Bing';
+                    } else if (refUrl.hostname.includes('facebook') || refUrl.hostname.includes('fb.me')) {
+                        source = 'Facebook';
+                    } else if (refUrl.hostname.includes('twitter.com') || refUrl.hostname.includes('t.co') || refUrl.hostname.includes('x.com')) {
+                        source = 'Twitter';
+                    } else if (!refUrl.hostname.includes(window.location.hostname)) {
+                        source = `Referral: ${refUrl.hostname}`;
+                    }
+                } catch (e) {
+                    console.error('Referrer parsing error:', e);
+                }
+            }
+
+            sessionStorage.setItem('acquisition_source', source);
+        }
     }, []);
 
-    const features = useMemo(() => [
-        { icon: <Server className="text-[#ff6b6b]" />, title: "OpenClaw VPS", text: "Each instance runs in an isolated high-performance Docker container." },
-        { icon: <Terminal className="text-[#ff6b6b]" />, title: "Instant Installation", text: "No technical skills needed. Our automated scripts install OpenClaw for you." },
-        { icon: <Zap className="text-[#ff6b6b]" />, title: "1-Click Deploy", text: "Launch your dedicated AI environment instantly with our optimized setup." },
-        { icon: <HardDrive className="text-[#ff6b6b]" />, title: "Safe Storage", text: "Your data and agent configuration persist securely across container restarts." },
-        { icon: <Bot className="text-[#ff6b6b]" />, title: "Unlimited Agents", text: "Run multiple OpenClaw agents tailored for different tasks on one account." },
-        { icon: <ShieldCheck className="text-[#ff6b6b]" />, title: "Auto-Scalable", text: "Enterprise-grade infrastructure that grows with your AI agent needs." }
-    ], []);
-
-    const plans = useMemo(() => [
-        { name: "One Agent", price: "$19", limit: "1 Agent", features: ["Dedicated VPS", "1-Click Installation", "Web Terminal Access", "Persistent Storage"], checkoutUrl: "https://whop.com/checkout/plan_Ke7ZeyJO29DwZ" },
-        { name: "5 Agents", price: "$69", limit: "Up to 5 Agents", features: ["Priority Support", "Dedicated Resources", "Multi-Agent Dashboard", "Safe Volume Backups"], popular: true, checkoutUrl: "https://whop.com/checkout/plan_9NRNdPMrVzwi8" },
-        { name: "10 Agents", price: "$99", limit: "Up to 10 Agents", features: ["Enterprise Hardware", "Advanced Monitoring", "Custom Subdomains", "Global Edge Network"], checkoutUrl: "https://whop.com/checkout/plan_XXO2Ey0ki51AI" },
-    ], []);
-
     return (
-        <div className="bg-[#050505] text-white selection:bg-[#ff6b6b]/30 selection:text-white font-sans overflow-x-hidden">
+        <div className="landing" style={{ position: 'relative', background: 'var(--bg-deep)', minHeight: '100vh' }}>
             <StarField />
 
-            {/* Nav */}
-            <nav className="relative z-50 border-b border-white/5 bg-black/50 backdrop-blur-xl">
-                <div className="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        <Logo size={40} />
-                        <span className="text-xl font-black italic uppercase tracking-tighter">OpenClaw Host</span>
+            {/* Navigation */}
+            <nav className="nav" style={{ position: 'relative', zIndex: 10, borderBottom: '1px solid var(--color-border)' }}>
+                <div className="container flex-between" style={{ padding: 'clamp(0.75rem, 2vw, 1.25rem) var(--spacing-lg)' }}>
+                    <div className="flex gap-md" style={{ alignItems: 'center' }}>
+                        <h3 style={{ margin: 0, letterSpacing: '-0.02em' }}>OpenClaw Host</h3>
+                        <Logo size={36} />
                     </div>
-                    <div className="flex items-center gap-8">
-                        <a href="#pricing" className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Pricing</a>
-                        <Link to="/login" className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Login</Link>
-                        <Link to="/register" className="bg-[#ff6b6b] text-white px-8 py-3 rounded-2xl font-black text-sm tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-[#ff6b6b]/20">
-                            GET STARTED
-                        </Link>
+                    <div className="flex gap-lg" style={{ alignItems: 'center' }}>
+                        <a href="#pricing" className="btn btn-ghost" style={{ fontSize: '0.95rem' }}>Pricing</a>
+                        <Link to="/login" className="btn btn-ghost" style={{ fontSize: '0.95rem' }}>Login</Link>
+                        <Link to="/register" className="btn btn-primary" style={{ padding: '0.6rem 1.5rem', fontSize: '0.95rem' }}>Get Started</Link>
                     </div>
                 </div>
             </nav>
 
-            {/* Hero */}
-            <section className="relative pt-32 pb-48 z-10">
-                <div className="max-w-5xl mx-auto px-8 text-center">
-                    <div className="inline-block bg-[#ff6b6b]/10 border border-[#ff6b6b]/20 px-6 py-2 rounded-full mb-12">
-                        <p className="text-[#ff6b6b] text-xs font-black uppercase tracking-[0.2em]">
-                            Standalone Infrastructure Provider
+            {/* Hero Section */}
+            <section className="hero" style={{
+                minHeight: '85vh',
+                display: 'flex',
+                alignItems: 'center',
+                position: 'relative',
+                zIndex: 1,
+                padding: 'var(--spacing-2xl) 0',
+            }}>
+                <div className="container text-center">
+                    <div className="animate-fade-in-up" style={{ maxWidth: '900px', margin: '0 auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 'var(--spacing-xl)' }}>
+                            <Logo size={120} />
+                        </div>
+
+                        <div style={{
+                            background: 'rgba(255,107,107,0.1)',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: 'var(--radius-md)',
+                            border: '1px solid rgba(255,107,107,0.2)',
+                            marginBottom: 'var(--spacing-xl)',
+                            display: 'inline-block'
+                        }}>
+                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
+                                <strong>Independent Hosting:</strong> We provide infrastructure for OpenClaw. For the official project, visit <a href="https://openclaw.ai/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--coral-bright)', textDecoration: 'none', fontWeight: 'bold' }}>openclaw.ai</a>
+                            </p>
+                        </div>
+
+                        <h1 style={{
+                            fontSize: 'clamp(3rem, 8vw, 5rem)',
+                            marginBottom: 'var(--spacing-md)',
+                            lineHeight: 1,
+                            letterSpacing: '-0.03em',
+                            textTransform: 'uppercase'
+                        }}>
+                            OpenClaw Hosting
+                        </h1>
+                        <p style={{
+                            fontSize: '1rem',
+                            color: 'var(--coral-bright)',
+                            fontWeight: 'var(--font-weight-bold)',
+                            letterSpacing: '0.2em',
+                            textTransform: 'uppercase',
+                            marginBottom: 'var(--spacing-xl)'
+                        }}>
+                            THE AI THAT ACTUALLY DOES THINGS.
                         </p>
+
+                        <p style={{
+                            fontSize: '1.25rem',
+                            maxWidth: '650px',
+                            margin: '0 auto var(--spacing-2xl)',
+                            color: 'var(--color-text-secondary)',
+                            lineHeight: 1.6,
+                        }}>
+                            The easiest way to <strong>install OpenClaw</strong> and <strong>deploy OpenClaw</strong> VPS.
+                            Get your dedicated AI agent in under 60 seconds.
+                        </p>
+
+                        <div className="flex-center gap-md" style={{ flexWrap: 'wrap' }}>
+                            <Link to="/register" className="btn btn-primary" style={{ fontSize: '1.125rem', padding: '1rem 2.5rem' }}>
+                                Deploy Your Agent Now
+                            </Link>
+                        </div>
+
                     </div>
+                </div>
+            </section>
 
-                    <h1 className="text-[clamp(3.5rem,10vw,7rem)] font-black italic uppercase italic leading-[0.9] tracking-tighter mb-8">
-                        Deploy <span className="text-[#ff6b6b]">OpenClaw</span> <br />
-                        In Seconds.
-                    </h1>
+            {/* Features */}
+            <section id="features" style={{ padding: 'var(--spacing-2xl) 0', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--color-border)', position: 'relative', zIndex: 1 }}>
+                <div className="container">
+                    <h2 className="text-center mb-xl" style={{ letterSpacing: '-0.02em', fontSize: '2.5rem' }}>
+                        Enterprise OpenClaw VPS features
+                    </h2>
 
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-12 font-medium">
-                        The professional hosting solution for autonomous AI agents.
-                        Dedicated instances, 1-click installation, and instant global delivery.
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                        gap: 'var(--spacing-xl)',
+                        marginTop: 'var(--spacing-2xl)',
+                    }}>
+                        {[
+                            { icon: faServer, title: "OpenClaw VPS", text: "Each instance runs in an isolated high-performance Docker container." },
+                            { icon: faTerminal, title: "Instant Installation", text: "No technical skills needed. Our automated scripts install OpenClaw for you." },
+                            { icon: faBolt, title: "1-Click Deploy", text: "Launch your dedicated AI environment instantly with our optimized setup." },
+                            { icon: faHdd, title: "Safe Storage", text: "Your data and agent configuration persist securely across container restarts." },
+                            { icon: faRobot, title: "Unlimited Agents", text: "Run multiple OpenClaw agents tailored for different tasks on one account." },
+                            { icon: faBolt, title: "Auto-Scalable", text: "Enterprise-grade infrastructure that grows with your AI agent needs." }
+                        ].map((feature, i) => (
+                            <div key={i} className="card-glass" style={{ padding: 'var(--spacing-xl)', borderRadius: 'var(--radius-xl)' }}>
+                                <div style={{ fontSize: '1.5rem', marginBottom: 'var(--spacing-md)', color: 'var(--coral-bright)' }}>
+                                    <FontAwesomeIcon icon={feature.icon} />
+                                </div>
+                                <h3 style={{ fontSize: '1.25rem', marginBottom: 'var(--spacing-sm)' }}>{feature.title}</h3>
+                                <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.5 }}>{feature.text}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+            {/* Pricing Section */}
+            <section id="pricing" style={{ padding: 'var(--spacing-2xl) 0', position: 'relative', zIndex: 1, borderTop: '1px solid var(--color-border)' }}>
+                <div className="container">
+                    <h2 className="text-center mb-xl" style={{ fontSize: '2.5rem' }}>Simple, Transparent Pricing</h2>
+                    <p className="text-center" style={{ color: 'var(--color-text-secondary)', maxWidth: '700px', margin: '0 auto var(--spacing-2xl)', fontSize: '1.1rem' }}>
+                        All plans include unlimited usage. You provide your own API keys, we provide the ultimate high-performance hosting.
                     </p>
 
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-                        <Link to="/register" className="bg-white text-black px-12 py-6 rounded-[2rem] font-black text-sm tracking-widest hover:scale-105 active:scale-95 transition-all shadow-3xl flex items-center gap-3">
-                            INITIALIZE DEPLOYMENT <ArrowRight size={20} />
-                        </Link>
-                        <a href="#features" className="px-12 py-6 rounded-[2rem] font-black text-sm tracking-widest text-gray-500 hover:text-white transition-colors">
-                            VIEW CAPABILITIES
-                        </a>
-                    </div>
-                </div>
-            </section>
-
-            {/* Features Grid */}
-            <section id="features" className="relative pb-48 z-10 px-8">
-                <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {features.map((f, i) => (
-                        <div key={i} className="group p-12 bg-white/2 border border-white/5 rounded-[3.5rem] hover:border-[#ff6b6b]/20 transition-all duration-700 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-40 h-40 bg-[#ff6b6b]/5 blur-[60px] rounded-full group-hover:bg-[#ff6b6b]/10 transition-all" />
-                            <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-700">
-                                {f.icon}
-                            </div>
-                            <h3 className="text-2xl font-black italic uppercase mb-4">{f.title}</h3>
-                            <p className="text-gray-500 leading-relaxed font-medium">{f.text}</p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* Pricing */}
-            <section id="pricing" className="relative pb-48 z-10 px-8">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-24">
-                        <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter mb-6">Simple Fleet Pricing</h2>
-                        <p className="text-xl text-gray-500 font-medium max-w-2xl mx-auto">
-                            Transparent hosting plans with zero overhead. You provide the keys, we provide the ultimate high-performance hosting environment.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {plans.map((p, i) => (
-                            <div key={i} className={cn(
-                                "p-12 rounded-[4rem] border transition-all duration-700 relative flex flex-col",
-                                p.popular ? "bg-[#ff6b6b]/5 border-[#ff6b6b]/30 shadow-[0_0_80px_rgba(255,107,107,0.05)]" : "bg-white/2 border-white/5"
-                            )}>
-                                {p.popular && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#ff6b6b] text-white px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                    <div className="responsive-grid" style={{
+                        marginTop: 'var(--spacing-xl)',
+                        maxWidth: '1200px',
+                        margin: 'var(--spacing-xl) auto 0'
+                    }}>
+                        {[
+                            { name: "One Agent", price: "$19", limit: "1 Agent", features: ["Dedicated VPS", "1-Click Installation", "Web Terminal Access", "Persistent Storage"], checkoutUrl: "https://whop.com/checkout/plan_Ke7ZeyJO29DwZ" },
+                            { name: "5 Agents", price: "$69", limit: "Up to 5 Agents", features: ["Priority Support", "Dedicated Resources", "Multi-Agent Dashboard", "Safe Volume Backups"], popular: true, checkoutUrl: "https://whop.com/checkout/plan_9NRNdPMrVzwi8" },
+                            { name: "10 Agents", price: "$99", limit: "Up to 10 Agents", features: ["Enterprise Hardware", "Advanced Monitoring", "Custom Subdomains", "Global Edge Network"], checkoutUrl: "https://whop.com/checkout/plan_XXO2Ey0ki51AI" },
+                        ].map((plan, i) => (
+                            <div key={i} className="card-glass" style={{
+                                padding: 'var(--spacing-xl)',
+                                borderRadius: 'var(--radius-xl)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                border: plan.popular ? '2px solid var(--coral-bright)' : '1px solid var(--color-border)',
+                                background: plan.popular ? 'rgba(255,107,107,0.03)' : 'var(--color-bg-elevated)',
+                                position: 'relative'
+                            }}>
+                                {plan.popular && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '-12px',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        background: 'var(--coral-bright)',
+                                        color: 'white',
+                                        padding: '4px 12px',
+                                        borderRadius: 'var(--radius-full)',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 'bold',
+                                        textTransform: 'uppercase'
+                                    }}>
                                         Most Popular
                                     </div>
                                 )}
-                                <h3 className="text-3xl font-black italic uppercase mb-2">{p.name}</h3>
-                                <div className="flex items-baseline gap-2 mb-8">
-                                    <span className="text-6xl font-black italic">{p.price}</span>
-                                    <span className="text-gray-600 font-bold uppercase tracking-widest text-xs">/month</span>
+                                <h3 style={{ fontSize: '1.5rem', marginBottom: 'var(--spacing-xs)' }}>{plan.name}</h3>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: 'var(--spacing-md)' }}>
+                                    <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{plan.price}</span>
+                                    <span style={{ color: 'var(--color-text-muted)' }}>/mo</span>
                                 </div>
-
-                                <ul className="space-y-4 mb-12 flex-1">
-                                    {p.features.map((f, j) => (
-                                        <li key={j} className="flex items-center gap-3 text-sm font-medium text-gray-400">
-                                            <CheckCircle size={16} className="text-[#ff6b6b]" /> {f}
+                                <p style={{ color: 'var(--coral-bright)', fontWeight: 'bold', marginBottom: 'var(--spacing-lg)' }}>{plan.limit}</p>
+                                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 var(--spacing-xl) 0', flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+                                    {plan.features.map((f, j) => (
+                                        <li key={j} style={{ fontSize: '0.95rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <FontAwesomeIcon icon={faCheckCircle} style={{ color: 'var(--color-success)', fontSize: '0.8rem' }} />
+                                            {f}
                                         </li>
                                     ))}
                                 </ul>
+                                {isAuthenticated ? (
+                                    <a href={plan.checkoutUrl} target="_blank" rel="noopener noreferrer" className={`btn ${plan.popular ? 'btn-primary' : 'btn-ghost'}`} style={{ width: '100%', textAlign: 'center' }}>
+                                        Buy Now on Whop
+                                    </a>
+                                ) : (
+                                    <Link to="/register" className={`btn ${plan.popular ? 'btn-primary' : 'btn-ghost'}`} style={{ width: '100%', textAlign: 'center' }}>
+                                        Register Now
+                                    </Link>
+                                )}
+                                <p style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: 'var(--spacing-sm)' }}>
+                                    {isAuthenticated ? 'Instant account creation with Whop' : 'Create an account to view checkout'}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
 
-                                <a href={p.checkoutUrl} className={cn(
-                                    "w-full py-6 rounded-[2rem] font-black text-sm tracking-widest transition-all text-center",
-                                    p.popular ? "bg-[#ff6b6b] text-white shadow-2xl shadow-[#ff6b6b]/30" : "bg-white/5 text-white hover:bg-white/10"
-                                )}>
-                                    RECRUIT NOW
-                                </a>
+                    {/* Enterprise / Custom Section */}
+                    <div className="card-glass enterprise-custom-card" style={{
+                        marginTop: 'var(--spacing-xl)',
+                        maxWidth: '1200px',
+                        margin: 'var(--spacing-xl) auto 0',
+                        padding: 'var(--spacing-xl) var(--spacing-2xl)',
+                        borderRadius: 'var(--radius-xl)',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 'var(--spacing-xl)',
+                        border: '1px solid var(--color-border)',
+                        background: 'linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,107,107,0.05) 100%)'
+                    }}>
+                        <div style={{ flex: '1 1 300px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: 'var(--spacing-sm)' }}>
+                                <span className="badge badge-primary" style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Enterprise</span>
+                                <h3 style={{ margin: 0, fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}>Custom Plan</h3>
+                            </div>
+                            <p style={{ fontSize: '1.1rem', color: 'var(--color-text-secondary)', margin: 0 }}>
+                                Need more than 10 agents? We provide dedicated clusters and custom SLA.
+                            </p>
+                        </div>
+
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-lg)', flex: '1 1 300px' }}>
+                            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', width: '100%', gap: 'var(--spacing-sm) var(--spacing-xl)' }}>
+                                {[
+                                    "Custom Agent Limits",
+                                    "Dedicated Account Manager",
+                                    "SLA Guarantee",
+                                    "Private Infrastructure"
+                                ].map((f, i) => (
+                                    <li key={i} style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <FontAwesomeIcon icon={faCheckCircle} style={{ color: 'var(--coral-bright)', fontSize: '0.75rem' }} />
+                                        {f}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div style={{ flex: '0 0 auto', width: 'auto' }}>
+                            <Link to="/contact" className="btn btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
+                                Contact Sales
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* FAQ Section */}
+            <section id="faq" style={{ padding: 'var(--spacing-2xl) 0', position: 'relative', zIndex: 1 }}>
+                <div className="container">
+                    <h2 className="text-center mb-xl" style={{ fontSize: '2.5rem' }}>Frequently Asked Questions</h2>
+                    <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
+                        {[
+                            { q: "What is OpenClaw Hosting?", a: "OpenClaw Hosting is a dedicated platform that provides pre-configured VPS for running OpenClaw AI agents with zero technical setup." },
+                            { q: "How do I install OpenClaw?", a: "With 1-click deployment, we automatically install OpenClaw and all its dependencies in a secure Docker container for you." },
+                            { q: "Can I run OpenClaw VPS for business?", a: "Yes, our enterprise-grade infrastructure is designed for reliable, 24/7 agent operations, perfect for business automation." },
+                            { q: "Is the OpenClaw VPS dedicated?", a: "Absolutely. Every user gets an isolated environment with dedicated resources to ensure maximum speed and privacy." }
+                        ].map((faq, i) => (
+                            <div key={i} className="card-glass" style={{ padding: 'var(--spacing-lg)' }}>
+                                <h4 style={{ color: 'var(--coral-bright)', marginBottom: 'var(--spacing-sm)', fontSize: '1.2rem' }}>{faq.q}</h4>
+                                <p style={{ margin: 0, color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>{faq.a}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Disclaimer Bar */}
-            <div className="relative z-10 border-t border-white/5 py-12 bg-[#ff6b6b]/5 text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#ff6b6b]">
-                    Powered by high-performance enterprise clusters
-                </p>
-            </div>
-
             <Footer />
         </div>
     );
-}
-
-function cn(...classes: any[]) {
-    return classes.filter(Boolean).join(' ');
 }
