@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Bot, Cpu, Share2, Terminal, Server, CreditCard, User, LogOut, Search, Globe, HardDrive, Clock,
     Trash2, Play, Square, Settings, LayoutDashboard, ChevronRight, CheckCircle, Plus, Rocket,
@@ -121,6 +122,7 @@ interface AgentConfig {
 }
 
 export default function Dashboard() {
+    const navigate = useNavigate();
     const { user, token, logout } = useAuth();
     const [agents, setAgents] = useState<AgentConfig[]>([]);
     const [selectedAgent, setSelectedAgent] = useState<AgentConfig | null>(null);
@@ -128,14 +130,34 @@ export default function Dashboard() {
     const [isSaving, setIsSaving] = useState(false);
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [subscription, setSubscription] = useState<any>(null);
 
     useEffect(() => {
         if (user) {
             fetchAgents();
-            const interval = setInterval(fetchAgents, 5000);
+            fetchSubscription();
+            const interval = setInterval(() => {
+                fetchAgents();
+                fetchSubscription();
+            }, 5000);
             return () => clearInterval(interval);
         }
     }, [user]);
+
+    const fetchSubscription = async () => {
+        if (!token) return;
+        try {
+            const resp = await fetch('/api/subscription', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                setSubscription(data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch subscription:', err);
+        }
+    };
 
     const fetchAgents = async () => {
         if (!user) return;
@@ -168,12 +190,19 @@ export default function Dashboard() {
     };
 
     const handleCreateAgent = () => {
+        if (subscription && subscription.currentCount >= subscription.maxInstances) {
+            if (confirm(`Operational Capacity Reached: Your ${subscription.plan} plan is limited to ${subscription.maxInstances} active agent slot(s). Would you like to upgrade your fleet capacity?`)) {
+                navigate('/billing');
+            }
+            return;
+        }
+
         const newAgent: any = {
-            id: 'new-' + Math.random().toString(36).substr(2, 9),
-            name: 'New Bot',
-            description: 'A helpful bot.',
+            id: 'temp-' + Date.now(),
+            name: 'New Agent',
+            description: 'AI-driven task executor',
             provider: 'openrouter',
-            model: 'anthropic/claude-3.5-sonnet',
+            model: 'anthropic/claude-3-haiku-20240307',
             apiKey: '',
             apiBase: '',
             telegramEnabled: false,
@@ -183,11 +212,12 @@ export default function Dashboard() {
             browserEnabled: true,
             shellEnabled: false,
             tmuxEnabled: false,
+            restrictToWorkspace: false,
             weatherEnabled: false,
             summarizeEnabled: false,
             gatewayHost: '0.0.0.0',
-            gatewayPort: 18790 + (agents.length * 10),
-            maxToolIterations: 30,
+            gatewayPort: 18790 + (agents.length * 2),
+            maxToolIterations: 20,
             status: 'stopped'
         };
         setAgents([newAgent, ...agents]);
@@ -200,19 +230,35 @@ export default function Dashboard() {
         try {
             const resp = await fetch('/api/config', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user.id, ...config })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ ...selectedAgent, userId: user?.id })
             });
-            if (resp.ok) {
-                await fetchAgents();
+            const data = await resp.json();
+            if (!resp.ok) {
+                if (data.error?.startsWith('AGENT_LIMIT_REACHED')) {
+                    if (confirm('Operational Capacity Reached: You have reached your plan limit. Upgrade your account to create more agents?')) {
+                        navigate('/billing');
+                    }
+                } else {
+                    throw new Error(data.error || 'Failed to save config');
+                }
+                return;
             }
+            alert('Protocol Updated: Bot configuration saved successfully.');
+            fetchAgents();
+            fetchSubscription();
+        } catch (err: any) {
+            alert('Protocol Error: ' + err.message);
         } finally {
             setIsSaving(false);
         }
     };
 
     const deleteAgent = async (id: string) => {
-        if (id.startsWith('new-')) {
+        if (id.startsWith('temp-')) {
             setAgents(agents.filter(a => a.id !== id));
             setSelectedAgent(agents[0] || null);
             return;
@@ -226,7 +272,7 @@ export default function Dashboard() {
     };
 
     const toggleBot = async (configId: string, currentStatus: string) => {
-        if (configId.startsWith('new-')) {
+        if (configId.startsWith('temp-')) {
             alert('Please save the bot before starting it.');
             return;
         }
@@ -271,14 +317,14 @@ export default function Dashboard() {
                 <nav className="space-y-1 flex-1">
                     <div className="flex items-center gap-2 mb-4 px-4 py-2 bg-[#f2f4f7] rounded-lg">
                         <button className="flex-1 text-xs font-semibold py-1.5 rounded-md bg-white shadow-sm border border-[#eaecf0]">User</button>
-                        <button className="flex-1 text-xs font-semibold py-1.5 text-[#475467]">Admin</button>
+                        <button onClick={() => navigate('/admin')} className="flex-1 text-xs font-semibold py-1.5 text-[#475467]">Admin</button>
                     </div>
 
                     <NavItem icon={<Inbox size={18} />} label="Inbox" />
                     <NavItem icon={<Bot size={18} />} label="My bots" active />
-                    <NavItem icon={<User size={18} />} label="My profile" />
+                    <NavItem icon={<User size={18} />} label="My profile" onClick={() => navigate('/profile')} />
                     <NavItem icon={<Settings size={18} />} label="Settings" />
-                    <NavItem icon={<CreditCard size={18} />} label="Billing" />
+                    <NavItem icon={<CreditCard size={18} />} label="Billing" onClick={() => navigate('/billing')} />
                 </nav>
 
                 <div className="pt-6 border-t border-[#eaecf0] mt-auto">
@@ -354,7 +400,7 @@ export default function Dashboard() {
                                 </div>
                             </div>
 
-                            <div className="p-8 space-y-10 max-w-3xl">
+                            <div className="p-8 space-y-10 max-w-3xl overflow-y-auto" style={{ maxHeight: 'calc(100vh - 128px)' }}>
                                 {/* Status Toggle Box */}
                                 <div className={cn(
                                     "p-6 rounded-xl border flex items-center justify-between",
@@ -382,7 +428,7 @@ export default function Dashboard() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-8">
+                                <div className="grid grid-cols-1 gap-8 pb-32">
                                     <h2 className="text-base font-bold text-[#101828] -mb-4">General Info</h2>
                                     <div>
                                         <label className="label-text">Bot Name</label>
@@ -522,12 +568,10 @@ export default function Dashboard() {
                                         </ChannelToggle>
                                     </div>
                                 </div>
-
-                                <div className="pt-20" />
                             </div>
 
                             {/* Footer Actions */}
-                            <div className="sticky bottom-0 bg-white border-t border-[#eaecf0] p-6 px-8 flex items-center justify-between mt-auto">
+                            <div className="sticky bottom-0 bg-white border-t border-[#eaecf0] p-6 px-8 flex items-center justify-between mt-auto z-10">
                                 <button
                                     onClick={() => deleteAgent(selectedAgent.id)}
                                     className="text-sm font-semibold text-[#b42318] flex items-center gap-2 hover:bg-red-50 px-4 py-2 rounded-lg"
@@ -545,7 +589,7 @@ export default function Dashboard() {
                             </div>
                         </>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-[#667085] p-20 text-center">
+                        <div className="flex-1 flex flex-col items-center justify-center text-[#667085] p-20 text-center h-full">
                             <Bot size={64} className="mb-6 opacity-20" />
                             <h3 className="text-lg font-bold text-[#101828] mb-2">No bot selected</h3>
                             <p className="text-sm max-w-xs">Select a bot from the list or create a new one to get started.</p>
@@ -557,9 +601,9 @@ export default function Dashboard() {
     );
 }
 
-function NavItem({ icon, label, active }: { icon: any, label: string, active?: boolean }) {
+function NavItem({ icon, label, active, onClick }: { icon: any, label: string, active?: boolean, onClick?: () => void }) {
     return (
-        <button className={cn("nav-item w-full", active && "active")}>
+        <button onClick={onClick} className={cn("nav-item w-full", active && "active")}>
             {icon}
             {label}
         </button>

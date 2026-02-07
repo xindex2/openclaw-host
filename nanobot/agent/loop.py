@@ -172,7 +172,7 @@ class AgentLoop:
              return OutboundMessage(
                 channel=msg.channel,
                 chat_id=msg.chat_id,
-                content="[ACCESS RESTRICTED] You have reached the limit of the Free Plan (1 message). Please upgrade to continue using your Agent."
+                content="[ACCESS RESTRICTED] You have reached the limit of the Free Plan (1 message). Please upgrade to continue using your Agent: https://openclaw.host/billing"
             )
         
         self.message_count += 1

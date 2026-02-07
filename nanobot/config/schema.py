@@ -97,6 +97,7 @@ class BrowserConfig(BaseModel):
     """Browser tool configuration."""
     enabled: bool = True
     headless: bool = True
+    max_tool_retries: int = 3
 
 
 class WebToolsConfig(BaseModel):

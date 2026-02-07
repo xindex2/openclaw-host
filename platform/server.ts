@@ -71,13 +71,24 @@ const isAdmin = (req: any, res: any, next: any) => {
 app.post('/api/register', async (req, res) => {
     try {
         const { email, password, full_name, acquisition_source } = req.body;
+        // Check if user already exists
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) return res.status(400).json({ error: 'User already exists' });
+
         const user = await prisma.user.create({
             data: {
                 email,
                 password, // Hash password in production
                 full_name: full_name || 'Commander',
-                acquisition_source: acquisition_source || 'Direct'
-            }
+                acquisition_source: acquisition_source || 'Direct',
+                subscription: {
+                    create: {
+                        plan: 'Free',
+                        maxInstances: 1
+                    }
+                }
+            },
+            include: { subscription: true }
         });
         res.json(user);
     } catch (e: any) {
@@ -106,6 +117,19 @@ app.post('/api/config', async (req, res) => {
     if (!userId) return res.status(401).json({ error: 'userId is required' });
 
     try {
+        // Enforce plan limits for NEW configs
+        const isNew = !id || id.startsWith('temp-');
+
+        if (isNew) {
+            const sub = await prisma.subscription.findUnique({ where: { userId } });
+            const count = await prisma.botConfig.count({ where: { userId } });
+            const maxInstances = sub?.maxInstances || 1;
+
+            if (count >= maxInstances) {
+                return res.status(403).json({ error: 'AGENT_LIMIT_REACHED|You have reached your plan limit. Please upgrade to create more agents.' });
+            }
+        }
+
         // Ensure user exists (demo-user fallback for dev)
         let user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user && userId === 'demo-user') {
@@ -113,7 +137,8 @@ app.post('/api/config', async (req, res) => {
                 data: {
                     id: 'demo-user',
                     email: 'demo@openclaw.ai',
-                    password: 'demo_password_hash'
+                    password: 'demo_password_hash',
+                    subscription: { create: { plan: 'Free', maxInstances: 1 } }
                 }
             });
         }
@@ -126,7 +151,7 @@ app.post('/api/config', async (req, res) => {
         };
 
         const config = await prisma.botConfig.upsert({
-            where: { id: id || 'new-uuid-placeholder' },
+            where: { id: (id && !id.startsWith('temp-')) ? id : 'new-' + Date.now() },
             update: data,
             create: data
         });
@@ -264,6 +289,20 @@ app.get('/api/bot/qr/:configId', authenticateToken, async (req: any, res: any) =
         }
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch QR' });
+    }
+});
+
+app.get('/api/subscription', authenticateToken, async (req: any, res: any) => {
+    try {
+        const sub = await prisma.subscription.findUnique({
+            where: { userId: req.user.id }
+        });
+        const count = await prisma.botConfig.count({
+            where: { userId: req.user.id }
+        });
+        res.json({ ...sub, currentCount: count });
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
     }
 });
 
