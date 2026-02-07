@@ -57,18 +57,32 @@ class BrowserTool(Tool):
             return
 
         from playwright.async_api import async_playwright
-        from playwright_stealth import stealth_async
         
         self.playwright = await async_playwright().start()
         self.browser = await self.playwright.chromium.launch(headless=True)
         self.context = await self.browser.new_context(
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            # Add extra headers to appear more human
+            extra_http_headers={
+                "Accept-Language": "en-US,en;q=0.9",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            },
             viewport={"width": 1280, "height": 800}
         )
         self.page = await self.context.new_page()
         
-        # Apply stealth patterns
-        await stealth_async(self.page)
+        # Apply stealth patterns with robust import
+        try:
+            try:
+                from playwright_stealth import stealth_async
+            except ImportError:
+                # Fallback for versions where it's just 'stealth'
+                from playwright_stealth import stealth as stealth_async
+            
+            await stealth_async(self.page)
+            logger.debug("Successfully applied stealth patterns to the browser.")
+        except Exception as e:
+            logger.warning(f"Failed to apply stealth patterns: {e}. Continuing without stealth.")
 
     async def execute(self, action: str, **kwargs: Any) -> str:
         try:

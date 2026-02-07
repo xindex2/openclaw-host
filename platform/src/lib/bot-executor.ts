@@ -9,13 +9,11 @@ const prisma = new PrismaClient();
 const processes: Record<string, ChildProcess> = {};
 
 export async function startBot(configId: string) {
-    // 1. Attempt to kill any legacy or orphaned processes for this specific config
     try {
-        const killCmd = `pkill -f "nanobot.*${configId}.json" || true`;
-        execSync(killCmd);
-        console.log(`[Bot ${configId}] Checked and cleaned existing processes.`);
+        const killCmd = `pkill -f "nanobot.*${configId}.json" > /dev/null 2>&1 || true`;
+        execSync(killCmd, { stdio: 'ignore' });
     } catch (e) {
-        console.warn(`[Bot ${configId}] Cleanup error (non-fatal):`, e);
+        // Silently handle pkill non-zero exits (usually means no process found)
     }
 
     if (processes[configId]) {
@@ -160,7 +158,7 @@ export async function startBot(configId: string) {
 export async function stopBot(configId: string) {
     // Robust kill by config ID reference in command line
     try {
-        execSync(`pkill -f "nanobot.*${configId}.json" || true`);
+        execSync(`pkill -f "nanobot.*${configId}.json" > /dev/null 2>&1 || true`, { stdio: 'ignore' });
     } catch (e) { }
 
     const child = processes[configId];
