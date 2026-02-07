@@ -40,7 +40,7 @@ export default function Footer() {
                 <div className="border-t border-white/5 pt-12 flex flex-col items-center gap-6 text-center">
                     <p className="text-gray-600 text-[11px] leading-relaxed max-w-3xl uppercase tracking-widest font-bold opacity-60">
                         <strong>Disclaimer:</strong> OpenClaw Host is an independent hosting provider. We are not officially affiliated with the OpenClaw project.
-                        For the official open-source project, please visit <a href="https://openclaw.ai/" target="_blank" rel="noopener noreferrer" className="text-[#ff6b6b] hover:underline">openclaw.ai</a>.
+                        For the official open-source project, please visit <a href="https://openclaw.ai/" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">openclaw.ai</a>.
                     </p>
                     <p className="text-gray-700 text-[10px] font-black tracking-widest uppercase">
                         &copy; {new Date().getFullYear()} OpenClaw Host. All rights reserved.

@@ -58,7 +58,7 @@ export default function DeployWizard({ user, onDeploy, isDeploying }: DeployWiza
             >
                 {/* Background Glow */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[100px] rounded-full pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-coral-bright/5 blur-[100px] rounded-full pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-500/5 blur-[100px] rounded-full pointer-events-none" />
 
                 <div className="relative space-y-12">
                     {/* Model Selection */}
@@ -114,7 +114,7 @@ export default function DeployWizard({ user, onDeploy, isDeploying }: DeployWiza
                                 {user.avatar_url ? (
                                     <img src={user.avatar_url} className="w-full h-full object-cover" />
                                 ) : (
-                                    <span className="font-black text-coral-bright">{user.full_name?.charAt(0)}</span>
+                                    <span className="font-black text-red-500">{user.full_name?.charAt(0)}</span>
                                 )}
                             </div>
                             <div className="flex flex-col">

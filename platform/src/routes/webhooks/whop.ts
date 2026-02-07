@@ -1,6 +1,8 @@
 import express from 'express';
 import { WhopService } from '../../lib/whop-service.js';
 
+import { getSystemConfig } from '../../lib/config-helper.js';
+
 const router = express.Router();
 
 /**
@@ -9,7 +11,7 @@ const router = express.Router();
  */
 router.post('/', async (req, res) => {
     const signature = req.headers['x-whop-signature'] as string;
-    const secret = process.env.WHOP_WEBHOOK_SECRET;
+    const secret = (await getSystemConfig('WHOP_WEBHOOK_SECRET')) || process.env.WHOP_WEBHOOK_SECRET;
 
     // In development/testing, we might skip signature verification if secret is not set
     if (secret && !WhopService.verifySignature(JSON.stringify(req.body), signature, secret)) {

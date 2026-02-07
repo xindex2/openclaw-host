@@ -328,16 +328,16 @@ export default function Dashboard() {
                                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 glass-panel p-8 rounded-3xl">
                                     <div className="space-y-1">
                                         <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-                                            Fleet Command
+                                            Dashboard
                                         </h1>
-                                        <p className="text-white/40 text-sm font-medium">Manage your fleet of autonomous nanobots.</p>
+                                        <p className="text-white/40 text-sm font-medium">Manage your AI agents.</p>
                                     </div>
                                     <button
                                         onClick={handleCreateAgent}
-                                        className="btn-primary-modern flex items-center gap-2 px-8 py-4"
+                                        className="bg-green-600 hover:bg-green-500 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-lg shadow-green-900/20 flex items-center gap-2"
                                     >
                                         <Plus size={20} strokeWidth={3} />
-                                        <span>Deploy New Agent</span>
+                                        <span>New Agent</span>
                                     </button>
                                 </header>
 
@@ -366,12 +366,12 @@ export default function Dashboard() {
                         {/* Editor Sidebar */}
                         <aside className="w-full md:w-72 border-r border-white/5 bg-black/20 p-8 flex flex-col gap-8 shrink-0">
                             <div>
-                                <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-6 pl-2">Mission Parameters</div>
+                                <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-6 pl-2">Configuration</div>
                                 <nav className="flex flex-col gap-2">
                                     {[
-                                        { id: 'provider', label: 'AI Engine', icon: <Cpu size={16} /> },
+                                        { id: 'provider', label: 'Model', icon: <Cpu size={16} /> },
                                         { id: 'channels', label: 'Channels', icon: <Share2 size={16} /> },
-                                        { id: 'tools', label: 'Capabilities', icon: <Terminal size={16} /> },
+                                        { id: 'tools', label: 'Tools', icon: <Terminal size={16} /> },
                                         { id: 'system', label: 'System', icon: <Settings size={16} /> },
                                     ].map(tab => (
                                         <button
@@ -397,18 +397,18 @@ export default function Dashboard() {
                             <header className="mb-12 flex items-center justify-between">
                                 <div className="flex-1 max-w-2xl">
                                     <button onClick={() => setEditingAgent(null)} className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest mb-6">
-                                        <ChevronLeft size={14} /> Back to fleet
+                                        <ChevronLeft size={14} /> Back to list
                                     </button>
                                     <input
                                         value={editingAgent.name}
                                         onChange={e => setEditingAgent({ ...editingAgent, name: e.target.value })}
                                         className="bg-transparent text-5xl font-black text-white outline-none w-full placeholder:text-white/10 uppercase italic tracking-tighter mb-4"
-                                        placeholder="AGENT DESIGNATION"
+                                        placeholder="AGENT NAME"
                                     />
                                     <textarea
                                         value={editingAgent.description}
                                         onChange={e => setEditingAgent({ ...editingAgent, description: e.target.value })}
-                                        placeholder="Define the mission objective for this agent..."
+                                        placeholder="Agent description..."
                                         className="bg-transparent text-white/50 text-base font-medium outline-none w-full resize-none h-12"
                                     />
                                 </div>
@@ -416,7 +416,7 @@ export default function Dashboard() {
 
                             <div className="space-y-16 pb-32">
                                 {activeTab === 'provider' && (
-                                    <Section icon={<Layers className="text-primary" />} title="AI Brain" desc="Configure the LLM engine and models.">
+                                    <Section icon={<Layers className="text-green-500" />} title="Model" desc="Configure the LLM engine.">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
                                             <InputWrapper label="Provider">
                                                 <select
@@ -470,7 +470,7 @@ export default function Dashboard() {
                                 )}
 
                                 {activeTab === 'channels' && (
-                                    <Section icon={<MessageSquare className="text-vibrant-secondary" />} title="Communication Hub" desc="Connect your agent to messaging platforms.">
+                                    <Section icon={<MessageSquare className="text-white" />} title="Channels" desc="Connect messaging platforms.">
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10">
                                             <ChannelInput
                                                 name="Telegram" icon={ICONS.telegram}
@@ -598,7 +598,7 @@ export default function Dashboard() {
                                 )}
 
                                 {activeTab === 'tools' && (
-                                    <Section icon={<Terminal className="text-primary" />} title="Agent Skills" desc="Enable advanced tools and capabilities.">
+                                    <Section icon={<Terminal className="text-white" />} title="Tools" desc="Enable capabilities.">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
                                             <ToolCard
                                                 title="Web Browser" icon={<Globe size={20} />}
@@ -732,16 +732,16 @@ function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
             <div className="flex items-center justify-between">
                 <div className={cn(
                     "w-16 h-16 rounded-[1.5rem] flex items-center justify-center transition-all shadow-inner",
-                    isRunning ? "bg-gradient-to-br from-primary to-primary-glow text-white shadow-primary/20" : "bg-white/5 text-white/20"
+                    isRunning ? "bg-green-600 text-white shadow-green-900/20" : "bg-white/5 text-white/20"
                 )}>
                     <Bot size={28} />
                 </div>
                 <div className="flex flex-col items-end gap-1.5">
                     <span className={cn(
                         "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border",
-                        isRunning ? "bg-primary/10 border-primary/20 text-primary" : "bg-white/5 border-white/5 text-white/20"
+                        isRunning ? "bg-green-500/10 border-green-500/20 text-green-500" : "bg-white/5 border-white/5 text-white/20"
                     )}>
-                        {isRunning ? 'Operational' : 'Idle'}
+                        {isRunning ? 'Running' : 'Stopped'}
                     </span>
                 </div>
             </div>
@@ -767,7 +767,7 @@ function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
                         onClick={onToggle}
                         className={cn(
                             "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
-                            isRunning ? "bg-white/5 text-red-500 hover:bg-red-500/10" : "bg-primary text-white hover:scale-110 shadow-lg shadow-primary/20"
+                            isRunning ? "bg-white/5 text-red-500 hover:bg-red-500/10" : "bg-green-600 text-white hover:scale-105 shadow-lg shadow-green-900/20"
                         )}
                     >
                         {isRunning ? <Square size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="ml-1" />}

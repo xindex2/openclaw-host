@@ -79,7 +79,7 @@ app.post('/api/register', async (req, res) => {
             data: {
                 email,
                 password, // Hash password in production
-                full_name: full_name || 'Commander',
+                full_name: full_name || 'User',
                 acquisition_source: acquisition_source || 'Direct',
                 subscription: {
                     create: {

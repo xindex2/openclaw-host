@@ -63,16 +63,16 @@ export default function AdminSettings() {
         <div className="space-y-12 animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black italic uppercase tracking-tighter mb-2">Integration Core</h1>
-                    <p className="text-gray-500 font-medium uppercase tracking-[0.2em] text-[10px]">Global API & Webhook Parameters</p>
+                    <h1 className="text-4xl font-black uppercase tracking-tighter mb-2">Settings</h1>
+                    <p className="text-gray-500 font-medium uppercase tracking-[0.2em] text-[10px]">System Configuration</p>
                 </div>
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-[#ff4d4d] text-white px-10 py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#ff4d4d]/25 flex items-center gap-3"
+                    className="bg-red-600 text-white px-10 py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-red-900/25 flex items-center gap-3"
                 >
                     <Save size={16} />
-                    {saving ? 'SYNCING...' : 'SAVE CHANGES'}
+                    {saving ? 'SAVING...' : 'SAVE CHANGES'}
                 </button>
             </div>
 
@@ -84,19 +84,19 @@ export default function AdminSettings() {
                             <Shield className="text-blue-400" size={20} />
                         </div>
                         <div>
-                            <h3 className="text-xl font-black italic uppercase tracking-tighter">Whop Protocol</h3>
-                            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em]">Authentication Layer</p>
+                            <h3 className="text-xl font-black uppercase tracking-tighter">Billing Integration</h3>
+                            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em]">Whop Credentials</p>
                         </div>
                     </div>
 
                     <div className="space-y-8">
                         <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#ff4d4d] mb-4 block opacity-60">API Token</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-red-500 mb-4 block opacity-60">API Token</label>
                             <div className="relative">
                                 <Key className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                                 <input
                                     type="password"
-                                    className="w-full bg-black border border-white/5 rounded-2xl pl-16 pr-6 py-4 outline-none focus:border-blue-500/50 transition-all font-mono text-xs"
+                                    className="w-full bg-black border border-white/5 rounded-2xl pl-16 pr-6 py-4 outline-none focus:border-red-500/50 transition-all font-mono text-xs"
                                     value={config['WHOP_API_TOKEN']}
                                     onChange={(e) => setConfig({ ...config, 'WHOP_API_TOKEN': e.target.value })}
                                     placeholder="whop_at_..."
@@ -105,10 +105,10 @@ export default function AdminSettings() {
                         </div>
 
                         <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#ff4d4d] mb-4 block opacity-60">Business ID</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-red-500 mb-4 block opacity-60">Business ID</label>
                             <input
                                 type="text"
-                                className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-blue-500/50 transition-all font-mono text-xs"
+                                className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-red-500/50 transition-all font-mono text-xs"
                                 value={config['WHOP_BUSINESS_ID']}
                                 onChange={(e) => setConfig({ ...config, 'WHOP_BUSINESS_ID': e.target.value })}
                                 placeholder="biz_..."
@@ -116,10 +116,10 @@ export default function AdminSettings() {
                         </div>
 
                         <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#ff4d4d] mb-4 block opacity-60">Webhook Secret</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-red-500 mb-4 block opacity-60">Webhook Secret</label>
                             <input
                                 type="password"
-                                className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-blue-500/50 transition-all font-mono text-xs"
+                                className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-red-500/50 transition-all font-mono text-xs"
                                 value={config['WHOP_WEBHOOK_SECRET']}
                                 onChange={(e) => setConfig({ ...config, 'WHOP_WEBHOOK_SECRET': e.target.value })}
                                 placeholder="wh_sec_..."
@@ -132,12 +132,12 @@ export default function AdminSettings() {
                 <div className="space-y-8">
                     <div className="bg-white/2 border border-white/5 rounded-[3rem] p-12">
                         <div className="flex items-start gap-6 mb-8">
-                            <div className="w-12 h-12 bg-[#ff4d4d]/10 rounded-2xl flex items-center justify-center shrink-0">
-                                <Info className="text-[#ff4d4d]" size={20} />
+                            <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center shrink-0">
+                                <Info className="text-red-500" size={20} />
                             </div>
                             <div className="space-y-4">
-                                <h4 className="text-xl font-black italic uppercase tracking-tighter">Sync Notice</h4>
-                                <p className="text-sm text-gray-500 leading-relaxed font-medium">Changing these values will immediately affect all incoming Whop webhooks and quota calculations. Ensure your secrets match the values found in your <a href="https://whop.com/dash" target="_blank" className="underline text-blue-400">Whop Dashboard</a>.</p>
+                                <h4 className="text-xl font-black uppercase tracking-tighter text-white/90">Sync Notice</h4>
+                                <p className="text-sm text-gray-500 leading-relaxed font-medium">Changing these values will immediately affect all incoming Whop webhooks and quota calculations. Ensure your secrets match the values found in your <a href="https://whop.com/dash" target="_blank" className="underline text-red-400">Whop Dashboard</a>.</p>
                             </div>
                         </div>
 
@@ -146,15 +146,15 @@ export default function AdminSettings() {
                                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Endpoint URL</span>
                                 <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[9px] font-black uppercase tracking-widest">Active</span>
                             </div>
-                            <code className="text-[11px] text-[#ff4d4d] font-black break-all">https://openclaw-host.com/api/webhooks/whop</code>
+                            <code className="text-[11px] text-red-500 font-black break-all">https://openclaw-host.com/api/webhooks/whop</code>
                         </div>
                     </div>
 
-                    <div className="bg-amber-500/5 border border-amber-500/10 p-12 rounded-[3rem] flex items-start gap-8">
-                        <AlertTriangle className="text-amber-500 shrink-0" size={24} />
+                    <div className="bg-red-500/5 border border-red-500/10 p-12 rounded-[3rem] flex items-start gap-8">
+                        <AlertTriangle className="text-red-500 shrink-0" size={24} />
                         <div>
-                            <h4 className="font-black italic uppercase tracking-tight mb-2">Security Warning</h4>
-                            <p className="text-xs text-gray-500 leading-relaxed">System keys are encrypted at rest but accessible via this panel to authorized administrators only. Avoid exposing these keys in client-side logs or public screenshots.</p>
+                            <h4 className="font-black uppercase tracking-tight mb-2 text-red-500">Security Warning</h4>
+                            <p className="text-xs text-gray-500 leading-relaxed">System keys are encrypted at rest but accessible here. Do not share these credentials.</p>
                         </div>
                     </div>
                 </div>

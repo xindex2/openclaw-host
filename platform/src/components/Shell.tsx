@@ -1,6 +1,7 @@
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Bot, Layout as LayoutIcon, Users, Settings, LogOut, ChevronRight, Activity, ShieldCheck, MessageSquare, CreditCard, Cpu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Logo from './Logo';
 
 export default function Shell({ children }: { children: React.ReactNode }) {
     const { user, logout } = useAuth();
@@ -11,29 +12,29 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
     const menuItems = [
         { icon: <LayoutIcon size={18} />, label: 'Dashboard', path: '/dashboard' },
-        { icon: <Bot size={18} />, label: 'All Agents', path: '/dashboard' },
+        { icon: <Bot size={18} />, label: 'Agents', path: '/dashboard' },
     ];
 
     const adminItems = [
-        { icon: <Activity size={18} />, label: 'Command Center', path: '/admin' },
-        { icon: <Users size={18} />, label: 'User Registry', path: '/admin/users' },
-        { icon: <ShieldCheck size={18} />, label: 'System Logs', path: '/admin/events' },
-        { icon: <Settings size={18} />, label: 'Plan Config', path: '/admin/plans' },
-        { icon: <Cpu size={18} />, label: 'Integration', path: '/admin/settings' },
+        { icon: <Activity size={18} />, label: 'Overview', path: '/admin' },
+        { icon: <Users size={18} />, label: 'Users', path: '/admin/users' },
+        { icon: <ShieldCheck size={18} />, label: 'Logs', path: '/admin/events' },
+        { icon: <Settings size={18} />, label: 'Business Plans', path: '/admin/plans' },
+        { icon: <Cpu size={18} />, label: 'Settings', path: '/admin/settings' },
     ];
 
     const accountItems = [
-        { icon: <Bot size={18} />, label: 'My Identity', path: '/profile' },
-        { icon: <CreditCard size={18} />, label: 'Subscription', path: '/billing' },
+        { icon: <Bot size={18} />, label: 'Profile', path: '/profile' },
+        { icon: <CreditCard size={18} />, label: 'Billing', path: '/billing' },
     ];
 
     return (
         <div className="min-h-screen bg-zinc-950 text-white flex flex-col font-sans overflow-hidden">
             {/* Topbar Header */}
             <header className="h-16 border-b border-zinc-800 bg-zinc-900 flex items-center justify-between px-8 relative z-[60] shrink-0 shadow-xl shadow-black/20">
-                <Link to="/dashboard" className="flex items-center gap-2.5 group">
-                    <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:bg-red-500 transition-colors">
-                        <Bot size={18} className="text-white" />
+                <Link to="/dashboard" className="flex items-center gap-3 group">
+                    <div className="w-10 h-10 flex items-center justify-center transition-transform hover:scale-110">
+                        <Logo size={40} className="drop-shadow-lg" />
                     </div>
                     <span className="text-sm font-black tracking-widest uppercase italic">OpenClaw<span className="text-red-600"> Host</span></span>
                 </Link>
@@ -50,7 +51,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 <aside className="w-64 border-r border-zinc-800 bg-black p-6 flex flex-col gap-8 relative z-10 shrink-0">
                     <nav className="flex flex-col gap-8 overflow-y-auto pr-2 custom-scrollbar">
                         <div className="space-y-3">
-                            <p className="px-3 text-[9px] font-bold uppercase tracking-[0.25em] text-zinc-500">Fleet Operations</p>
+                            <p className="px-3 text-[9px] font-bold uppercase tracking-[0.25em] text-zinc-500">Platform</p>
                             <div className="space-y-0.5">
                                 {menuItems.map((item) => (
                                     <SidebarItem
@@ -65,7 +66,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
                         {isAdmin && (
                             <div className="space-y-3">
-                                <p className="px-3 text-[9px] font-bold uppercase tracking-[0.25em] text-red-500/70">Central Intelligence</p>
+                                <p className="px-3 text-[9px] font-bold uppercase tracking-[0.25em] text-red-500/70">Administration</p>
                                 <div className="space-y-0.5">
                                     {adminItems.map((item) => (
                                         <SidebarItem
@@ -80,7 +81,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                         )}
 
                         <div className="space-y-3">
-                            <p className="px-3 text-[9px] font-bold uppercase tracking-[0.25em] text-zinc-500">Commander Logistics</p>
+                            <p className="px-3 text-[9px] font-bold uppercase tracking-[0.25em] text-zinc-500">Account</p>
                             <div className="space-y-0.5">
                                 {accountItems.map((item) => (
                                     <SidebarItem
@@ -107,13 +108,13 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-1">
                                     <p className="text-[11px] font-bold text-white truncate">
-                                        {user?.full_name || 'Commander'}
+                                        {user?.full_name || 'User'}
                                     </p>
                                     <button onClick={logout} className="text-zinc-500 hover:text-red-500 transition-colors shrink-0">
                                         <LogOut size={12} />
                                     </button>
                                 </div>
-                                <p className="text-[9px] font-medium text-zinc-500 truncate uppercase tracking-widest">{user?.role || 'Officer'}</p>
+                                <p className="text-[9px] font-medium text-zinc-500 truncate uppercase tracking-widest">{user?.role || 'Member'}</p>
                             </div>
                         </div>
                     </div>
