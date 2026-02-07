@@ -99,4 +99,60 @@ router.get('/stats', async (req, res) => {
     }
 });
 
+/**
+ * GET /api/admin/config
+ * Get system configuration keys
+ */
+router.get('/config', async (req, res) => {
+    try {
+        const configs = await prisma.systemConfig.findMany();
+        const configMap = configs.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {});
+        res.json(configMap);
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/admin/config
+ * Update system configuration keys
+ */
+router.post('/config', async (req, res) => {
+    const data = req.body;
+    try {
+        const operations = Object.entries(data).map(([key, value]) => {
+            return prisma.systemConfig.upsert({
+                where: { key },
+                update: { value: String(value) },
+                create: { key, value: String(value) }
+            });
+        });
+        await Promise.all(operations);
+        res.json({ success: true });
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * GET /api/admin/users
+ * List all users with subscription info
+ */
+router.get('/users', async (req, res) => {
+    try {
+        const users = await prisma.user.findMany({
+            include: {
+                subscription: true,
+                _count: {
+                    select: { configs: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json({ users });
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 export default router;
