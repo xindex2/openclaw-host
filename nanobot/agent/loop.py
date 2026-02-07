@@ -168,11 +168,11 @@ class AgentLoop:
         logger.info(f"Processing message from {msg.channel}:{msg.sender_id}")
         
         # Free Tier Limit Check
-        if self.plan == "free" and self.message_count >= 1:
+        if self.plan == "free" and self.message_count >= 2:
              return OutboundMessage(
                 channel=msg.channel,
                 chat_id=msg.chat_id,
-                content="[ACCESS RESTRICTED] You have reached the limit of the Free Plan (1 message). Please upgrade to continue using your Agent: https://openclaw-host.com/billing"
+                content="[ACCESS RESTRICTED] You have reached the limit of the Free Plan (2 messages). Please upgrade to continue using your Agent: https://openclaw-host.com/billing"
             )
         
         self.message_count += 1

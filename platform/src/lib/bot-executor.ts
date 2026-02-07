@@ -25,7 +25,7 @@ export async function startBot(configId: string) {
 
     const config = await prisma.botConfig.findUnique({
         where: { id: configId },
-        include: { user: true }
+        include: { user: { include: { subscription: true } } }
     });
     if (!config) throw new Error('Bot configuration not found.');
 
@@ -55,7 +55,7 @@ export async function startBot(configId: string) {
                 model: config.model,
                 workspace: workspacePath,
                 max_tool_iterations: config.maxToolIterations || 20,
-                plan: (config as any).user?.plan || "free"
+                plan: (config as any).user?.subscription?.plan?.toLowerCase() || "free"
             }
         },
         channels: {

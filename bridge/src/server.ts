@@ -21,7 +21,7 @@ export class BridgeServer {
   private wa: WhatsAppClient | null = null;
   private clients: Set<WebSocket> = new Set();
 
-  constructor(private port: number, private authDir: string) {}
+  constructor(private port: number, private authDir: string) { }
 
   async start(): Promise<void> {
     // Create WebSocket server
@@ -40,6 +40,15 @@ export class BridgeServer {
     this.wss.on('connection', (ws) => {
       console.log('🔗 Python client connected');
       this.clients.add(ws);
+
+      // Immediately send current status and QR if available
+      if (this.wa) {
+        ws.send(JSON.stringify({ type: 'status', status: this.wa.getStatus() }));
+        const currentQR = this.wa.getQR();
+        if (currentQR) {
+          ws.send(JSON.stringify({ type: 'qr', qr: currentQR }));
+        }
+      }
 
       ws.on('message', async (data) => {
         try {

@@ -36,9 +36,19 @@ export class WhatsAppClient {
   private sock: any = null;
   private options: WhatsAppClientOptions;
   private reconnecting = false;
+  private lastQR: string | null = null;
+  private lastStatus = 'disconnected';
 
   constructor(options: WhatsAppClientOptions) {
     this.options = options;
+  }
+
+  public getStatus(): string {
+    return this.lastStatus;
+  }
+
+  public getQR(): string | null {
+    return this.lastQR;
   }
 
   async connect(): Promise<void> {
@@ -77,6 +87,7 @@ export class WhatsAppClient {
         // Display QR code in terminal
         console.log('\n📱 Scan this QR code with WhatsApp (Linked Devices):\n');
         qrcode.generate(qr, { small: true });
+        this.lastQR = qr;
         this.options.onQR(qr);
       }
 
@@ -85,6 +96,7 @@ export class WhatsAppClient {
         const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
         console.log(`Connection closed. Status: ${statusCode}, Will reconnect: ${shouldReconnect}`);
+        this.lastStatus = 'disconnected';
         this.options.onStatus('disconnected');
 
         if (shouldReconnect && !this.reconnecting) {
@@ -97,6 +109,8 @@ export class WhatsAppClient {
         }
       } else if (connection === 'open') {
         console.log('✅ Connected to WhatsApp');
+        this.lastQR = null;
+        this.lastStatus = 'connected';
         this.options.onStatus('connected');
       }
     });
@@ -180,6 +194,7 @@ export class WhatsAppClient {
     if (this.sock) {
       this.sock.end(undefined);
       this.sock = null;
+      this.lastStatus = 'disconnected';
     }
   }
 }
