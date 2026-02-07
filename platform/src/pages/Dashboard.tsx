@@ -17,8 +17,8 @@ function cn(...inputs: ClassValue[]) {
 
 const ICONS = {
     telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
-    discord: 'https://cdn-icons-png.flaticon.com/512/3670/3670157.png',
-    whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png',
+    discord: 'https://favicon.im/discord.com?t=1770422839363',
+    whatsapp: 'https://favicon.im/whatsapp.com?larger=true',
     feishu: 'https://www.feishu.cn/favicon.ico',
     github: 'https://github.com/favicon.ico'
 };
@@ -295,10 +295,13 @@ export default function Dashboard() {
                                     <ChevronLeft size={14} /> Back to dashboard
                                 </button>
                                 <div className="space-y-1">
+                                    <h2 className="text-3xl font-black tracking-tighter text-white uppercase italic mb-2">
+                                        {editingAgent.id ? 'Edit Squad Member' : 'New Squad Member'}
+                                    </h2>
                                     <input
                                         value={editingAgent.name}
                                         onChange={e => setEditingAgent({ ...editingAgent, name: e.target.value })}
-                                        className="bg-transparent text-3xl font-black tracking-tighter text-white outline-none border-b border-zinc-800 focus:border-red-600 transition-colors w-full placeholder:text-zinc-800 uppercase italic"
+                                        className="bg-transparent text-sm font-medium text-zinc-400 outline-none border-b border-zinc-800 focus:border-red-600 transition-colors w-full placeholder:text-zinc-800 uppercase tracking-widest"
                                         placeholder="Agent Name"
                                     />
                                     <input

@@ -104,7 +104,7 @@ body {
   }
 
   .card-glass {
-    @apply bg-white/2 border border-white/5 backdrop-blur-sm transition-all duration-700;
+    @apply bg-white/[0.02] border border-white/5 backdrop-blur-sm transition-all duration-700;
   }
 }
 
