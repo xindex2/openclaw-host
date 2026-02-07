@@ -1,5 +1,5 @@
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Bot, Layout as LayoutIcon, Users, Settings, LogOut, ChevronRight, Activity, ShieldCheck, MessageSquare, CreditCard } from 'lucide-react';
+import { Bot, Layout as LayoutIcon, Users, Settings, LogOut, ChevronRight, Activity, ShieldCheck, MessageSquare, CreditCard, Cpu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Shell({ children }: { children: React.ReactNode }) {
@@ -18,6 +18,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         { icon: <Activity size={18} />, label: 'Command Center', path: '/admin' },
         { icon: <Users size={18} />, label: 'User Registry', path: '/admin/users' },
         { icon: <ShieldCheck size={18} />, label: 'System Logs', path: '/admin/events' },
+        { icon: <Settings size={18} />, label: 'Plan Config', path: '/admin/plans' },
+        { icon: <Cpu size={18} />, label: 'Integration', path: '/admin/settings' },
     ];
 
     const accountItems = [
@@ -33,7 +35,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                     <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:bg-red-500 transition-colors">
                         <Bot size={18} className="text-white" />
                     </div>
-                    <span className="text-sm font-black tracking-widest uppercase italic">Zaki<span className="text-red-600">Bot</span></span>
+                    <span className="text-sm font-black tracking-widest uppercase italic">OpenClaw<span className="text-red-600"> Host</span></span>
                 </Link>
 
                 <div className="flex items-center gap-6">

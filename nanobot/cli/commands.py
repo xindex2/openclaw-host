@@ -211,6 +211,7 @@ def gateway(
         browser_config=config.tools.browser,
         cron_service=cron,
         restrict_to_workspace=config.tools.restrict_to_workspace,
+        plan=config.agents.defaults.plan,
     )
     
     # Set cron callback (needs agent)

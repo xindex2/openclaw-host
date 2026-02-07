@@ -47,6 +47,7 @@ class AgentLoop:
         browser_config: "BrowserConfig | None" = None,
         cron_service: "CronService | None" = None,
         restrict_to_workspace: bool = False,
+        plan: str = "free",
     ):
         from nanobot.config.schema import ExecToolConfig, BrowserConfig
         from nanobot.cron.service import CronService
@@ -60,6 +61,8 @@ class AgentLoop:
         self.browser_config = browser_config or BrowserConfig()
         self.cron_service = cron_service
         self.restrict_to_workspace = restrict_to_workspace
+        self.plan = plan
+        self.message_count = 0
         
         self.context = ContextBuilder(workspace)
         self.sessions = SessionManager(workspace)
@@ -163,6 +166,16 @@ class AgentLoop:
             return await self._process_system_message(msg)
         
         logger.info(f"Processing message from {msg.channel}:{msg.sender_id}")
+        
+        # Free Tier Limit Check
+        if self.plan == "free" and self.message_count >= 1:
+             return OutboundMessage(
+                channel=msg.channel,
+                chat_id=msg.chat_id,
+                content="[ACCESS RESTRICTED] You have reached the limit of the Free Plan (1 message). Please upgrade to continue using your Agent."
+            )
+        
+        self.message_count += 1
         
         # Get or create session
         session = self.sessions.get_or_create(msg.session_key)

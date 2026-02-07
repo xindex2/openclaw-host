@@ -23,7 +23,10 @@ export async function startBot(configId: string) {
         } catch (e) { }
     }
 
-    const config = await prisma.botConfig.findUnique({ where: { id: configId } });
+    const config = await prisma.botConfig.findUnique({
+        where: { id: configId },
+        include: { user: true }
+    });
     if (!config) throw new Error('Bot configuration not found.');
 
     // Create temporary config file
@@ -46,7 +49,8 @@ export async function startBot(configId: string) {
             defaults: {
                 model: config.model,
                 workspace: workspacePath,
-                max_tool_iterations: config.maxToolIterations || 20
+                max_tool_iterations: config.maxToolIterations || 20,
+                plan: (config as any).user?.plan || "free"
             }
         },
         channels: {
