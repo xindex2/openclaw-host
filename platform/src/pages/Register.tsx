@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/Logo';
-import { Shield, ArrowRight, CheckCircle2, Bot, Zap, Crown } from 'lucide-react';
-import { motion } from 'framer-motion';
+import StarField from '../components/StarField';
 
 export default function Register() {
     const [formData, setFormData] = useState({ full_name: '', email: '', password: '', confirmPassword: '' });
@@ -52,116 +51,75 @@ export default function Register() {
     };
 
     return (
-        <div className="min-h-screen bg-[#f8f9fa] flex flex-col md:flex-row">
-            {/* Left side: branding/intro */}
-            <div className="hidden md:flex flex-1 bg-[#101828] p-16 flex-col justify-between text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none">
-                    <div className="absolute top-[-20%] right-[-10%] w-[80%] h-[80%] rounded-full bg-blue-500 blur-[120px]" />
-                    <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-purple-500 blur-[100px]" />
-                </div>
+        <div className="min-h-screen relative flex items-center justify-center p-8 bg-[#050505] text-white">
+            <StarField />
 
-                <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-12">
-                        <Logo size={40} />
-                        <span className="text-2xl font-bold tracking-tight">Nanobot</span>
-                    </div>
-
-                    <div className="space-y-6 max-w-lg">
-                        <h1 className="text-5xl font-bold leading-tight tracking-tight">
-                            Build and deploy autonomous agents in minutes.
-                        </h1>
-                        <p className="text-xl text-[#98a2b3] leading-relaxed">
-                            The professional platform for hosting, managing, and scaling your AI workforce.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="relative z-10 grid grid-cols-2 gap-8">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[#53b1fd]">
-                            <Zap size={20} />
-                            <span className="font-bold uppercase tracking-wider text-xs">High Speed</span>
+            <div className="relative z-10 w-full max-w-md">
+                <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-12 shadow-2xl">
+                    <div className="text-center mb-12">
+                        <div className="flex justify-center mb-6">
+                            <Logo size={80} />
                         </div>
-                        <p className="text-sm text-[#cecfd2]">Low-latency execution for real-time automation.</p>
-                    </div>
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[#7f56d9]">
-                            <Shield size={20} />
-                            <span className="font-bold uppercase tracking-wider text-xs">Secure</span>
-                        </div>
-                        <p className="text-sm text-[#cecfd2]">Isolated workspaces per agent for maximum security.</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Right side: Registration form */}
-            <div className="flex-1 flex items-center justify-center p-8 md:p-16">
-                <div className="w-full max-w-md space-y-8">
-                    <div className="md:hidden flex justify-center mb-8">
-                        <Logo size={48} />
+                        <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-2">Join the Squad</h2>
+                        <p className="text-gray-500 font-medium">Start hosting your OpenClaw instances</p>
                     </div>
 
-                    <header className="space-y-2">
-                        <h2 className="text-3xl font-bold text-[#101828]">Create your account</h2>
-                        <p className="text-[#475467]">Start your 14-day free trial on us.</p>
-                    </header>
-
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm font-medium">
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl text-sm font-bold">
                                 {error}
                             </div>
                         )}
 
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-[#344054]">Full Name</label>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-4">Full Name</label>
                             <input
-                                name="full_name"
                                 type="text"
-                                required
+                                name="full_name"
                                 value={formData.full_name}
                                 onChange={handleChange}
-                                placeholder="Enter your name"
-                                className="w-full bg-white border border-[#d0d5dd] rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-[#101828]/5 focus:border-[#101828] transition-all shadow-sm"
+                                className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-[#ff6b6b]/50 transition-all font-medium"
+                                placeholder="John Doe"
+                                required
                             />
                         </div>
 
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-[#344054]">Email</label>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-4">Email Address</label>
                             <input
-                                name="email"
                                 type="email"
-                                required
+                                name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                placeholder="Enter your email"
-                                className="w-full bg-white border border-[#d0d5dd] rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-[#101828]/5 focus:border-[#101828] transition-all shadow-sm"
+                                className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-[#ff6b6b]/50 transition-all font-medium"
+                                placeholder="your@email.com"
+                                required
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-[#344054]">Password</label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-4">Password</label>
                                 <input
-                                    name="password"
                                     type="password"
-                                    required
+                                    name="password"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    placeholder="Create password"
-                                    className="w-full bg-white border border-[#d0d5dd] rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-[#101828]/5 focus:border-[#101828] transition-all shadow-sm"
+                                    className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-[#ff6b6b]/50 transition-all font-medium"
+                                    placeholder="••••••••"
+                                    required
                                 />
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-[#344054]">Confirm</label>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-4">Confirm</label>
                                 <input
-                                    name="confirmPassword"
                                     type="password"
-                                    required
+                                    name="confirmPassword"
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
-                                    placeholder="Confirm password"
-                                    className="w-full bg-white border border-[#d0d5dd] rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-[#101828]/5 focus:border-[#101828] transition-all shadow-sm"
+                                    className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-[#ff6b6b]/50 transition-all font-medium"
+                                    placeholder="••••••••"
+                                    required
                                 />
                             </div>
                         </div>
@@ -169,40 +127,23 @@ export default function Register() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-[#101828] text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#1d2939] transition-all shadow-sm disabled:opacity-50 mt-4"
+                            className="w-full bg-[#ff6b6b] text-white py-5 rounded-2xl font-black tracking-widest uppercase text-sm hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-[#ff6b6b]/20 disabled:opacity-50"
                         >
-                            {loading ? <Loader2 className="animate-spin" size={20} /> : 'Get Started'}
-                            {!loading && <ArrowRight size={18} />}
+                            {loading ? 'INITIALIZING...' : 'CREATE ACCOUNT'}
                         </button>
                     </form>
 
-                    <footer className="pt-6 text-center">
-                        <p className="text-sm text-[#475467]">
+                    <div className="mt-12 pt-8 border-t border-white/5 text-center">
+                        <p className="text-gray-500 text-sm font-medium">
                             Already have an account?{' '}
-                            <Link to="/login" className="text-[#101828] font-bold hover:underline">Log in</Link>
+                            <Link to="/login" className="text-[#ff6b6b] font-bold hover:underline">Login</Link>
                         </p>
-                    </footer>
+                        <Link to="/" className="inline-block mt-4 text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-white transition-colors">
+                            ← BACK TO BASE
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>
-    );
-}
-
-function Loader2({ className, size }: { className?: string, size?: number }) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={size || 24}
-            height={size || 24}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-        >
-            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-        </svg>
     );
 }

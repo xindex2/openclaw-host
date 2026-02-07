@@ -4,7 +4,7 @@ import {
     Bot, Cpu, Share2, Terminal, Server, CreditCard, User, LogOut, Search, Globe, HardDrive, Clock,
     Trash2, Play, Square, Settings, LayoutDashboard, ChevronRight, CheckCircle, Plus, Rocket,
     Cloud, FileText, Lock, Sparkles, ChevronLeft, Edit3, Activity, Check, Info, Loader2, Zap, Layout,
-    MessageSquare, Smartphone, QrCode, ShieldAlert, Layers, ExternalLink, Mail, Inbox
+    MessageSquare, Smartphone, QrCode, ShieldAlert, Layers
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
@@ -12,72 +12,48 @@ import { twMerge } from 'tailwind-merge';
 
 import { useAuth } from '../context/AuthContext';
 import DeployWizard from '../components/DeployWizard';
-import Logo from '../components/Logo';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-const PROVIDER_MODELS: Record<string, string[]> = {
-    openrouter: [
-        'anthropic/claude-3.5-sonnet',
-        'anthropic/claude-3-opus',
-        'openai/gpt-4o',
-        'openai/gpt-4o-mini',
-        'deepseek/deepseek-chat',
-        'google/gemini-pro-1.5',
-        'meta-llama/llama-3.1-405b',
-        'qwen/qwen-2.5-72b-instruct'
-    ],
-    anthropic: [
-        'claude-3-5-sonnet-20240620',
-        'claude-3-opus-20240229',
-        'claude-3-haiku-20240307'
-    ],
-    openai: [
-        'gpt-4o',
-        'gpt-4o-mini',
-        'o1-preview',
-        'gpt-4-turbo',
-        'gpt-3.5-turbo'
-    ],
-    deepseek: [
-        'deepseek-chat',
-        'deepseek-coder'
-    ],
-    google: [
-        'gemini-1.5-pro',
-        'gemini-1.5-flash'
-    ],
-    groq: [
-        'llama-3.1-70b-versatile',
-        'llama-3.1-8b-instant',
-        'mixtral-8x7b-32768'
-    ],
-    moonshot: [
-        'moonshot-v1-8k',
-        'moonshot-v1-32k'
-    ],
-    dashscope: [
-        'qwen-max',
-        'qwen-plus',
-        'qwen-turbo'
-    ],
-    vllm: [
-        'custom-local-model'
-    ]
+const ICONS = {
+    telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
+    discord: 'https://favicon.im/discord.com?t=1770422839363',
+    whatsapp: 'https://favicon.im/whatsapp.com?larger=true',
+    feishu: 'https://www.feishu.cn/favicon.ico',
+    github: 'https://github.com/favicon.ico'
 };
 
 const PROVIDERS = [
-    { id: 'openrouter', name: 'OpenRouter' },
-    { id: 'anthropic', name: 'Anthropic' },
-    { id: 'openai', name: 'OpenAI' },
-    { id: 'deepseek', name: 'DeepSeek' },
-    { id: 'google', name: 'Google Gemini' },
-    { id: 'groq', name: 'Groq' },
-    { id: 'moonshot', name: 'Moonshot' },
-    { id: 'dashscope', name: 'DashScope' },
-    { id: 'vllm', name: 'vLLM (Local)' },
+    { id: 'openrouter', name: 'OpenRouter (Global)', icon: 'https://openrouter.ai/favicon.ico' },
+    { id: 'anthropic', name: 'Anthropic Claude', icon: 'https://www.anthropic.com/favicon.ico' },
+    { id: 'openai', name: 'OpenAI GPT', icon: 'https://openai.com/favicon.ico' },
+    { id: 'deepseek', name: 'DeepSeek', icon: 'https://www.deepseek.com/favicon.ico' },
+    { id: 'google', name: 'Google Gemini', icon: 'https://www.google.com/favicon.ico' },
+    { id: 'groq', name: 'Groq (Llama/Mixtral)', icon: 'https://groq.com/favicon.ico' },
+    { id: 'moonshot', name: 'Moonshot / Kimi', icon: 'https://www.moonshot.cn/favicon.ico' },
+    { id: 'dashscope', name: 'DashScope (Qwen)', icon: 'https://help.aliyun.com/favicon.ico' },
+    { id: 'aihubmix', name: 'AIHubMix', icon: 'https://aihubmix.com/favicon.ico' },
+    { id: 'vllm', name: 'vLLM (Local)', icon: 'https://vllm.ai/favicon.ico' },
+    { id: 'zhipu', name: 'Zhipu AI (GLM)', icon: 'https://www.zhipuai.cn/favicon.ico' },
+];
+
+const SUGGESTED_MODELS = [
+    'anthropic/claude-3.5-sonnet',
+    'anthropic/claude-3-opus',
+    'anthropic/claude-3-5-haiku',
+    'openai/gpt-4o',
+    'openai/gpt-4o-mini',
+    'openai/o1-preview',
+    'deepseek/deepseek-chat',
+    'deepseek/deepseek-coder',
+    'google/gemini-pro-1.5',
+    'meta-llama/llama-3.1-405b',
+    'meta-llama/llama-3.1-70b',
+    'mistralai/pixtral-12b',
+    'moonshot/moonshot-v1-8k',
+    'qwen/qwen-2.5-72b-instruct'
 ];
 
 interface AgentConfig {
@@ -123,13 +99,13 @@ interface AgentConfig {
 
 export default function Dashboard() {
     const navigate = useNavigate();
-    const { user, token, logout } = useAuth();
+    const { user, token } = useAuth();
     const [agents, setAgents] = useState<AgentConfig[]>([]);
-    const [selectedAgent, setSelectedAgent] = useState<AgentConfig | null>(null);
+    const [editingAgent, setEditingAgent] = useState<AgentConfig | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('provider');
     const [isSaving, setIsSaving] = useState(false);
     const [qrCode, setQrCode] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
     const [subscription, setSubscription] = useState<any>(null);
 
     useEffect(() => {
@@ -166,9 +142,6 @@ export default function Dashboard() {
             if (resp.ok) {
                 const data = await resp.json();
                 setAgents(data);
-                if (!selectedAgent && data.length > 0) {
-                    setSelectedAgent(data[0]);
-                }
             }
         } catch (err) {
             console.error('Failed to fetch agents:', err);
@@ -198,11 +171,10 @@ export default function Dashboard() {
         }
 
         const newAgent: any = {
-            id: 'temp-' + Date.now(),
             name: 'New Agent',
-            description: 'AI-driven task executor',
+            description: 'A helpful AI assistant.',
             provider: 'openrouter',
-            model: 'anthropic/claude-3-haiku-20240307',
+            model: 'anthropic/claude-3.5-sonnet',
             apiKey: '',
             apiBase: '',
             telegramEnabled: false,
@@ -212,16 +184,18 @@ export default function Dashboard() {
             browserEnabled: true,
             shellEnabled: false,
             tmuxEnabled: false,
-            restrictToWorkspace: false,
             weatherEnabled: false,
             summarizeEnabled: false,
+            webSearchApiKey: '',
+            githubToken: '',
+            firecrawlApiKey: '',
+            apifyApiToken: '',
+            restrictToWorkspace: true,
             gatewayHost: '0.0.0.0',
-            gatewayPort: 18790 + (agents.length * 2),
-            maxToolIterations: 20,
-            status: 'stopped'
+            gatewayPort: 18790 + (agents.length * 10),
+            maxToolIterations: 30
         };
-        setAgents([newAgent, ...agents]);
-        setSelectedAgent(newAgent);
+        setEditingAgent(newAgent);
     };
 
     const saveConfig = async (config: AgentConfig) => {
@@ -234,48 +208,66 @@ export default function Dashboard() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ ...selectedAgent, userId: user?.id })
+                body: JSON.stringify({ userId: user.id, ...config })
             });
+
             const data = await resp.json();
+
             if (!resp.ok) {
                 if (data.error?.startsWith('AGENT_LIMIT_REACHED')) {
                     if (confirm('Operational Capacity Reached: You have reached your plan limit. Upgrade your account to create more agents?')) {
                         navigate('/billing');
                     }
                 } else {
-                    throw new Error(data.error || 'Failed to save config');
+                    alert('Protocol Error: ' + (data.error || 'Failed to save config'));
                 }
                 return;
             }
-            alert('Protocol Updated: Bot configuration saved successfully.');
-            fetchAgents();
-            fetchSubscription();
-        } catch (err: any) {
-            alert('Protocol Error: ' + err.message);
+
+            if (resp.ok) {
+                await fetchAgents();
+                await fetchSubscription();
+                setEditingAgent(null);
+            }
         } finally {
             setIsSaving(false);
         }
     };
 
+    const handleCreateAgentFromWizard = async (config: any) => {
+        const newAgent: any = {
+            ...config,
+            description: 'Autonomous research and execution agent.',
+            apiKey: '',
+            apiBase: '',
+            feishuEnabled: false,
+            browserEnabled: true,
+            shellEnabled: false,
+            tmuxEnabled: false,
+            weatherEnabled: false,
+            summarizeEnabled: false,
+            webSearchApiKey: '',
+            githubToken: '',
+            firecrawlApiKey: '',
+            apifyApiToken: '',
+            restrictToWorkspace: true,
+            gatewayHost: '0.0.0.0',
+            gatewayPort: 18790 + (agents.length * 10),
+            maxToolIterations: 20
+        };
+        await saveConfig(newAgent);
+    };
+
     const deleteAgent = async (id: string) => {
-        if (id.startsWith('temp-')) {
-            setAgents(agents.filter(a => a.id !== id));
-            setSelectedAgent(agents[0] || null);
-            return;
-        }
-        if (!confirm('Are you sure you want to delete this bot?')) return;
+        if (!confirm('Are you sure you want to delete this agent?')) return;
         try {
             await fetch(`/api/config/${id}`, { method: 'DELETE' });
             await fetchAgents();
-            setSelectedAgent(agents.find(a => a.id !== id) || null);
+            await fetchSubscription();
         } catch (e) { }
     };
 
     const toggleBot = async (configId: string, currentStatus: string) => {
-        if (configId.startsWith('temp-')) {
-            alert('Please save the bot before starting it.');
-            return;
-        }
         const action = currentStatus === 'running' ? 'stop' : 'start';
         const resp = await fetch('/api/bot/control', {
             method: 'POST',
@@ -290,360 +282,601 @@ export default function Dashboard() {
         }
     };
 
-    const filteredAgents = agents.filter(a =>
-        a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-white">
-                <Loader2 className="animate-spin text-[#101828]" size={32} />
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="animate-spin text-primary" size={48} />
             </div>
         );
     }
 
     return (
-        <div className="dashboard-container">
-            {/* Sidebar */}
-            <aside className="sidebar">
-                <div className="flex items-center gap-3 mb-10 px-2">
-                    <div className="w-8 h-8">
-                        <Logo size={32} />
-                    </div>
-                    <span className="text-xl font-bold text-[#101828]">Nanobot</span>
-                </div>
-
-                <nav className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2 mb-4 px-4 py-2 bg-[#f2f4f7] rounded-lg">
-                        <button className="flex-1 text-xs font-semibold py-1.5 rounded-md bg-white shadow-sm border border-[#eaecf0]">User</button>
-                        <button onClick={() => navigate('/admin')} className="flex-1 text-xs font-semibold py-1.5 text-[#475467]">Admin</button>
-                    </div>
-
-                    <NavItem icon={<Inbox size={18} />} label="Inbox" />
-                    <NavItem icon={<Bot size={18} />} label="My bots" active />
-                    <NavItem icon={<User size={18} />} label="My profile" onClick={() => navigate('/profile')} />
-                    <NavItem icon={<Settings size={18} />} label="Settings" />
-                    <NavItem icon={<CreditCard size={18} />} label="Billing" onClick={() => navigate('/billing')} />
-                </nav>
-
-                <div className="pt-6 border-t border-[#eaecf0] mt-auto">
-                    <div className="bg-[#f9fafb] p-4 rounded-xl border border-[#eaecf0]">
-                        <p className="text-xs text-[#475467] mb-1">Signed in as</p>
-                        <p className="text-xs font-semibold text-[#101828] truncate mb-4">{user?.email}</p>
-                        <button onClick={logout} className="w-full flex items-center gap-2 text-xs font-bold text-[#b42318] hover:bg-red-50 p-2 rounded-lg transition-all">
-                            <LogOut size={14} /> Log out
-                        </button>
-                    </div>
-                </div>
-            </aside>
-
-            {/* Main Content Area */}
-            <main className="main-content">
-                {/* List Column */}
-                <div className="list-column">
-                    <div className="p-6 border-b border-[#eaecf0] flex items-center justify-between">
-                        <h2 className="text-lg font-bold text-[#101828]">My bots</h2>
-                        <button onClick={handleCreateAgent} className="btn-primary py-1.5 px-3">
-                            <Plus size={16} /> Add
-                        </button>
-                    </div>
-                    <div className="p-4 border-b border-[#eaecf0]">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#667085]" size={16} />
-                            <input
-                                type="text"
-                                placeholder="Search bots..."
-                                className="w-full pl-10 pr-4 py-2 bg-[#f9fafb] border border-[#d0d5dd] rounded-lg text-sm outline-none focus:border-[#101828]"
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
+        <div className="min-h-screen py-8 px-4 md:px-8 max-w-7xl mx-auto">
+            <AnimatePresence mode="wait">
+                {!editingAgent ? (
+                    <motion.div
+                        key="list"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-8"
+                    >
+                        {agents.length === 0 ? (
+                            <DeployWizard
+                                user={user}
+                                onDeploy={handleCreateAgentFromWizard}
+                                isDeploying={isSaving}
                             />
-                        </div>
-                    </div>
-                    <div className="flex-1 overflow-y-auto">
-                        {filteredAgents.map(agent => (
-                            <div
-                                key={agent.id}
-                                onClick={() => setSelectedAgent(agent)}
-                                className={cn("card-item", selectedAgent?.id === agent.id && "active")}
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div className={cn(
-                                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                                        agent.status === 'running' ? "bg-[#ecfdf3] text-[#027a48]" : "bg-[#f2f4f7] text-[#475467]"
-                                    )}>
-                                        <Bot size={20} />
+                        ) : (
+                            <>
+                                <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 glass-panel p-8 rounded-3xl">
+                                    <div className="space-y-1">
+                                        <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                                            Fleet Command
+                                        </h1>
+                                        <p className="text-white/40 text-sm font-medium">Manage your fleet of autonomous nanobots.</p>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-2 mb-0.5">
-                                            <span className="font-semibold text-sm text-[#101828] truncate">{agent.name}</span>
-                                            {agent.status === 'running' && <span className="badge badge-success">Running</span>}
-                                        </div>
-                                        <p className="text-xs text-[#475467] truncate">{agent.description || 'No description'}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Detail Column */}
-                <div className="detail-column">
-                    {selectedAgent ? (
-                        <>
-                            <div className="sticky top-0 bg-white h-16 border-b border-[#eaecf0] px-8 flex items-center justify-between z-10">
-                                <h1 className="text-lg font-bold text-[#101828]">{selectedAgent.name}</h1>
-                                <div className="flex items-center gap-3">
-                                    <button className="btn-secondary h-9 py-0">
-                                        <ExternalLink size={16} /> View
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="p-8 space-y-10 max-w-3xl overflow-y-auto" style={{ maxHeight: 'calc(100vh - 128px)' }}>
-                                {/* Status Toggle Box */}
-                                <div className={cn(
-                                    "p-6 rounded-xl border flex items-center justify-between",
-                                    selectedAgent.status === 'running' ? "bg-[#ecfdf3] border-[#abefc6]" : "bg-[#f9fafb] border-[#eaecf0]"
-                                )}>
-                                    <div>
-                                        <h3 className="font-bold text-[#101828] mb-1">
-                                            {selectedAgent.status === 'running' ? 'Bot is running' : 'Bot is offline'}
-                                        </h3>
-                                        <p className="text-sm text-[#475467]">
-                                            Turn the bot on or off.
-                                        </p>
-                                    </div>
-                                    <div
-                                        onClick={() => toggleBot(selectedAgent.id, selectedAgent.status)}
-                                        className={cn(
-                                            "w-12 h-6 rounded-full relative cursor-pointer transition-all",
-                                            selectedAgent.status === 'running' ? "bg-[#039855]" : "bg-[#d0d5dd]"
-                                        )}
+                                    <button
+                                        onClick={handleCreateAgent}
+                                        className="btn-primary-modern flex items-center gap-2 px-8 py-4"
                                     >
-                                        <div className={cn(
-                                            "absolute top-1 w-4 h-4 bg-white rounded-full transition-all",
-                                            selectedAgent.status === 'running' ? "left-7" : "left-1"
-                                        )} />
-                                    </div>
+                                        <Plus size={20} strokeWidth={3} />
+                                        <span>Deploy New Agent</span>
+                                    </button>
+                                </header>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {agents.map(agent => (
+                                        <AgentCard
+                                            key={agent.id}
+                                            agent={agent}
+                                            onEdit={() => setEditingAgent(agent)}
+                                            onDelete={() => deleteAgent(agent.id)}
+                                            onToggle={() => toggleBot(agent.id, agent.status)}
+                                        />
+                                    ))}
                                 </div>
+                            </>
+                        )}
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="editor"
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.02 }}
+                        className="glass-panel flex flex-col md:flex-row min-h-[85vh] rounded-[2.5rem] overflow-hidden border border-white/5"
+                    >
+                        {/* Editor Sidebar */}
+                        <aside className="w-full md:w-72 border-r border-white/5 bg-black/20 p-8 flex flex-col gap-8 shrink-0">
+                            <div>
+                                <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-6 pl-2">Mission Parameters</div>
+                                <nav className="flex flex-col gap-2">
+                                    {[
+                                        { id: 'provider', label: 'AI Engine', icon: <Cpu size={16} /> },
+                                        { id: 'channels', label: 'Channels', icon: <Share2 size={16} /> },
+                                        { id: 'tools', label: 'Capabilities', icon: <Terminal size={16} /> },
+                                        { id: 'system', label: 'System', icon: <Settings size={16} /> },
+                                    ].map(tab => (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={cn(
+                                                "flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-[11px] transition-all text-left uppercase tracking-widest",
+                                                activeTab === tab.id
+                                                    ? "text-primary bg-primary/5 border border-primary/20 shadow-inner"
+                                                    : "text-white/40 hover:text-white hover:bg-white/5"
+                                            )}
+                                        >
+                                            {tab.icon}
+                                            <span>{tab.label}</span>
+                                        </button>
+                                    ))}
+                                </nav>
+                            </div>
+                        </aside>
 
-                                <div className="grid grid-cols-1 gap-8 pb-32">
-                                    <h2 className="text-base font-bold text-[#101828] -mb-4">General Info</h2>
-                                    <div>
-                                        <label className="label-text">Bot Name</label>
-                                        <input
-                                            value={selectedAgent.name}
-                                            onChange={e => setSelectedAgent({ ...selectedAgent, name: e.target.value })}
-                                            className="input-field"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="label-text">Description</label>
-                                        <textarea
-                                            value={selectedAgent.description}
-                                            onChange={e => setSelectedAgent({ ...selectedAgent, description: e.target.value })}
-                                            className="input-field min-h-[100px] py-3"
-                                        />
-                                    </div>
+                        {/* Editor Content */}
+                        <main className="flex-1 p-8 md:p-12 overflow-y-auto custom-scrollbar relative">
+                            <header className="mb-12 flex items-center justify-between">
+                                <div className="flex-1 max-w-2xl">
+                                    <button onClick={() => setEditingAgent(null)} className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest mb-6">
+                                        <ChevronLeft size={14} /> Back to fleet
+                                    </button>
+                                    <input
+                                        value={editingAgent.name}
+                                        onChange={e => setEditingAgent({ ...editingAgent, name: e.target.value })}
+                                        className="bg-transparent text-5xl font-black text-white outline-none w-full placeholder:text-white/10 uppercase italic tracking-tighter mb-4"
+                                        placeholder="AGENT DESIGNATION"
+                                    />
+                                    <textarea
+                                        value={editingAgent.description}
+                                        onChange={e => setEditingAgent({ ...editingAgent, description: e.target.value })}
+                                        placeholder="Define the mission objective for this agent..."
+                                        className="bg-transparent text-white/50 text-base font-medium outline-none w-full resize-none h-12"
+                                    />
+                                </div>
+                            </header>
 
-                                    <div className="pt-4 border-t border-[#eaecf0]" />
-                                    <h2 className="text-base font-bold text-[#101828] -mb-4">AI Provider</h2>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="label-text">Provider</label>
-                                            <select
-                                                value={selectedAgent.provider}
-                                                onChange={e => setSelectedAgent({ ...selectedAgent, provider: e.target.value })}
-                                                className="input-field bg-white"
-                                            >
-                                                {PROVIDERS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="label-text">Model</label>
-                                            <div className="relative">
-                                                <input
-                                                    list="models"
-                                                    value={selectedAgent.model}
-                                                    onChange={e => setSelectedAgent({ ...selectedAgent, model: e.target.value })}
-                                                    className="input-field font-mono"
-                                                    placeholder="Select or enter model..."
-                                                />
-                                                <datalist id="models">
-                                                    {(PROVIDER_MODELS[selectedAgent.provider] || []).map(m => (
-                                                        <option key={m} value={m} />
+                            <div className="space-y-16 pb-32">
+                                {activeTab === 'provider' && (
+                                    <Section icon={<Layers className="text-primary" />} title="AI Brain" desc="Configure the LLM engine and models.">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+                                            <InputWrapper label="Provider">
+                                                <select
+                                                    value={editingAgent.provider}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, provider: e.target.value })}
+                                                    className="input-modern w-full"
+                                                >
+                                                    {PROVIDERS.map(p => (
+                                                        <option key={p.id} value={p.id}>{p.name}</option>
                                                     ))}
-                                                </datalist>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="label-text">API Key</label>
-                                        <input
-                                            type="password"
-                                            value={selectedAgent.apiKey}
-                                            onChange={e => setSelectedAgent({ ...selectedAgent, apiKey: e.target.value })}
-                                            className="input-field font-mono"
-                                            placeholder="sk-..."
-                                        />
-                                    </div>
-
-                                    <div className="pt-4 border-t border-[#eaecf0]" />
-                                    <h2 className="text-base font-bold text-[#101828] -mb-4">Connect Channels</h2>
-
-                                    <div className="space-y-4">
-                                        <ChannelToggle
-                                            name="Telegram"
-                                            icon={<MessageSquare size={18} />}
-                                            checked={selectedAgent.telegramEnabled}
-                                            onToggle={(v: boolean) => setSelectedAgent({ ...selectedAgent, telegramEnabled: v })}
-                                        >
-                                            <div className="space-y-4 pt-4">
-                                                <input
-                                                    value={selectedAgent.telegramToken || ''}
-                                                    onChange={e => setSelectedAgent({ ...selectedAgent, telegramToken: e.target.value })}
-                                                    placeholder="Bot Token"
-                                                    className="input-field text-xs"
-                                                />
-                                                <input
-                                                    value={selectedAgent.telegramAllowFrom || ''}
-                                                    onChange={e => setSelectedAgent({ ...selectedAgent, telegramAllowFrom: e.target.value })}
-                                                    placeholder="Allowed User IDs (comma separated)"
-                                                    className="input-field text-xs"
-                                                />
-                                            </div>
-                                        </ChannelToggle>
-
-                                        <ChannelToggle
-                                            name="Discord"
-                                            icon={<Layout size={18} />}
-                                            checked={selectedAgent.discordEnabled}
-                                            onToggle={(v: boolean) => setSelectedAgent({ ...selectedAgent, discordEnabled: v })}
-                                        >
-                                            <div className="space-y-4 pt-4">
-                                                <input
-                                                    value={selectedAgent.discordToken || ''}
-                                                    onChange={e => setSelectedAgent({ ...selectedAgent, discordToken: e.target.value })}
-                                                    placeholder="Bot Token"
-                                                    className="input-field text-xs"
-                                                />
-                                            </div>
-                                        </ChannelToggle>
-
-                                        <ChannelToggle
-                                            name="WhatsApp"
-                                            icon={<Smartphone size={18} />}
-                                            checked={selectedAgent.whatsappEnabled}
-                                            onToggle={(v: boolean) => setSelectedAgent({ ...selectedAgent, whatsappEnabled: v })}
-                                        >
-                                            <div className="space-y-4 pt-4">
-                                                <div className="flex items-center gap-4 p-4 bg-[#f9fafb] rounded-lg border border-[#eaecf0]">
-                                                    <div className="w-24 h-24 bg-white border rounded-lg flex items-center justify-center p-2">
-                                                        {qrCode ? (
-                                                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrCode)}`} className="w-full h-full" />
-                                                        ) : (
-                                                            <QrCode className="text-[#d0d5dd]" size={32} />
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="text-xs font-semibold mb-2">Scan QR to sync</p>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); fetchQr(selectedAgent.id); }}
-                                                            className="text-xs font-bold text-[#101828] bg-white border border-[#d0d5dd] px-3 py-1.5 rounded-lg hover:bg-[#f9fafb]"
-                                                        >
-                                                            Refresh QR
-                                                        </button>
-                                                    </div>
+                                                </select>
+                                            </InputWrapper>
+                                            <InputWrapper label="Model Designation">
+                                                <div className="relative">
+                                                    <input
+                                                        list="models"
+                                                        value={editingAgent.model}
+                                                        onChange={e => setEditingAgent({ ...editingAgent, model: e.target.value })}
+                                                        className="input-modern w-full font-mono"
+                                                        placeholder="Select or enter model ID..."
+                                                    />
+                                                    <datalist id="models">
+                                                        {SUGGESTED_MODELS.map(m => (
+                                                            <option key={m} value={m} />
+                                                        ))}
+                                                    </datalist>
                                                 </div>
+                                                <p className="text-[10px] text-white/20 mt-2 font-medium">Use any model ID supported by your provider.</p>
+                                            </InputWrapper>
+                                            <InputWrapper label="API Secret Key" full>
                                                 <input
-                                                    value={selectedAgent.whatsappAllowFrom || ''}
-                                                    onChange={e => setSelectedAgent({ ...selectedAgent, whatsappAllowFrom: e.target.value })}
-                                                    placeholder="Allowed Numbers (+CountryCode)"
-                                                    className="input-field text-xs"
+                                                    type="password"
+                                                    value={editingAgent.apiKey}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, apiKey: e.target.value })}
+                                                    className="input-modern w-full font-mono"
+                                                    placeholder="Enter your API key here..."
+                                                />
+                                            </InputWrapper>
+                                            {editingAgent.provider === 'vllm' && (
+                                                <InputWrapper label="Base URL (vLLM / Local)" full>
+                                                    <input
+                                                        value={editingAgent.apiBase || ''}
+                                                        onChange={e => setEditingAgent({ ...editingAgent, apiBase: e.target.value })}
+                                                        className="input-modern w-full font-mono"
+                                                        placeholder="http://localhost:8000/v1"
+                                                    />
+                                                </InputWrapper>
+                                            )}
+                                        </div>
+                                    </Section>
+                                )}
+
+                                {activeTab === 'channels' && (
+                                    <Section icon={<MessageSquare className="text-vibrant-secondary" />} title="Communication Hub" desc="Connect your agent to messaging platforms.">
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10">
+                                            <ChannelInput
+                                                name="Telegram" icon={ICONS.telegram}
+                                                enabled={editingAgent.telegramEnabled}
+                                                onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, telegramEnabled: v })}
+                                            >
+                                                <div className="space-y-4">
+                                                    <div className="bg-white/5 p-4 rounded-2xl text-[11px] text-white/60 leading-relaxed border border-white/5">
+                                                        Get a token from <a href="https://t.me/botfather" target="_blank" className="text-primary hover:underline">@BotFather</a>.
+                                                    </div>
+                                                    <InputWrapper label="Bot Token">
+                                                        <input
+                                                            type="password"
+                                                            value={editingAgent.telegramToken || ''}
+                                                            onChange={e => setEditingAgent({ ...editingAgent, telegramToken: e.target.value })}
+                                                            className="input-modern w-full font-mono text-xs"
+                                                            placeholder="123456:AABBCC..."
+                                                        />
+                                                    </InputWrapper>
+                                                    <InputWrapper label="Allowed Users (IDs)">
+                                                        <input
+                                                            value={editingAgent.telegramAllowFrom || ''}
+                                                            onChange={e => setEditingAgent({ ...editingAgent, telegramAllowFrom: e.target.value })}
+                                                            className="input-modern w-full text-xs"
+                                                            placeholder="e.g. 1234567, 7654321"
+                                                        />
+                                                    </InputWrapper>
+                                                </div>
+                                            </ChannelInput>
+
+                                            <ChannelInput
+                                                name="Discord" icon={ICONS.discord}
+                                                enabled={editingAgent.discordEnabled}
+                                                onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, discordEnabled: v })}
+                                            >
+                                                <div className="space-y-4">
+                                                    <div className="bg-white/5 p-4 rounded-2xl text-[11px] text-white/60 leading-relaxed border border-white/5">
+                                                        Create a bot at <a href="https://discord.com/developers" target="_blank" className="text-primary hover:underline">Discord Portal</a>. Enable <span className="text-white font-bold">Message Content Intent</span>.
+                                                    </div>
+                                                    <InputWrapper label="Bot Token">
+                                                        <input
+                                                            type="password"
+                                                            value={editingAgent.discordToken || ''}
+                                                            onChange={e => setEditingAgent({ ...editingAgent, discordToken: e.target.value })}
+                                                            className="input-modern w-full font-mono text-xs"
+                                                        />
+                                                    </InputWrapper>
+                                                </div>
+                                            </ChannelInput>
+
+                                            <ChannelInput
+                                                name="WhatsApp" icon={ICONS.whatsapp}
+                                                enabled={editingAgent.whatsappEnabled}
+                                                onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, whatsappEnabled: v })}
+                                            >
+                                                <div className="space-y-4">
+                                                    <div className="bg-white/5 p-6 rounded-2xl border border-white/5 flex flex-col items-center gap-6">
+                                                        <div className="text-center space-y-2">
+                                                            <div className="text-xs font-black uppercase text-white">Device Linking</div>
+                                                            <p className="text-[10px] text-white/40 uppercase tracking-widest">Scan the QR below with WhatsApp</p>
+                                                        </div>
+                                                        <div className="w-48 h-48 bg-white rounded-3xl p-4 flex items-center justify-center relative overflow-hidden group">
+                                                            {qrCode ? (
+                                                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCode)}`} alt="WhatsApp QR" className="w-full h-full" />
+                                                            ) : (
+                                                                <div className="flex flex-col items-center gap-2 text-black/20">
+                                                                    <QrCode size={48} />
+                                                                    <span className="text-[10px] font-black uppercase">No Active QR</span>
+                                                                </div>
+                                                            )}
+                                                            <button
+                                                                onClick={() => fetchQr(editingAgent.id)}
+                                                                className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 text-white"
+                                                            >
+                                                                <Rocket size={24} />
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">Refresh Sync</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <InputWrapper label="Allowed Contacts (+CountryCode)">
+                                                        <input
+                                                            value={editingAgent.whatsappAllowFrom || ''}
+                                                            onChange={e => setEditingAgent({ ...editingAgent, whatsappAllowFrom: e.target.value })}
+                                                            className="input-modern w-full text-xs"
+                                                            placeholder="e.g. +123456789, +987654321"
+                                                        />
+                                                    </InputWrapper>
+                                                </div>
+                                            </ChannelInput>
+
+                                            <ChannelInput
+                                                name="Feishu" icon={ICONS.feishu}
+                                                enabled={editingAgent.feishuEnabled}
+                                                onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, feishuEnabled: v })}
+                                            >
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <InputWrapper label="App ID">
+                                                        <input
+                                                            value={editingAgent.feishuAppId || ''}
+                                                            onChange={e => setEditingAgent({ ...editingAgent, feishuAppId: e.target.value })}
+                                                            className="input-modern w-full text-xs"
+                                                            placeholder="cli_..."
+                                                        />
+                                                    </InputWrapper>
+                                                    <InputWrapper label="App Secret">
+                                                        <input
+                                                            type="password"
+                                                            value={editingAgent.feishuAppSecret || ''}
+                                                            onChange={e => setEditingAgent({ ...editingAgent, feishuAppSecret: e.target.value })}
+                                                            className="input-modern w-full text-xs"
+                                                        />
+                                                    </InputWrapper>
+                                                    <InputWrapper label="Allow From (User IDs)" full>
+                                                        <input
+                                                            value={editingAgent.feishuAllowFrom || ''}
+                                                            onChange={e => setEditingAgent({ ...editingAgent, feishuAllowFrom: e.target.value })}
+                                                            className="input-modern w-full text-xs"
+                                                            placeholder="ou_..., ou_..."
+                                                        />
+                                                    </InputWrapper>
+                                                </div>
+                                            </ChannelInput>
+                                        </div>
+                                    </Section>
+                                )}
+
+                                {activeTab === 'tools' && (
+                                    <Section icon={<Terminal className="text-primary" />} title="Agent Skills" desc="Enable advanced tools and capabilities.">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
+                                            <ToolCard
+                                                title="Web Browser" icon={<Globe size={20} />}
+                                                desc="Full internet access via headless browser."
+                                                checked={editingAgent.browserEnabled}
+                                                onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, browserEnabled: v })}
+                                            />
+                                            <ToolCard
+                                                title="System Shell" icon={<Terminal size={20} />}
+                                                desc="Execute commands on the host system."
+                                                checked={editingAgent.shellEnabled}
+                                                onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, shellEnabled: v })}
+                                            />
+                                            <ToolCard
+                                                title="Tmux Persistence" icon={<Layers size={20} />}
+                                                desc="Enable persistent terminal sessions."
+                                                checked={editingAgent.tmuxEnabled}
+                                                onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, tmuxEnabled: v })}
+                                            />
+                                            <ToolCard
+                                                title="Brave Search" icon={<Search size={20} />}
+                                                desc="Real-time web search integration."
+                                                checked={!!editingAgent.webSearchApiKey}
+                                            >
+                                                <input
+                                                    type="password"
+                                                    value={editingAgent.webSearchApiKey || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, webSearchApiKey: e.target.value })}
+                                                    className="input-modern w-full text-[10px] mt-2"
+                                                    placeholder="Enter Search API Key..."
+                                                />
+                                            </ToolCard>
+                                            <ToolCard
+                                                title="Firecrawl" icon={<Sparkles size={20} />}
+                                                desc="Advanced web scraping for summarization."
+                                                checked={!!editingAgent.firecrawlApiKey}
+                                            >
+                                                <input
+                                                    type="password"
+                                                    value={editingAgent.firecrawlApiKey || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, firecrawlApiKey: e.target.value })}
+                                                    className="input-modern w-full text-[10px] mt-2"
+                                                    placeholder="Firecrawl API Key..."
+                                                />
+                                            </ToolCard>
+                                            <ToolCard
+                                                title="Apify" icon={<Activity size={20} />}
+                                                desc="Cloud tools and data extraction."
+                                                checked={!!editingAgent.apifyApiToken}
+                                            >
+                                                <input
+                                                    type="password"
+                                                    value={editingAgent.apifyApiToken || ''}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, apifyApiToken: e.target.value })}
+                                                    className="input-modern w-full text-[10px] mt-2"
+                                                    placeholder="Apify API Token..."
+                                                />
+                                            </ToolCard>
+                                        </div>
+                                    </Section>
+                                )}
+
+                                {activeTab === 'system' && (
+                                    <Section icon={<Server className="text-white/40" />} title="System Tuning" desc="Configure security and performance.">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+                                            <div className="col-span-full">
+                                                <ToggleRow
+                                                    icon={<Lock className="text-orange-500" />}
+                                                    label="Workspace Isolation"
+                                                    desc="Restrict file system access to the project directory."
+                                                    checked={editingAgent.restrictToWorkspace}
+                                                    onToggle={(v: boolean) => setEditingAgent({ ...editingAgent, restrictToWorkspace: v })}
                                                 />
                                             </div>
-                                        </ChannelToggle>
-                                    </div>
-                                </div>
+                                            <InputWrapper label="Execution Step Limit">
+                                                <input
+                                                    type="number"
+                                                    value={editingAgent.maxToolIterations}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, maxToolIterations: parseInt(e.target.value) })}
+                                                    className="input-modern w-full font-mono"
+                                                />
+                                            </InputWrapper>
+                                            <InputWrapper label="Gateway Listener Port">
+                                                <input
+                                                    type="number"
+                                                    value={editingAgent.gatewayPort}
+                                                    onChange={e => setEditingAgent({ ...editingAgent, gatewayPort: parseInt(e.target.value) })}
+                                                    className="input-modern w-full font-mono"
+                                                />
+                                            </InputWrapper>
+                                        </div>
+                                    </Section>
+                                )}
                             </div>
 
-                            {/* Footer Actions */}
-                            <div className="sticky bottom-0 bg-white border-t border-[#eaecf0] p-6 px-8 flex items-center justify-between mt-auto z-10">
+                            {/* Floating Action Bar */}
+                            <div className="fixed bottom-12 right-12 flex items-center gap-4 z-50">
                                 <button
-                                    onClick={() => deleteAgent(selectedAgent.id)}
-                                    className="text-sm font-semibold text-[#b42318] flex items-center gap-2 hover:bg-red-50 px-4 py-2 rounded-lg"
+                                    onClick={() => deleteAgent(editingAgent.id)}
+                                    className="p-4 rounded-2xl bg-white/5 border border-white/5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
                                 >
-                                    <Trash2 size={16} /> Delete
+                                    <Trash2 size={20} />
                                 </button>
                                 <button
-                                    onClick={() => saveConfig(selectedAgent)}
+                                    onClick={() => saveConfig(editingAgent)}
                                     disabled={isSaving}
-                                    className="btn-primary"
+                                    className="btn-primary-modern px-10 py-5 flex items-center gap-3 shadow-2xl shadow-primary/20"
                                 >
-                                    {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
-                                    Save changes
+                                    {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Rocket size={20} />}
+                                    <span className="font-black text-sm uppercase tracking-widest">Deploy Mission</span>
                                 </button>
                             </div>
-                        </>
-                    ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-[#667085] p-20 text-center h-full">
-                            <Bot size={64} className="mb-6 opacity-20" />
-                            <h3 className="text-lg font-bold text-[#101828] mb-2">No bot selected</h3>
-                            <p className="text-sm max-w-xs">Select a bot from the list or create a new one to get started.</p>
-                        </div>
-                    )}
-                </div>
-            </main>
+                        </main>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
 
-function NavItem({ icon, label, active, onClick }: { icon: any, label: string, active?: boolean, onClick?: () => void }) {
+function AgentCard({ agent, onEdit, onDelete, onToggle }: any) {
+    const isRunning = agent.status === 'running';
     return (
-        <button onClick={onClick} className={cn("nav-item w-full", active && "active")}>
-            {icon}
-            {label}
-        </button>
-    );
-}
-
-function ChannelToggle({ name, icon, checked, onToggle, children }: any) {
-    return (
-        <div className={cn(
-            "border border-[#eaecf0] rounded-xl overflow-hidden transition-all",
-            checked ? "bg-white shadow-sm ring-1 ring-[#101828]/5" : "bg-[#f9fafb]"
-        )}>
-            <div
-                className="p-4 flex items-center justify-between cursor-pointer"
-                onClick={() => onToggle(!checked)}
-            >
-                <div className="flex items-center gap-3">
-                    <div className={cn(
-                        "w-8 h-8 rounded-lg flex items-center justify-center",
-                        checked ? "bg-[#101828] text-white" : "bg-white border text-[#667085]"
-                    )}>
-                        {icon}
-                    </div>
-                    <span className="text-sm font-bold text-[#101828]">{name}</span>
-                </div>
+        <motion.div
+            layout
+            className={cn(
+                "glass-card p-8 flex flex-col gap-6 relative group rounded-[2.5rem] border border-white/5 transition-all duration-500",
+                isRunning && "border-primary/20 bg-primary/[0.02]"
+            )}
+        >
+            <div className="flex items-center justify-between">
                 <div className={cn(
-                    "w-10 h-5 rounded-full relative transition-all",
-                    checked ? "bg-[#101828]" : "bg-[#d0d5dd]"
+                    "w-16 h-16 rounded-[1.5rem] flex items-center justify-center transition-all shadow-inner",
+                    isRunning ? "bg-gradient-to-br from-primary to-primary-glow text-white shadow-primary/20" : "bg-white/5 text-white/20"
                 )}>
-                    <div className={cn(
-                        "absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all",
-                        checked ? "left-5.5" : "left-0.5"
-                    )} style={{ left: checked ? '22px' : '2px' }} />
+                    <Bot size={28} />
+                </div>
+                <div className="flex flex-col items-end gap-1.5">
+                    <span className={cn(
+                        "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border",
+                        isRunning ? "bg-primary/10 border-primary/20 text-primary" : "bg-white/5 border-white/5 text-white/20"
+                    )}>
+                        {isRunning ? 'Operational' : 'Idle'}
+                    </span>
                 </div>
             </div>
-            {checked && (
-                <div className="px-4 pb-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {children}
+
+            <div>
+                <h3 className="text-xl font-black text-white group-hover:text-primary transition-colors uppercase italic tracking-tighter mb-2">{agent.name}</h3>
+                <p className="text-[11px] text-white/40 font-medium line-clamp-2 leading-relaxed h-8">{agent.description || 'No mission objective defined.'}</p>
+            </div>
+
+            <div className="flex items-center justify-between pt-6 border-t border-white/5 mt-auto">
+                <div className="flex -space-x-2">
+                    {agent.telegramEnabled && <ChannelIcon src={ICONS.telegram} />}
+                    {agent.discordEnabled && <ChannelIcon src={ICONS.discord} />}
+                    {agent.whatsappEnabled && <ChannelIcon src={ICONS.whatsapp} />}
+                    {agent.feishuEnabled && <ChannelIcon src={ICONS.feishu} />}
                 </div>
-            )}
+
+                <div className="flex items-center gap-3">
+                    <button onClick={onEdit} className="p-3 rounded-2xl hover:bg-white/10 text-white/20 hover:text-white transition-all">
+                        <Settings size={18} />
+                    </button>
+                    <button
+                        onClick={onToggle}
+                        className={cn(
+                            "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
+                            isRunning ? "bg-white/5 text-red-500 hover:bg-red-500/10" : "bg-primary text-white hover:scale-110 shadow-lg shadow-primary/20"
+                        )}
+                    >
+                        {isRunning ? <Square size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="ml-1" />}
+                    </button>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+function ChannelIcon({ src }: { src: string }) {
+    return (
+        <div className="w-8 h-8 rounded-full border-2 border-[#050505] bg-white p-1 hover:translate-y-[-4px] transition-transform cursor-help">
+            <img src={src} className="w-full h-full object-contain" />
         </div>
+    );
+}
+
+function Section({ icon, title, desc, children }: any) {
+    return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex items-center gap-5 mb-10">
+                <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center shadow-inner text-white/20 border border-white/5">
+                    {icon}
+                </div>
+                <div>
+                    <h2 className="text-3xl font-black tracking-tighter text-white uppercase italic">{title}</h2>
+                    <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.2em]">{desc}</p>
+                </div>
+            </div>
+            {children}
+        </div>
+    );
+}
+
+function ChannelInput({ name, icon, enabled, onToggle, children }: any) {
+    return (
+        <div className={cn(
+            "p-8 rounded-[2rem] border transition-all duration-500 relative overflow-hidden",
+            enabled ? "bg-white/[0.02] border-primary/20" : "bg-transparent border-white/5 opacity-40 grayscale"
+        )}>
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-5">
+                    <div className="w-14 h-14 bg-white p-2 rounded-2xl shadow-xl">
+                        <img src={icon} alt={name} className="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-black text-white uppercase italic tracking-tight">{name}</h3>
+                        <p className="text-[9px] text-primary font-black uppercase tracking-widest">{enabled ? 'Active Protocol' : 'Standby'}</p>
+                    </div>
+                </div>
+                <Toggle checked={enabled} onChange={onToggle} />
+            </div>
+            <AnimatePresence>
+                {enabled && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                    >
+                        <div className="pt-8 border-t border-white/5">
+                            {children}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+function ToolCard({ title, icon, desc, checked, onToggle, children }: any) {
+    return (
+        <div className={cn(
+            "p-8 rounded-[2rem] border transition-all duration-500 group flex flex-col h-full",
+            checked ? "bg-white/[0.02] border-primary/20" : "bg-transparent border-white/5"
+        )}>
+            <div className="flex items-center justify-between mb-6">
+                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-all", checked ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-white/10")}>
+                    {icon}
+                </div>
+                {onToggle && <Toggle checked={checked} onChange={onToggle} />}
+            </div>
+            <h3 className="text-base font-black text-white uppercase italic tracking-tight mb-3">{title}</h3>
+            <p className="text-[11px] text-white/40 font-medium leading-relaxed mb-6 flex-1">{desc}</p>
+            {children}
+        </div>
+    );
+}
+
+function ToggleRow({ label, desc, icon, checked, onToggle }: any) {
+    return (
+        <div className="flex items-center justify-between p-6 bg-white/[0.02] rounded-3xl border border-white/5">
+            <div className="flex items-center gap-5">
+                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white/20">
+                    {icon}
+                </div>
+                <div>
+                    <h4 className="font-black text-sm text-white uppercase italic tracking-wide">{label}</h4>
+                    <p className="text-[11px] text-white/40 font-medium">{desc}</p>
+                </div>
+            </div>
+            <Toggle checked={checked} onChange={onToggle} />
+        </div>
+    );
+}
+
+function InputWrapper({ label, children, full }: any) {
+    return (
+        <div className={full ? 'col-span-full' : ''}>
+            <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-3 block px-1">{label}</label>
+            {children}
+        </div>
+    );
+}
+
+function Toggle({ checked, onChange }: any) {
+    return (
+        <label className="relative inline-flex items-center cursor-pointer">
+            <input
+                type="checkbox"
+                checked={checked}
+                onChange={e => onChange(e.target.checked)}
+                className="sr-only peer"
+            />
+            <div className="w-12 h-6.5 bg-white/5 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-full after:h-5 after:w-5 after:shadow-lg after:transition-all peer-checked:bg-primary transition-all duration-300"></div>
+        </label>
     );
 }
