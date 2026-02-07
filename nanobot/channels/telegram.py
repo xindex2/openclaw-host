@@ -2,6 +2,7 @@
 
 import asyncio
 import re
+from typing import Any
 
 from loguru import logger
 from telegram import Update
